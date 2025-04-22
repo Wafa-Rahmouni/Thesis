@@ -1,0 +1,29 @@
+/* Book Cons. */
+.book-cons {
+    position: absolute;
+    width: 288px;
+    height: 70px;
+    left: 1500px;
+    top: 800px;
+
+    background: #FF1837;
+    border-radius: 128px;
+}
+
+/* Read More */
+.book-cons .read-more {
+    position: absolute;
+    width: 103px;
+    height: 26px;
+    left: calc(50% - 103px/2 - 0.5px);
+    top: calc(50% - 26px/2);
+
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 600;
+    font-size: 21px;
+    line-height: 26px;
+    text-transform: capitalize;
+
+    color: #000000;
+}

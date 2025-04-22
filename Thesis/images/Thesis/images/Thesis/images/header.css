@@ -1,0 +1,17 @@
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px; /* Space between links */
+    margin-left: 20px; /* Move links slightly to the right */
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+nav ul li a:hover {
+    color: #007BFF; /* Change color on hover */
+}
