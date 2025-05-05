@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Appointment History</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="stylesg.css"> <!-- Adjust path as needed -->
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">My Profile</a></li>
+        <li><a href="#">Messages</a></li>
+      </ul>
+      <button class="book-button">Book Visit</button>
+      <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <a href="#">Appointments</a> &gt; <span>History</span>
+  </div>
+
+  <!-- HEADER & TABS -->
+  <div class="header">
+    <h1>History</h1>
+    <p>Review your past appointments, their outcomes, and details of treatments or diagnoses.</p>
+    <div class="tabs">
+      <button class="tab-button" data-tab="consultation">Consultation</button>
+      <button class="tab-button" data-tab="appointments">Appointments</button>
+      <button class="tab-button active" data-tab="history">History</button>
+      <button class="tab-button" data-tab="clinics">Clinics</button>
+      <button class="tab-button">Plans</button>
+      <button class="tab-button">Emergency</button>
+      <button class="tab-button">Reminders</button>
+    </div>
+  </div>
+
+  <!-- APPOINTMENT HISTORY TABLE -->
+  <div class="appointments-container">
+    <h2>Past Appointments</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dr. Sofia Malik</td>
+          <td>Mar 18, 2025</td>
+          <td>09:00 AM</td>
+          <td>Video</td>
+          <td><span class="patient-status status-completed">Completed</span></td>
+          <td>Routine dental checkup, advised regular flossing</td>
+        </tr>
+        <tr>
+          <td>Dr. Lucas Grant</td>
+          <td>Feb 28, 2025</td>
+          <td>11:30 AM</td>
+          <td>Phone</td>
+          <td><span class="patient-status status-cancelled">Cancelled</span></td>
+          <td>Appointment cancelled due to emergency rescheduling</td>
+        </tr>
+        <tr>
+          <td>Dr. Aisha Sharma</td>
+          <td>Jan 15, 2025</td>
+          <td>03:00 PM</td>
+          <td>In-Person</td>
+          <td><span class="patient-status status-rescheduled">Rescheduled</span></td>
+          <td>Moved from Jan 10 due to clinic maintenance</td>
+        </tr>
+        <tr>
+          <td>Dr. James Lee</td>
+          <td>Dec 10, 2024</td>
+          <td>01:00 PM</td>
+          <td>Video</td>
+          <td><span class="patient-status status-completed">Completed</span></td>
+          <td>Follow-up for wisdom tooth extraction</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- JS: Tab Navigation -->
+  <script>
+    const tabButtons = document.querySelectorAll(".tab-button");
+
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        const tab = button.getAttribute("data-tab");
+        if (tab === "appointments") location.href = "appointments.html";
+        if (tab === "consultation") location.href = "consultation.html";
+        if (tab === "history") location.href = "appointment-history.html";
+        if (tab === "clinics") location.href = "clinics.html";
+        // Add more redirects as needed for other tabs
+      });
+    });
+  </script>
+
+</body>
+</html>

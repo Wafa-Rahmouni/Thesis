@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Plans</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="stylesg.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">My Profile</a></li>
+        <li><a href="#">Messages</a></li>
+      </ul>
+      <button class="book-button">Book Visit</button>
+      <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <a href="#">Consultations</a> &gt; <span>Plans</span>
+  </div>
+
+  <!-- HEADER & TABS -->
+  <div class="header">
+    <h1>Plans</h1>
+    <p>Explore available dental care plans and choose what suits you or your family best.</p>
+    <div class="tabs">
+      <button class="tab-button" data-tab="consultation">Consultation</button>
+      <button class="tab-button" data-tab="appointments">Appointments</button>
+      <button class="tab-button" data-tab="history">History</button>
+      <button class="tab-button" data-tab="clinics">Clinics</button>
+      <button class="tab-button active" data-tab="plans">Plans</button>
+      <button class="tab-button">Emergency</button>
+      <button class="tab-button">Reminders</button>
+      <button class="tab-button">Education</button>
+    </div>
+  </div>
+
+  <!-- PLANS SECTION -->
+  <div class="appointments-container">
+    <h2>Available Plans</h2>
+    <div class="consultation-options">
+
+      <div class="consultation-option">
+        <h3>Basic Care</h3>
+        <p>₦4,500/month</p>
+        <ul style="list-style-type: none; padding-left: 0;">
+          <li>2 video consultations/month</li>
+          <li>Standard oral care guidance</li>
+          <li>Prescription support</li>
+        </ul>
+        <button>Subscribe</button>
+      </div>
+
+      <div class="consultation-option">
+        <h3>Premium Plan</h3>
+        <p>₦9,000/month</p>
+        <ul style="list-style-type: none; padding-left: 0;">
+          <li>Unlimited consultations</li>
+          <li>In-clinic priority booking</li>
+          <li>Routine checkups & diagnostics</li>
+        </ul>
+        <button>Subscribe</button>
+      </div>
+
+      <div class="consultation-option">
+        <h3>Family Package</h3>
+        <p>₦15,000/month</p>
+        <ul style="list-style-type: none; padding-left: 0;">
+          <li>Consultations for up to 5 family members</li>
+          <li>Dedicated care manager</li>
+          <li>Emergency dental care access</li>
+        </ul>
+        <button>Subscribe</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JS: Tab Navigation -->
+  <script>
+    const tabButtons = document.querySelectorAll(".tab-button");
+
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        const tab = button.getAttribute("data-tab");
+        if (tab === "appointments") location.href = "appointments.html";
+        if (tab === "consultation") location.href = "consultation.html";
+        if (tab === "history") location.href = "appointment-history.html";
+        if (tab === "clinics") location.href = "clinics.html";
+        if (tab === "plans") location.href = "plans.html";
+      });
+    });
+  </script>
+
+</body>
+</html>

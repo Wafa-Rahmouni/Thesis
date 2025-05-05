@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Reminders</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="stylesg.css">
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">My Profile</a></li>
+        <li><a href="#">Messages</a></li>
+      </ul>
+      <button class="book-button">Book Visit</button>
+      <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <a href="#">Consultations</a> &gt; <span>Reminders</span>
+  </div>
+
+  <!-- HEADER & TABS -->
+  <div class="header">
+    <h1>Reminders</h1>
+    <p>Manage and view all your upcoming reminders for consultations and treatments.</p>
+    <div class="tabs">
+      <button class="tab-button" data-tab="consultation">Consultation</button>
+      <button class="tab-button" data-tab="appointments">Appointments</button>
+      <button class="tab-button" data-tab="history">History</button>
+      <button class="tab-button" data-tab="clinics">Clinics</button>
+      <button class="tab-button" data-tab="plans">Plans</button>
+      <button class="tab-button" data-tab="emergency">Emergency</button>
+      <button class="tab-button active" data-tab="reminders">Reminders</button>
+    </div>
+  </div>
+
+  <!-- REMINDERS SECTION -->
+  <div class="appointments-container">
+    <h2>Upcoming Reminders</h2>
+
+    <div class="consultation-card">
+      <div>
+        <h3>Routine Cleaning</h3>
+        <p>May 9, 2025 - 09:00 AM</p>
+      </div>
+      <div class="status status-upcoming">Upcoming</div>
+    </div>
+
+    <div class="consultation-card">
+      <div>
+        <h3>Post-op Checkup</h3>
+        <p>May 12, 2025 - 11:30 AM</p>
+      </div>
+      <div class="status status-upcoming">Upcoming</div>
+    </div>
+
+    <div class="consultation-card">
+      <div>
+        <h3>Medication Reminder</h3>
+        <p>May 13, 2025 - 08:00 AM</p>
+      </div>
+      <div class="status status-upcoming">Upcoming</div>
+    </div>
+
+    <h2 style="margin-top: 40px;">Set New Reminder</h2>
+    <div class="reschedule-form">
+      <label for="reminder-title">Reminder Title</label>
+      <input type="text" id="reminder-title" placeholder="e.g. Dental Cleaning" />
+
+      <label for="reminder-date">Date</label>
+      <input type="date" id="reminder-date" />
+
+      <label for="reminder-time">Time</label>
+      <input type="time" id="reminder-time" />
+
+      <button class="book-button" style="margin-top: 12px;">Add Reminder</button>
+    </div>
+  </div>
+
+  <script>
+    const tabButtons = document.querySelectorAll(".tab-button");
+
+    tabButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        const tab = button.getAttribute("data-tab");
+        if (tab === "appointments") location.href = "appointments.html";
+        if (tab === "consultation") location.href = "consultation.html";
+        if (tab === "history") location.href = "appointment-history.html";
+        if (tab === "clinics") location.href = "clinics.html";
+        if (tab === "plans") location.href = "plans.html";
+        if (tab === "emergency") location.href = "emergency.html";
+        if (tab === "reminders") location.href = "reminders.html";
+      });
+    });
+  </script>
+
+</body>
+</html>

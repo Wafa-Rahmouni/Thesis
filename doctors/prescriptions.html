@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Prescriptions Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome from W3Schools -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../patients/dashboard/appointments/global.css"> <!-- Linking the external CSS -->
+  
+  <!-- Custom Styles -->
+  <style>
+    /* Custom Container Styling for Prescriptions */
+    .prescriptions-container {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      margin: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .prescriptions-container h2 {
+      font-size: 32px;
+      color: #1a73e8;
+      margin-bottom: 25px;
+    }
+
+    .prescriptions-container p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    /* Button Style for Adding Prescription */
+    .add-prescription-button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .add-prescription-button:hover {
+      background-color: #45a049;
+    }
+
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      font-size: 16px;
+    }
+
+    table th, table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #1a73e8;
+      color: white;
+      font-weight: bold;
+    }
+
+    table td {
+      background-color: #f9f9f9;
+    }
+
+    table tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    table td button {
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    table td button:hover {
+      background-color: #005f73;
+    }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 400px;
+    }
+
+    .modal-content h3 {
+      font-size: 20px;
+      color: #333;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .action-buttons button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .action-buttons button:hover {
+      background-color: #45a049;
+    }
+
+    .action-buttons .edit {
+      background-color: #f39c12;
+    }
+
+    .action-buttons .edit:hover {
+      background-color: #e67e22;
+    }
+
+    .close {
+      background-color: #ccc;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .close:hover {
+      background-color: #999;
+    }
+
+    /* Print Layout */
+    .print-layout {
+      display: none;
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+    }
+
+    .print-layout h2 {
+      text-align: center;
+      color: #1a73e8;
+    }
+
+    .print-layout .medication-list {
+      margin-top: 20px;
+    }
+
+    .print-layout ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .print-layout ul li {
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">My Profile</a></li>
+        <li><a href="#">Messages</a></li>
+      </ul>
+  
+      <button class="book-button">Book Visit</button>
+  
+      <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <span>Prescriptions</span>
+  </div>
+
+  <!-- HEADER & TABS -->
+  <div class="header">
+    <h1>Prescriptions</h1>
+    <p>Efficiently track, manage, and update prescriptions for your patients, including multiple medications per prescription.</p>
+    <div class="tabs">
+      <button>Appointments</button>
+      <button>Patients</button>
+      <button>Consultations</button>
+      <button class="active">Prescriptions</button>
+      <button>Emergencies</button>
+      <button>Messages</button>
+    </div>
+  </div>
+
+  <!-- PRESCRIPTIONS SECTION -->
+  <div class="prescriptions-container">
+    <h2>Prescription Records</h2>
+    <button class="add-prescription-button" onclick="window.location.href='add-prescription.html'">Add New Prescription</button>
+    <p>Below is the list of prescriptions you have issued. Each prescription can contain multiple medications.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Prescription ID</th>
+          <th>Patient</th>
+          <th>Medications</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="prescriptions-table-body">
+        <!-- Sample Data Rows -->
+        <tr id="prescription-001">
+          <td>RX-001</td>
+          <td>John Doe</td>
+          <td>
+            <ul>
+              <li>Paracetamol</li>
+            </ul>
+          </td>
+          <td>2025-05-05</td>
+          <td>Active</td>
+          <td>
+            <button class="manage-button" onclick="showPrescriptionModal(1)">Manage</button>
+            <button class="print-button" onclick="printPrescription(1)">Print</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PRINT LAYOUT (Hidden) -->
+  <div id="print-layout" class="print-layout">
+    <h2>Prescription Details</h2>
+    <p><strong>Prescription ID:</strong> <span id="print-prescription-id"></span></p>
+    <p><strong>Patient:</strong> <span id="print-patient-name"></span></p>
+    <p><strong>Date:</strong> <span id="print-prescription-date"></span></p>
+    <div class="medication-list">
+      <h3>Medications:</h3>
+      <ul id="print-medications-list"></ul>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    // Function to print the prescription
+    function printPrescription(prescriptionId) {
+      // Find the corresponding prescription data
+      var prescription = document.getElementById('prescription-' + prescriptionId);
+      var prescriptionId = prescription.cells[0].innerText;
+      var patientName = prescription.cells[1].innerText;
+      var prescriptionDate = prescription.cells[3].innerText;
+      var medications = prescription.cells[2].innerHTML;
+
+      // Populate the print layout
+      document.getElementById('print-prescription-id').innerText = prescriptionId;
+      document.getElementById('print-patient-name').innerText = patientName;
+      document.getElementById('print-prescription-date').innerText = prescriptionDate;
+      document.getElementById('print-medications-list').innerHTML = medications;
+
+      // Show the print layout
+      var printLayout = document.getElementById('print-layout');
+      printLayout.style.display = 'block';
+
+      // Print the content
+      window.print();
+
+      // Hide the print layout again
+      printLayout.style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>

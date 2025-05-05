@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Consultation Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome from W3Schools -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../patients/dashboard/appointments/global.css"> <!-- Linking the external CSS -->
+  
+  <!-- Custom Styles -->
+  <style>
+    /* Custom Container Styling for Consultations */
+    .consultation-container {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      margin: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .consultation-container h2 {
+      font-size: 32px;
+      color: #1a73e8;
+      margin-bottom: 25px;
+    }
+
+    .consultation-container p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    /* Button Style for Managing Consultation */
+    .manage-button {
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .manage-button:hover {
+      background-color: #005f73;
+    }
+
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      font-size: 16px;
+    }
+
+    table th, table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #1a73e8;
+      color: white;
+      font-weight: bold;
+    }
+
+    table td {
+      background-color: #f9f9f9;
+    }
+
+    table tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    table td button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    table td button:hover {
+      background-color: #45a049;
+    }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 400px;
+    }
+
+    .modal-content h3 {
+      font-size: 20px;
+      color: #333;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .action-buttons button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .action-buttons button:hover {
+      background-color: #45a049;
+    }
+
+    .action-buttons .reschedule {
+      background-color: #f39c12;
+    }
+
+    .action-buttons .reschedule:hover {
+      background-color: #e67e22;
+    }
+
+    .close {
+      background-color: #ccc;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .close:hover {
+      background-color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">My Profile</a></li>
+        <li><a href="#">Messages</a></li>
+      </ul>
+  
+      <button class="book-button">Book Visit</button>
+  
+      <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+  
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <span>Consultations</span>
+  </div>
+
+  <!-- HEADER & TABS -->
+  <div class="header">
+    <h1>Consultations</h1>
+    <p>Track, view, and manage consultation details between doctors and patients.</p>
+    <div class="tabs">
+      <button>Appointments</button>
+      <button>Patients</button>
+      <button class="active">Consultations</button>
+      <button>Prescriptions</button>
+      <button>Emergencies</button>
+      <button>Messages</button>
+    </div>
+  </div>
+
+  <!-- CONSULTATIONS SECTION -->
+  <div class="consultation-container">
+    <h2>Consultation Records</h2>
+    <p>View the details of patient consultations and their outcomes. Use the table below for easy management.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Consultation ID</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="consultations-table-body">
+        <!-- Sample Data Rows -->
+        <tr>
+          <td>CON-001</td>
+          <td>John Doe</td>
+          <td>Dr. Smith</td>
+          <td>2025-05-06</td>
+          <td>General Checkup</td>
+          <td>Completed</td>
+          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
+        </tr>
+        <tr>
+          <td>CON-002</td>
+          <td>Jane Smith</td>
+          <td>Dr. Lee</td>
+          <td>2025-05-07</td>
+          <td>Specialist Referral</td>
+          <td>Pending</td>
+          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
+        </tr>
+        <tr>
+          <td>CON-003</td>
+          <td>Michael Johnson</td>
+          <td>Dr. Brown</td>
+          <td>2025-05-10</td>
+          <td>Follow-up</td>
+          <td>Completed</td>
+          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
+        </tr>
+        <tr>
+          <td>CON-004</td>
+          <td>Emily White</td>
+          <td>Dr. Green</td>
+          <td>2025-05-12</td>
+          <td>Emergency</td>
+          <td>Pending</td>
+          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACTION MODAL -->
+  <div class="modal" id="consultation-action-modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Consultation Status Update</h3>
+      <p>Would you like to update the status or reschedule this consultation?</p>
+      <div class="action-buttons">
+        <button class="confirm" onclick="updateConsultationStatus('Completed')">Mark as Completed</button>
+        <button class="reschedule" onclick="updateConsultationStatus('Rescheduled')">Reschedule</button>
+      </div>
+      <button class="close" onclick="closeConsultationModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="scripts.js"></script>
+
+</body>
+</html>
