@@ -1,99 +1,26 @@
-let selectedAppointmentId = null;
-
-// --- Initialize After Common Content is Loaded ---
-document.addEventListener('DOMContentLoaded', () => {
-  loadCommonHTML(() => {
-    console.log('Common content loaded and initialized.');
-    initializeCommonEventListeners();
-  });
-
-  // Other initialization logic
-  setupTabNavigation();
-  renderAppointments();
-});
-
-// --- Tab Navigation ---
-function setupTabNavigation() {
-  const tabButtons = document.querySelectorAll(".tab-button");
-  const currentPage = window.location.pathname.split("/").pop();
-
-  tabButtons.forEach(button => {
-    const page = button.getAttribute("data-page");
-
-    button.addEventListener("click", () => {
-      if (page) window.location.href = page;
-    });
-
-    if (page === currentPage) {
-      button.classList.add("active");
-    } else {
-      button.classList.remove("active");
-    }
-  });
-}
-
-// --- Appointments Rendering ---
-const appointments = [
-  { id: 1, patient: "John Doe", date: "2025-05-05", time: "10:00 AM", type: "In-person", status: "Scheduled" },
-  { id: 2, patient: "Jane Smith", date: "2025-05-06", time: "2:00 PM", type: "Video", status: "Scheduled" },
-];
-
-function renderAppointments() {
-  const tbody = document.getElementById("appointments-table-body");
-  if (!tbody) return;
-
-  tbody.innerHTML = "";
-
-  appointments.forEach(appt => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${appt.patient}</td>
-      <td>${appt.date}</td>
-      <td>${appt.time}</td>
-      <td>${appt.type}</td>
-      <td id="status-${appt.id}">${appt.status}</td>
-      <td class="action-buttons">
-        <button class="confirm" onclick="openModal(${appt.id})">Confirm</button>
-        <button class="reschedule" onclick="openModal(${appt.id})">Reschedule</button>
-        <button class="cancel" onclick="openModal(${appt.id})">Cancel</button>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-// --- Modal Control ---
-function openModal(id) {
-  selectedAppointmentId = id;
-  document.getElementById("action-modal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("action-modal").style.display = "none";
-  selectedAppointmentId = null;
-}
-
-function updateStatus(status) {
-  const appt = appointments.find(a => a.id === selectedAppointmentId);
-  if (appt) {
-    appt.status = status;
-    const statusCell = document.getElementById(`status-${appt.id}`);
-    if (statusCell) statusCell.textContent = status;
-  }
-  closeModal();
-}
-
 // --- Load Common HTML ---
 function loadCommonHTML(callback) {
-  fetch('common.html')
-    .then(response => response.text())
+  console.log('Attempting to load common HTML...');
+  fetch('../../doctors/common.html') // Adjusted path
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.text();
+    })
     .then(data => {
       const commonContainer = document.getElementById('common-container');
       if (commonContainer) {
         commonContainer.innerHTML = data;
+        console.log('Common HTML loaded successfully.');
+
+        // Initialize event listeners after the content is loaded
+        initializeCommonEventListeners();
 
         // Execute the callback after the common content is loaded
         if (callback) callback();
+      } else {
+        console.error('common-container not found in the DOM.');
       }
     })
     .catch(error => console.error('Error loading common HTML:', error));
@@ -183,14 +110,6 @@ function initializeCommonEventListeners() {
   }
 }
 
-// --- Utility Functions ---
-function closeAllPopups() {
-  const popups = document.querySelectorAll('.popup');
-  popups.forEach(popup => {
-    popup.style.display = 'none'; // Hide all popups
-  });
-}
-
 // --- Profile Modal Functions ---
 function openProfileModal() {
   closeAllPopups(); // Close other popups
@@ -234,30 +153,6 @@ function closeLanguagePopup() {
   }
 }
 
-// --- Language Translation Function ---
-function translatePage(language) {
-  const currentUrl = window.location.href; // Get the current page URL
-  const translateUrl = `https://translate.google.com/translate?hl=${language}&sl=auto&tl=${language}&u=${encodeURIComponent(currentUrl)}`;
-  window.location.href = translateUrl; // Redirect to the Google Translate URL
-}
-
-// --- Initialize Event Listeners for Language Buttons ---
-function initializeLanguageButtons() {
-  const englishButton = document.querySelector('.popup-button[onclick="translatePage(\'en\')"]');
-  const arabicButton = document.querySelector('.popup-button[onclick="translatePage(\'ar\')"]');
-  const frenchButton = document.querySelector('.popup-button[onclick="translatePage(\'fr\')"]');
-
-  if (englishButton) {
-    englishButton.addEventListener('click', () => translatePage('en'));
-  }
-  if (arabicButton) {
-    arabicButton.addEventListener('click', () => translatePage('ar'));
-  }
-  if (frenchButton) {
-    frenchButton.addEventListener('click', () => translatePage('fr'));
-  }
-}
-
 // --- Notifications Popup Functions ---
 function openNotificationsPopup() {
   closeAllPopups(); // Close other popups
@@ -290,38 +185,32 @@ function closeLogoutPopup() {
   }
 }
 
+function confirmLogout() {
+  console.log('User logged out.');
+  window.location.href = '/login.html'; // Adjust the path to your login page
+}
+
+// --- Utility Functions ---
+function closeAllPopups() {
+  const popups = document.querySelectorAll('.popup');
+  popups.forEach(popup => {
+    popup.style.display = 'none'; // Hide all popups
+  });
+}
+
 // --- Book Visit Popup Functions ---
 function openBookVisitPopup() {
-  closeAllPopups(); // Close other popups
   const popup = document.getElementById('book-visit-popup');
   if (popup) {
     popup.style.display = 'block';
-  }
-}
-
-function closeBookVisitPopup() {
-  const popup = document.getElementById('book-visit-popup');
-  if (popup) {
-    popup.style.display = 'none';
-  }
-}
-
-// --- Login and Role Management Functions ---
-// Store the user's role during login
-function login(userRole) {
-  localStorage.setItem("userRole", userRole); // Save the role ("doctor" or "patient")
-  window.location.href = "dashboard.html"; // Redirect to the dashboard after login
-}
-
-// Redirect to the appropriate Messages page based on the stored role
-function redirectToMessages() {
-  const userRole = localStorage.getItem("userRole"); // Retrieve the stored role
-  if (userRole === "doctor") {
-    window.location.href = "/messages.html"; // Redirect to Doctors Messages page
-  } else if (userRole === "patient") {
-    window.location.href = "patients/messages.html"; // Redirect to Patients Messages page
   } else {
-    alert("Please log in to access messages.");
-    window.location.href = "login.html"; // Redirect to login page if no role is found
+    console.error('Book Visit Popup not found in the DOM.');
   }
 }
+
+// Call the function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  loadCommonHTML(() => {
+    console.log('Common content loaded and initialized.');
+  });
+});

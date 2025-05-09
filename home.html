@@ -25,7 +25,7 @@
             <nav>
                 <ul>
                     <li><a href="#services-container">Services</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="#footer">Contact</a></li>
                     <li><a href="#About">About</a></li>
                     <li><a href="#Login" class="login-link">Login</a></li>
                 </ul>
@@ -46,13 +46,13 @@
         <p class="sante-net-subtitle">Connecting You to Expert Care, Anytime, Anywhere</p>
         <p class="sante-net-subtitle" id="role">Select a role to get started</p>
         <div class="button-row">
-            <button class="styled-button" onclick="showRoleServices('practitioner')">Practitioners</button>
-            <button class="styled-button" onclick="showRoleServices('patient')">Patients</button>            
+            <button class="styled-button" onclick="selectRole('doctor')">Practitioners</button>
+            <button class="styled-button" onclick="selectRole('patient')">Patients</button>
         </div>
     </section>
 
     <!-- General Services Section -->
-    <section class="services-container">
+    <section class="services-container" id="services-container">
         <!-- Default Services (Always visible) -->
         <div class="service-box">
             <img src="https://appscrip.com/blog/wp-content/uploads/2024/06/teladoc-business-model.jpg" alt="Instant Consultation">
@@ -79,7 +79,7 @@
     <!-- About Us Button -->
     <div class="About">
         <div class="contentWrapper">
-          <p class="AboutHeading">About Us</p>
+          <p class="AboutHeading" id="About">About Us</p>
           <p class="AboutDescription">
             Our platform is a cutting-edge digital solution exclusively designed to transform the way dental clinics operate and interact with their patients. With a focus on convenience, efficiency, and innovation, this platform empowers patients to seamlessly register their profiles, book appointments with their preferred dentists, and access a wide range of additional services tailored to their needs. Beyond simple scheduling, the platform integrates advanced features such as reminders for upcoming visits, secure payment options, and even real-time communication tools to connect patients and dental professionals effortlessly. Whether it’s routine check-ups or specialized treatments, we aim to bridge the gap between technology and healthcare, ensuring an optimized and user-friendly experience for both patients and clinics. Elevate your dental care journey with a platform that's as forward-thinking as it is practical.
           </p>
@@ -189,7 +189,7 @@
         </div>
       </div>
     </div>
-    <footer class="footer">
+    <footer class="footer" id="footer">
         <div class="footer-container">
           <div class="footer-main">
             <!-- Column 1: Logo and About -->

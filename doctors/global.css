@@ -979,3 +979,13 @@ background-color: #bbb;
 .registration-form .form-button.cancel:hover {
   background-color: #bbb; /* Match the hover color */
 }
+
+/* Profile Picture Styles */
+.profile-picture img {
+  width: 150px; /* Adjust the size as needed */
+  height: 150px; /* Ensure the height matches the width for a perfect circle */
+  border-radius: 50%; /* Makes the image circular */
+  object-fit: cover; /* Ensures the image fits within the circle */
+  border: 2px solid #ccc; /* Optional: Add a border around the image */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow for better appearance */
+}

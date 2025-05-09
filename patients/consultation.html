@@ -7,32 +7,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stylesg.css">
+  <link rel="stylesheet" href="../../doctors/global.css"> <!-- Linking the external CSS -->
 </head>
 <body>
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-        <a href="#">
-          <div class="logo-wrapper">
-            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
-          </div>
-          <span>Sante<span>Net</span></span>
-        </a>
-      </div>
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">My Profile</a></li>
-        <li><a href="#">Messages</a></li>
-      </ul>
-      <button class="book-button">Book Visit</button>
-      <div class="icon-buttons">
-        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
-        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
-        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
-      </div>
-    </div>
-  </nav>
-
+  <!-- Placeholder for dynamically loading common content -->
+  <div id="common-container"></div>
   <div class="breadcrumb">
     <a href="#">Home</a> &gt; <a href="#">Patient</a> &gt; <span>Consultations</span>
   </div>
@@ -41,16 +20,15 @@
     <h1>Consultations</h1>
     <p>Access your scheduled consultations or request a new one with a licensed dentist.</p>
     <div class="tabs">
-      <button class="tab-button active" data-tab="consultation">Consultation</button>
-      <button class="tab-button" data-tab="appointments">Appointments</button>
+      <button class="tab-button active" data-tab="appointments">Appointments</button>
+      <button class="tab-button" data-tab="consultation">Consultations</button>
       <button class="tab-button" data-tab="history">History</button>
       <button class="tab-button" data-tab="clinics">Clinics</button>
-      <button class="tab-button">Plans</button>
-      <button class="tab-button">Emergency</button>
-      <button class="tab-button">Reminders</button>
+      <button class="tab-button" data-tab="plans">Plans</button>
+      <button class="tab-button" data-tab="emergency">Emergency</button>
+      <button class="tab-button" data-tab="reminders">Reminders</button>
     </div>
-  </div>
-
+    
   <div class="appointments-container">
     <!-- Consultation Tab Content -->
     <div class="consultation-list">
@@ -145,4 +123,14 @@
   </div>
 </body>
 <script src="conscript.js"></script>
+<script src="script0.js"></script>
+  <script src="./common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCommonHTML(() => {
+        console.log('Common content loaded and initialized.');
+        initializeCommonEventListeners();
+      });
+    });
+  </script>
 </html>

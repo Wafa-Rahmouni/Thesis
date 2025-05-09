@@ -396,7 +396,11 @@ html {
     color: #555;
   }
   
-  
+  #loginModal {
+    display: none; /* ensures it's hidden on page load */
+    /* other modal styling */
+}
+
   /* SERVICE DESCRIPTION OVERLAY */
   .service-description {
     font-family: 'Nunito', sans-serif;
@@ -560,22 +564,108 @@ html {
   
   /* FORM STYLES */
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-    max-height: 500px;  
-    min-width: 500px;
-    overflow-y: auto;   
-    scroll-behavior: smooth;  
-    height: auto;
-    padding: 20px;
-    border-radius: 20px;
-    background-color: #c6ecd6;
-    color: #fff;
-    border: 1px solid #05369e;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 500px;
+  min-width: 400px; /* Adjusted width to match the popup */
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #fff; /* Match the popup background */
+  color: #333; /* Match the popup text color */
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Match the popup shadow */
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Title Styling */
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333; /* Match the popup text color */
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Message Styling */
+.message {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Input Fields */
+.form label .input {
+  background-color: #fff;
+  color: #222;
+  width: 100%;
+  padding: 12px 10px;
+  outline: 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form label .input:focus {
+  border-color: #38DB7C; /* Match the popup's confirm button color */
+}
+
+/* Submit Button */
+.submit {
+  border: none;
+  outline: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 16px;
+  background-color: #38DB7C; /* Match the popup's confirm button color */
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.submit:hover {
+  background-color: #2dc76c; /* Match the popup's hover color */
+}
+
+/* Close Button */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  background: none;
+  outline: none;
+  color: #333;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: #38DB7C; /* Match the popup's confirm button color */
+}
+
+/* Sign-In Link */
+.signin {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.signin a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+.signin a:hover {
+  text-decoration: underline;
 }
 
 /* LABEL AND INPUT STYLES */
@@ -693,7 +783,7 @@ html {
     right: 20px; 
     background: none; 
     outline: none; 
-    color: #fff;
+    color: #454242;
     font-size: 40px;
     border: none;
     cursor: pointer;

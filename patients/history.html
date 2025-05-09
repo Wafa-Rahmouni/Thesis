@@ -7,33 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stylesg.css"> <!-- Adjust path as needed -->
+  <link rel="stylesheet" href="../../doctors/global.css"> <!-- Linking the external CSS -->
 </head>
 <body>
 
   <!-- NAVBAR -->
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-        <a href="#">
-          <div class="logo-wrapper">
-            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
-          </div>
-          <span>Sante<span>Net</span></span>
-        </a>
-      </div>
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">My Profile</a></li>
-        <li><a href="#">Messages</a></li>
-      </ul>
-      <button class="book-button">Book Visit</button>
-      <div class="icon-buttons">
-        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
-        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
-        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
-      </div>
-    </div>
-  </nav>
+  <!-- Placeholder for dynamically loading common content -->
+  <div id="common-container"></div>
 
   <!-- BREADCRUMB -->
   <div class="breadcrumb">
@@ -45,15 +25,15 @@
     <h1>History</h1>
     <p>Review your past appointments, their outcomes, and details of treatments or diagnoses.</p>
     <div class="tabs">
-      <button class="tab-button" data-tab="consultation">Consultation</button>
       <button class="tab-button" data-tab="appointments">Appointments</button>
-      <button class="tab-button active" data-tab="history">History</button>
+      <button class="tab-button" data-tab="consultation">Consultations</button>
+      <button class="tab-button" data-tab="history">History</button>
       <button class="tab-button" data-tab="clinics">Clinics</button>
-      <button class="tab-button">Plans</button>
-      <button class="tab-button">Emergency</button>
-      <button class="tab-button">Reminders</button>
+      <button class="tab-button" data-tab="plans">Plans</button>
+      <button class="tab-button" data-tab="emergency">Emergency</button>
+      <button class="tab-button" data-tab="reminders">Reminders</button>
     </div>
-  </div>
+    
 
   <!-- APPOINTMENT HISTORY TABLE -->
   <div class="appointments-container">
@@ -105,25 +85,15 @@
       </tbody>
     </table>
   </div>
-
-  <!-- JS: Tab Navigation -->
+</body>
+<script src="script0.js"></script>
+  <script src="./common.js"></script>
   <script>
-    const tabButtons = document.querySelectorAll(".tab-button");
-
-    tabButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        tabButtons.forEach(btn => btn.classList.remove("active"));
-        button.classList.add("active");
-
-        const tab = button.getAttribute("data-tab");
-        if (tab === "appointments") location.href = "appointments.html";
-        if (tab === "consultation") location.href = "consultation.html";
-        if (tab === "history") location.href = "appointment-history.html";
-        if (tab === "clinics") location.href = "clinics.html";
-        // Add more redirects as needed for other tabs
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCommonHTML(() => {
+        console.log('Common content loaded and initialized.');
+        initializeCommonEventListeners();
       });
     });
   </script>
-
-</body>
 </html>

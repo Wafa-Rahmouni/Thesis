@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Font Awesome from W3Schools -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../patients/dashboard/appointments/global.css"> <!-- Linking the external CSS -->
+  <link rel="stylesheet" href="global.css"> <!-- Linking the external CSS -->
   
   <!-- Custom Styles -->
   <style>
@@ -163,35 +163,8 @@
   </style>
 </head>
 <body>
-
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-        <a href="#">
-          <div class="logo-wrapper">
-            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
-          </div>
-          <span>Sante<span>Net</span></span>
-        </a>
-      </div>
-      
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">My Profile</a></li>
-        <li><a href="#">Messages</a></li>
-      </ul>
-  
-      <button class="book-button">Book Visit</button>
-  
-      <div class="icon-buttons">
-        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
-        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
-        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
-      </div>
-    </div>
-  </nav>
-  
-
+  <!-- Placeholder for dynamically loading common content -->
+  <div id="common-container"></div>
   <!-- BREADCRUMB -->
   <div class="breadcrumb">
     <a href="#">Home</a> &gt; <span>Consultations</span>
@@ -202,15 +175,13 @@
     <h1>Consultations</h1>
     <p>Track, view, and manage consultation details between doctors and patients.</p>
     <div class="tabs">
-      <button>Appointments</button>
-      <button>Patients</button>
-      <button class="active">Consultations</button>
-      <button>Prescriptions</button>
-      <button>Emergencies</button>
-      <button>Messages</button>
+      <button class="tab-button" data-page="appointments.html">Appointments</button>
+      <button class="tab-button" data-page="patients.html">Patients</button>
+      <button class="tab-button" data-page="consultations.html">Consultations</button>
+      <button class="tab-button" data-page="prescriptions.html">Prescriptions</button>
+      <button class="tab-button active" data-page="emergencies.html">Emergencies</button>
     </div>
-  </div>
-
+    
   <!-- CONSULTATIONS SECTION -->
   <div class="consultation-container">
     <h2>Consultation Records</h2>

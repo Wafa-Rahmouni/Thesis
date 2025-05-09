@@ -24,68 +24,96 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Role-specific content data
     const practitionerServices = [
-        { title: "Patient Management", description: "Manage patient records, appointments, and monitor health in real-time.", image: "https://via.placeholder.com/400x250?text=Practitioner+Service+1" },
-        { title: "Telemedicine Tools", description: "Remote consultations with video/chat support, EHR integration, and secure sessions.", image: "https://via.placeholder.com/400x250?text=Practitioner+Service+2" },
-        { title: "Remote Diagnostics", description: "AI-powered diagnostics with alerts, wearable sync, and specialist sharing.", image: "https://via.placeholder.com/400x250?text=Practitioner+Service+3" },
-        { title: "Case Collaboration", description: "Collaborate on cases with shared records, peer invites, and voice/video notes.", image: "https://via.placeholder.com/400x250?text=Practitioner+Service+4" }
+        {
+            title: "Patient Management",
+            description: "Manage patient records, appointments, and monitor health in real-time.",
+            image: "https://via.placeholder.com/400x250?text=Practitioner+Service+1",
+        },
+        {
+            title: "Telemedicine Tools",
+            description: "Remote consultations with video/chat support, EHR integration, and secure sessions.",
+            image: "https://via.placeholder.com/400x250?text=Practitioner+Service+2",
+        },
+        {
+            title: "Remote Diagnostics",
+            description: "AI-powered diagnostics with alerts, wearable sync, and specialist sharing.",
+            image: "https://via.placeholder.com/400x250?text=Practitioner+Service+3",
+        },
+        {
+            title: "Case Collaboration",
+            description: "Collaborate on cases with shared records, peer invites, and voice/video notes.",
+            image: "https://via.placeholder.com/400x250?text=Practitioner+Service+4",
+        },
     ];
 
     const patientServices = [
-        { title: "Health Dashboard", description: "Track vitals, meds, reminders, and appointments, with direct doctor communication.", image: "https://via.placeholder.com/400x250?text=Patient+Service+1" },
-        { title: "24/7 Support", description: "Emergency chat, nurse hotline, condition guides, and wellness coaching.", image: "https://via.placeholder.com/400x250?text=Patient+Service+2" },
-        { title: "Virtual Assistant", description: "Daily health guidance, Q&A, check-ins, mood support, and goal tracking.", image: "https://via.placeholder.com/400x250?text=Patient+Service+3" },
-        { title: "Family Organizer", description: "Manage family health with linked profiles, shared meds, and group alerts.", image: "https://via.placeholder.com/400x250?text=Patient+Service+4" }
+        {
+            title: "Health Dashboard",
+            description: "Track vitals, meds, reminders, and appointments, with direct doctor communication.",
+            image: "https://via.placeholder.com/400x250?text=Patient+Service+1",
+        },
+        {
+            title: "24/7 Support",
+            description: "Emergency chat, nurse hotline, condition guides, and wellness coaching.",
+            image: "https://via.placeholder.com/400x250?text=Patient+Service+2",
+        },
+        {
+            title: "Virtual Assistant",
+            description: "Daily health guidance, Q&A, check-ins, mood support, and goal tracking.",
+            image: "https://via.placeholder.com/400x250?text=Patient+Service+3",
+        },
+        {
+            title: "Personalized Care Plans",
+            description: "Receive tailored care plans based on your health needs and goals.",
+            image: "https://via.placeholder.com/400x250?text=Patient+Service+4",
+        },
     ];
 
-    // Store toggle state for role selection
-    let currentRole = null;
-    const servicesContainer = document.querySelector(".services-container");
-    const roleSelector = document.querySelector("#role");
-    const defaultContent = servicesContainer ? servicesContainer.innerHTML : "";
+    // Function to dynamically update the services container
+    function updateServices(role) {
+        const servicesContainer = document.querySelector(".services-container");
+        const roleSelector = document.querySelector("#role");
 
-    function createServiceBox(service, roleClass) {
-        const box = document.createElement("div");
-        box.classList.add("service-box", "customized", roleClass);
-
-        const img = document.createElement("img");
-        img.src = service.image;
-        img.alt = service.title;
-
-        const title = document.createElement("h2");
-        title.textContent = service.title;
-
-        const desc = document.createElement("p");
-        desc.textContent = service.description;
-
-        box.appendChild(img);
-        box.appendChild(title);
-        box.appendChild(desc);
-
-        return box;
-    }
-
-    // Make the showRoleServices function globally available
-    window.showRoleServices = function(role) {
         if (!servicesContainer || !roleSelector) return;
-        
-        if (currentRole === role) {
-            servicesContainer.innerHTML = defaultContent;
-            currentRole = null;
-            roleSelector.textContent = "Select a role to get started";
-            return;
-        }
 
+        // Clear the current content
         servicesContainer.innerHTML = "";
+
+        // Select the appropriate services based on the role
         const selectedServices = role === "practitioner" ? practitionerServices : patientServices;
 
-        selectedServices.forEach(service => {
-            const box = createServiceBox(service, role);
-            servicesContainer.appendChild(box);
+        // Update the role selector text
+        roleSelector.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Role Selected`;
+
+        // Populate the container with the selected services
+        selectedServices.forEach((service) => {
+            const serviceBox = document.createElement("div");
+            serviceBox.classList.add("service-box");
+
+            const img = document.createElement("img");
+            img.src = service.image;
+            img.alt = service.title;
+
+            const title = document.createElement("h2");
+            title.textContent = service.title;
+
+            const description = document.createElement("p");
+            description.textContent = service.description;
+
+            serviceBox.appendChild(img);
+            serviceBox.appendChild(title);
+            serviceBox.appendChild(description);
+
+            servicesContainer.appendChild(serviceBox);
         });
 
-        currentRole = role;
-        roleSelector.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Role Selected`;
-    };
+        // Scroll to the services section
+        servicesContainer.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Attach event listeners to the buttons
+    document.querySelector(".styled-button:nth-child(1)").addEventListener("click", () => updateServices("practitioner"));
+    document.querySelector(".styled-button:nth-child(2)").addEventListener("click", () => updateServices("patient"));
 
     // Modal open/close logic
     const loginLink = document.querySelector(".login-link");
@@ -99,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
             loginModal.style.display = "flex";
         });
     }
-
+    
     function closeLoginModal() {
         if (loginModal) loginModal.style.display = "none";
     }
@@ -122,21 +150,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Form visibility toggle based on selected role in the form
-const formRoleSelector = document.getElementById("formRoleSelector");
-const patientFields = document.getElementById("patientFields");
-const doctorFields = document.getElementById("doctorFields");
+    const formRoleSelector = document.getElementById("formRoleSelector");
+    const patientFields = document.getElementById("patientFields");
+    const doctorFields = document.getElementById("doctorFields");
 
-if (formRoleSelector && patientFields && doctorFields) {
-    formRoleSelector.addEventListener("change", function () {
-        const selectedRole = this.value;
-        patientFields.style.display = selectedRole === "patient" ? "block" : "none";
-        doctorFields.style.display = selectedRole === "doctor" ? "block" : "none";
-    });
+    if (formRoleSelector && patientFields && doctorFields) {
+        formRoleSelector.addEventListener("change", function () {
+            const selectedRole = this.value;
+            patientFields.style.display = selectedRole === "patient" ? "block" : "none";
+            doctorFields.style.display = selectedRole === "doctor" ? "block" : "none";
+        });
 
-    // Trigger once on load to ensure correct initial display
-    formRoleSelector.dispatchEvent(new Event("change"));
-}
-
+        // Trigger once on load to ensure correct initial display
+        formRoleSelector.dispatchEvent(new Event("change"));
+    }
 
     // Fix login/register form toggle
     const showLogin = document.getElementById("showLogin");
@@ -251,5 +278,95 @@ if (formRoleSelector && patientFields && doctorFields) {
                 }
             });
         }
+    });
+
+    // Store the selected role in localStorage and redirect to the personalized dashboard
+    function selectRole(role) {
+        console.log(`Redirecting user with role: ${role}`); // Debugging log
+        localStorage.setItem("userRole", role); // Save the role ("doctor" or "patient")
+        if (role === "doctor") {
+            window.location.href = "doctors/appointments.html"; // Redirect to the doctor's appointments page
+        } else if (role === "patient") {
+            window.location.href = "patients/appointments/appointment.html"; // Redirect to the patient's appointments page
+        }
+    }
+
+    // Redirect to the appropriate Messages page based on the stored role
+    function redirectToMessages() {
+        const userRole = localStorage.getItem("userRole"); // Retrieve the stored role
+        if (userRole === "doctor") {
+            window.location.href = "doctors/messages.html"; // Redirect to Doctors Messages page
+        } else if (userRole === "patient") {
+            window.location.href = "patients/messages.html"; // Redirect to Patients Messages page
+        } else {
+            alert("Please select a role first.");
+            window.location.href = "home.html"; // Redirect back to the home page if no role is selected
+        }
+    }
+
+    // Login form submission logic
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        const email = document.querySelector("#loginForm input[type='email']").value;
+        const password = document.querySelector("#loginForm input[type='password']").value;
+
+        let userRole;
+        if (email === "doctor@example.com" && password === "password") {
+            userRole = "doctor";
+        } else if (email === "patient@example.com" && password === "password") {
+            userRole = "patient";
+        } else {
+            alert("Invalid credentials. Please try again.");
+            return;
+        }
+
+        console.log(`User role determined: ${userRole}`); // Debugging log
+        selectRole(userRole);
+    });
+
+    // Register form submission logic
+    document.getElementById("registerForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent form submission
+
+        const role = document.getElementById("formRoleSelector").value;
+
+        if (!role) {
+            alert("Please select a role.");
+            return;
+        }
+
+        console.log(`User role selected during registration: ${role}`); // Debugging log
+        selectRole(role);
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the form from submitting
+
+    const roleSelector = document.getElementById('formRoleSelector');
+    const selectedRole = roleSelector.value;
+
+    if (!selectedRole) {
+      alert('Please select a role before submitting.');
+      return;
+    }
+
+    // Store the selected role in localStorage
+    localStorage.setItem('userRole', selectedRole);
+
+    alert('Registration successful! Role saved as: ' + selectedRole);
+
+    // Redirect to the dashboard or another page
+    window.location.href = '/dashboard.html'; // Adjust the path as needed
+  });
+
+  // Show/hide additional fields based on the selected role
+  document.getElementById('formRoleSelector').addEventListener('change', function () {
+    const selectedRole = this.value;
+
+    document.getElementById('patientFields').style.display =
+      selectedRole === 'patient' ? 'block' : 'none';
+    document.getElementById('doctorFields').style.display =
+      selectedRole === 'doctor' ? 'block' : 'none';
+  });
+  
     });
 });

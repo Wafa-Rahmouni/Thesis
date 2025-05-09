@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SanteNet - Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/doctors/global.css"> <!-- Linking the external CSS -->
+  
+  <!-- Custom Styles -->
+  <style>
+
+    /* Messages Container */
+    .messages-container {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      margin: 30px auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
+    }
+
+    .messages-container h2 {
+      font-size: 32px;
+      color: #1a73e8;
+      margin-bottom: 25px;
+    }
+
+    .messages-container p {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+    .new-message-button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      transition: background-color 0.3s ease;
+    }
+
+    .new-message-button:hover {
+      background-color: #45a049;
+    }
+
+    /* Table Styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      font-size: 16px;
+    }
+
+    table th, table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #1a73e8;
+      color: white;
+      font-weight: bold;
+    }
+
+    table td {
+      background-color: #f9f9f9;
+    }
+
+    table tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    table td button {
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+
+    table td button:hover {
+      background-color: #005f73;
+    }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 500px;
+    }
+
+    .modal-content h3 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    .modal-content input, .modal-content textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .action-buttons button {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .action-buttons button:hover {
+      background-color: #45a049;
+    }
+
+    .close {
+      background-color: #ccc;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .close:hover {
+      background-color: #999;
+    }
+  </style>
+</head>
+<body>
+  <!-- Placeholder for dynamically loading common content -->
+  <div id="common-container"></div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <span>Messages</span>
+  </div>
+
+  <!-- Messages Section -->
+  <div class="messages-container">
+    <h2>Patient Messages</h2>
+    <button class="new-message-button" onclick="openSendMessageModal()">Send New Message</button>
+    <p>Use the table below to view and respond to patient messages. You can reply directly to patients for any queries related to their appointments, treatments, or prescriptions.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Message ID</th>
+          <th>Patient</th>
+          <th>Subject</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="messages-table-body">
+        <!-- Sample Data Rows -->
+        <tr>
+          <td>MSG-001</td>
+          <td>John Doe</td>
+          <td>Question about Toothache</td>
+          <td>2025-05-05</td>
+          <td>Unread</td>
+          <td><button onclick="showMessageModal(1)">View</button></td>
+        </tr>
+        <tr>
+          <td>MSG-002</td>
+          <td>Jane Smith</td>
+          <td>Prescription Follow-up</td>
+          <td>2025-04-28</td>
+          <td>Read</td>
+          <td><button onclick="showMessageModal(2)">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Send Message Modal -->
+  <div class="modal" id="send-message-modal">
+    <div class="modal-content">
+      <h3>Send New Message</h3>
+      <label for="recipient">Recipient</label>
+      <input type="text" id="recipient" placeholder="Enter recipient's name" />
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" placeholder="Enter message subject" />
+      <label for="message-body">Message</label>
+      <textarea id="message-body" placeholder="Write your message here..." rows="4"></textarea>
+      <div class="action-buttons">
+        <button onclick="sendMessage()">Send</button>
+        <button class="close" onclick="closeSendMessageModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Viewing Modal -->
+  <div class="modal" id="message-modal">
+    <div class="modal-content">
+      <h3>View Message</h3>
+      <p id="message-content">Here will be the message content...</p>
+      <textarea id="reply-message" placeholder="Write your reply here..." rows="4" style="width: 100%;"></textarea>
+      <div class="action-buttons">
+        <button onclick="sendReply()">Send Reply</button>
+        <button class="close" onclick="closeMessageModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    // Function to open the Send Message modal
+    function openSendMessageModal() {
+      var modal = document.getElementById("send-message-modal");
+      modal.style.display = "flex";
+    }
+
+    // Function to close the Send Message modal
+    function closeSendMessageModal() {
+      var modal = document.getElementById("send-message-modal");
+      modal.style.display = "none";
+    }
+
+    // Function to send a new message
+    function sendMessage() {
+      var recipient = document.getElementById("recipient").value;
+      var subject = document.getElementById("subject").value;
+      var messageBody = document.getElementById("message-body").value;
+
+      if (!recipient || !subject || !messageBody) {
+        alert("Please fill in all fields before sending the message.");
+        return;
+      }
+
+      alert("Message sent to " + recipient + " with subject: " + subject);
+      closeSendMessageModal();
+    }
+
+    // Function to show the modal for viewing a message
+    function showMessageModal(messageId) {
+      var modal = document.getElementById("message-modal");
+      document.getElementById("message-content").innerText = "This is the content of message ID " + messageId;
+      modal.style.display = "flex";
+    }
+
+    // Function to close the message modal
+    function closeMessageModal() {
+      var modal = document.getElementById("message-modal");
+      modal.style.display = "none";
+    }
+
+    // Function to send a reply to a message
+    function sendReply() {
+      var replyContent = document.getElementById("reply-message").value;
+      alert("Your reply has been sent: " + replyContent);
+      closeMessageModal();
+    }
+  </script>
+  <script src="/doctors/scripts.js"></script>
+  <script src="/doctors/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCommonHTML(() => {
+        console.log('Common content loaded and initialized.');
+        initializeCommonEventListeners(); // Reinitialize event listeners
+      });
+    });
+  </script>
+</body>
+</html>

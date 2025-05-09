@@ -10,33 +10,8 @@
 </head>
 <body>
 
-  <nav>
-    <div class="nav-container">
-      <div class="logo">
-        <a href="#">
-          <div class="logo-wrapper">
-            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
-          </div>
-          <span>Sante<span>Net</span></span>
-        </a>
-      </div>
-      
-      <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">My Profile</a></li>
-        <li><a href="#">Messages</a></li>
-      </ul>
-  
-      <button class="book-button">Book Visit</button>
-  
-      <div class="icon-buttons">
-        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
-        <button class="icon-button" title="Language"><i class="fa fa-globe"></i></button>
-        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
-      </div>
-    </div>
-  </nav>
-  
+  <!-- Placeholder for dynamically loading common content -->
+  <div id="common-container"></div>
   <!-- BREADCRUMB -->
   <div class="breadcrumb">
     <a href="#">Home</a> &gt; <a href="#">Appointments</a> &gt; <span>Past Appointments</span>
@@ -93,5 +68,16 @@
 
   <!-- JAVASCRIPT -->
   <script src="conscript.js"></script>
+  <script src="script0.js"></script>
+    <script src="../../doctors/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCommonHTML(() => {
+        console.log('Common content loaded and initialized.');
+        initializeCommonEventListeners();
+      });
+    });
+  </script>
+
 </body>
 </html>

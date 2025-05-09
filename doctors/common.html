@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Content</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <!-- Google Translate Widget -->
+  <div id="google_translate_element" style="margin: 10px;"></div>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'fr,ar',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" 
+    src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
+  </script>
+
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#">
+          <div class="logo-wrapper">
+            <img src="/images/logo-removebg-preview.png" alt="SanteNet Logo">
+          </div>
+          <span>Sante<span>Net</span></span>
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="/home.html">Home</a></li>
+        <li><a href="#" id="profile-link">My Profile</a></li>
+        <li><a href="/messages.html">Messages</a></li>
+      </ul>
+<button class="book-button" onclick="openBookVisitPopup()">Book Visit</button>        <div class="icon-buttons">
+        <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
+        <button class="icon-button" title="Language" onclick="toggleLanguagePopup()"><i class="fa fa-globe"></i></button>
+        <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Language Popup -->
+  <div id="language-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeLanguagePopup()">&times;</span>
+      <h3>Select Language</h3>
+      <button class="popup-button" onclick="translatePage('en')">English</button>
+      <button class="popup-button" onclick="translatePage('ar')">العربية</button>
+      <button class="popup-button" onclick="translatePage('fr')">Français</button>
+    </div>
+  </div>
+<!-- Book Visit Popup -->
+<div id="book-visit-popup" class="popup" style="display: none;">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closeBookVisitPopup()">&times;</span>
+    <h3>Book a Visit</h3>
+    <form id="book-visit-form" onsubmit="handleBooking(event)">
+      <div class="form-group">
+        <label for="visit-date">Date:</label>
+        <input type="date" id="visit-date" required />
+      </div>
+      <div class="form-group">
+        <label for="visit-time">Time:</label>
+        <input type="time" id="visit-time" required />
+      </div>
+      <div class="form-group">
+        <label for="visit-type">Visit Type:</label>
+        <select id="visit-type" required>
+          <option value="In-Person">In-Person</option>
+          <option value="Virtual">Virtual</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="visit-reason">Reason for Visit:</label>
+        <textarea id="visit-reason" rows="4" placeholder="Enter reason for visit..." required></textarea>
+      </div>
+      <div class="popup-actions">
+        <button type="submit" class="popup-button confirm">Book Visit</button>
+        <button type="button" class="popup-button cancel" onclick="closeBookVisitPopup()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+  <!-- Notifications Popup -->
+  <div id="notifications-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeNotificationsPopup()">&times;</span>
+      <h3>Notifications</h3>
+      <ul class="notifications-list">
+        <li class="notification new">
+          <p><strong>Appointment Reminder:</strong> You have an appointment with Dr. Aisha Sharma tomorrow at 10:00 AM.</p>
+          <span class="notification-time">2 hours ago</span>
+        </li>
+        <li class="notification">
+          <p><strong>New Message:</strong> Dr. Lucas Grant has sent you a message regarding your recent consultation.</p>
+          <span class="notification-time">5 hours ago</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Popup -->
+  <div id="logout-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeLogoutPopup()">&times;</span>
+      <h3>Confirm Logout</h3>
+      <p>Are you sure you want to log out?</p>
+      <div class="popup-actions">
+        <button class="popup-button confirm" onclick="confirmLogout()">Yes, Logout</button>
+        <button class="popup-button cancel" onclick="closeLogoutPopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h2>My Profile</h2>
+      <div class="profile-picture">
+        <img src="path/to/profile-picture.jpg" alt="Profile Picture" id="profile-img" />
+      </div>
+      <div class="file-input-container" id="file-input-container" style="display: none;">
+        <input type="file" id="file-input" accept="image/*" onchange="previewImage(event)" />
+      </div>
+      <form id="profile-form">
+        <div class="form-group">
+          <label for="name">Full Name:</label>
+          <input type="text" id="name" value="John Doe" disabled />
+        </div>
+        <div class="form-group">
+          <label for="address">Address:</label>
+          <input type="text" id="address" value="123 Main St, City" disabled />
+        </div>
+        <div class="form-group">
+          <label for="gender">Gender:</label>
+          <select id="gender" disabled>
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="dob">Date of Birth:</label>
+          <input type="date" id="dob" value="1990-01-01" disabled />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone:</label>
+          <input type="tel" id="phone" value="123-456-7890" disabled />
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" value="john@example.com" disabled />
+        </div>
+        <div class="form-actions">
+          <button type="button" id="edit-btn">Edit</button>
+          <button type="submit" id="save-btn" style="display: none;">Save</button>
+          <button type="button" id="cancel-btn" style="display: none;">Cancel</button>
+          <button type="button" class="close" onclick="closeProfileModal()">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="#">Home</a> &gt; <span id="breadcrumb-page">Page Name</span>
+  </div>
+</body>
+<script src="conscript.js"></script>
+</html>
