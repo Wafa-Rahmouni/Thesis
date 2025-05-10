@@ -1,7 +1,7 @@
 // --- Load Common HTML ---
 function loadCommonHTML(callback) {
   console.log('Attempting to load common HTML...');
-  fetch('../../doctors/common.html') // Adjusted path
+  fetch('../../doctors/common.html')
     .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -13,11 +13,7 @@ function loadCommonHTML(callback) {
       if (commonContainer) {
         commonContainer.innerHTML = data;
         console.log('Common HTML loaded successfully.');
-
-        // Initialize event listeners after the content is loaded
         initializeCommonEventListeners();
-
-        // Execute the callback after the common content is loaded
         if (callback) callback();
       } else {
         console.error('common-container not found in the DOM.');
@@ -26,191 +22,252 @@ function loadCommonHTML(callback) {
     .catch(error => console.error('Error loading common HTML:', error));
 }
 
-// --- Initialize Event Listeners for Common Content ---
+// --- Initialize Event Listeners ---
 function initializeCommonEventListeners() {
-  // Profile modal functionality
-  const profileLink = document.getElementById('profile-link');
-  if (profileLink) {
-    profileLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      openProfileModal();
-    });
-  }
+  addClickListener('profile-link', e => {
+    e.preventDefault();
+    openProfileModal();
+  });
+  addClickListener('edit-btn', enableProfileEditing);
+  addClickListener('cancel-btn', cancelProfileEditing);
+  addClickListener('save-btn', saveProfileChanges);
 
-  const closeProfileButton = document.querySelector('#profile-modal .close');
-  if (closeProfileButton) {
-    closeProfileButton.addEventListener('click', closeProfileModal);
-  }
+  addClickListener('language-popup .close-btn', closeLanguagePopup);
+  addClickListener('notifications-popup .close-btn', closeNotificationsPopup);
+  addClickListener('logout-popup .close-btn', closeLogoutPopup);
+  addClickListener('logout-popup .confirm', confirmLogout);
 
-  // Enable form editing
-  const editButton = document.getElementById('edit-btn');
-  if (editButton) {
-    editButton.addEventListener('click', function () {
-      toggleForm(true);
-      document.getElementById('file-input-container').style.display = 'block'; // Show file input for profile picture
-    });
-  }
+  addClickListenerByTitle('Language', openLanguagePopup);
+  addClickListenerByTitle('Notifications', openNotificationsPopup);
+  addClickListenerByTitle('Logout', openLogoutPopup);
 
-  // Cancel editing
-  const cancelButton = document.getElementById('cancel-btn');
-  if (cancelButton) {
-    cancelButton.addEventListener('click', function () {
-      toggleForm(false);
-      document.getElementById('file-input-container').style.display = 'none'; // Hide file input
-    });
-  }
-
-  // Save changes
   const profileForm = document.getElementById('profile-form');
   if (profileForm) {
-    profileForm.addEventListener('submit', function (e) {
+    profileForm.addEventListener('submit', e => {
       e.preventDefault();
       alert('Profile updated!');
       toggleForm(false);
-      document.getElementById('file-input-container').style.display = 'none'; // Hide file input after saving
+      toggleFileInput(false);
     });
-  }
-
-  // Language popup functionality
-  const languageButton = document.querySelector('[title="Language"]');
-  if (languageButton) {
-    languageButton.addEventListener('click', openLanguagePopup);
-  }
-
-  const closeLanguageButton = document.querySelector('#language-popup .close-btn');
-  if (closeLanguageButton) {
-    closeLanguageButton.addEventListener('click', closeLanguagePopup);
-  }
-
-  // Notifications popup functionality
-  const notificationsButton = document.querySelector('[title="Notifications"]');
-  if (notificationsButton) {
-    notificationsButton.addEventListener('click', openNotificationsPopup);
-  }
-
-  const closeNotificationsButton = document.querySelector('#notifications-popup .close-btn');
-  if (closeNotificationsButton) {
-    closeNotificationsButton.addEventListener('click', closeNotificationsPopup);
-  }
-
-  // Logout confirmation popup functionality
-  const logoutButton = document.querySelector('[title="Logout"]');
-  if (logoutButton) {
-    logoutButton.addEventListener('click', openLogoutPopup);
-  }
-
-  const closeLogoutButton = document.querySelector('#logout-popup .close-btn');
-  if (closeLogoutButton) {
-    closeLogoutButton.addEventListener('click', closeLogoutPopup);
-  }
-
-  const confirmLogoutButton = document.querySelector('#logout-popup .confirm');
-  if (confirmLogoutButton) {
-    confirmLogoutButton.addEventListener('click', confirmLogout);
   }
 }
 
-// --- Profile Modal Functions ---
+function addClickListener(idOrSelector, handler) {
+  const element = document.getElementById(idOrSelector) || document.querySelector(`#${idOrSelector}`);
+  if (element) element.addEventListener('click', handler);
+}
+
+function addClickListenerByTitle(title, handler) {
+  const element = document.querySelector(`[title="${title}"]`);
+  if (element) element.addEventListener('click', handler);
+}
+
+// --- Profile Modal ---
 function openProfileModal() {
-  closeAllPopups(); // Close other popups
-  const profileModal = document.getElementById('profile-modal');
-  if (profileModal) {
-    profileModal.style.display = 'flex';
-  }
+  closeAllPopups();
+  showPopup('profile-modal');
 }
 
 function closeProfileModal() {
-  const profileModal = document.getElementById('profile-modal');
-  if (profileModal) {
-    profileModal.style.display = 'none';
-    toggleForm(false); // Reset form if closed during editing
-  }
+  hidePopup('profile-modal');
+  toggleForm(false);
+}
+
+function enableProfileEditing() {
+  toggleForm(true);
+  toggleFileInput(true);
+}
+
+function cancelProfileEditing() {
+  toggleForm(false);
+  toggleFileInput(false);
+}
+
+function saveProfileChanges() {
+  alert('Profile saved!');
+  toggleForm(false);
+  toggleFileInput(false);
 }
 
 function toggleForm(editable) {
   const form = document.getElementById('profile-form');
-  const fields = form.querySelectorAll('input, select');
-  fields.forEach(input => (input.disabled = !editable));
-
+  if (!form) return;
+  form.querySelectorAll('input, select').forEach(input => input.disabled = !editable);
   document.getElementById('edit-btn').style.display = editable ? 'none' : 'inline-block';
   document.getElementById('save-btn').style.display = editable ? 'inline-block' : 'none';
   document.getElementById('cancel-btn').style.display = editable ? 'inline-block' : 'none';
 }
 
-// --- Language Popup Functions ---
+function toggleFileInput(show) {
+  const inputContainer = document.getElementById('file-input-container');
+  if (inputContainer) inputContainer.style.display = show ? 'block' : 'none';
+}
+
+// --- Popup Handling ---
+function showPopup(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'flex';
+}
+
+function hidePopup(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+function closeAllPopups() {
+  document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
+}
+
 function openLanguagePopup() {
-  closeAllPopups(); // Close other popups
-  const popup = document.getElementById('language-popup');
-  if (popup) {
-    popup.style.display = 'block';
-  }
+  closeAllPopups();
+  showPopup('language-popup');
 }
 
 function closeLanguagePopup() {
-  const popup = document.getElementById('language-popup');
-  if (popup) {
-    popup.style.display = 'none';
-  }
+  hidePopup('language-popup');
 }
 
-// --- Notifications Popup Functions ---
 function openNotificationsPopup() {
-  closeAllPopups(); // Close other popups
-  const popup = document.getElementById('notifications-popup');
-  if (popup) {
-    popup.style.display = 'block';
-  }
+  closeAllPopups();
+  showPopup('notifications-popup');
 }
 
 function closeNotificationsPopup() {
-  const popup = document.getElementById('notifications-popup');
-  if (popup) {
-    popup.style.display = 'none';
-  }
+  hidePopup('notifications-popup');
 }
 
-// --- Logout Confirmation Popup Functions ---
 function openLogoutPopup() {
-  closeAllPopups(); // Close other popups
-  const popup = document.getElementById('logout-popup');
-  if (popup) {
-    popup.style.display = 'block';
-  }
+  closeAllPopups();
+  showPopup('logout-popup');
 }
 
 function closeLogoutPopup() {
-  const popup = document.getElementById('logout-popup');
-  if (popup) {
-    popup.style.display = 'none';
-  }
+  hidePopup('logout-popup');
 }
 
 function confirmLogout() {
   console.log('User logged out.');
-  window.location.href = '/login.html'; // Adjust the path to your login page
+  window.location.href = '/home.html';
 }
 
-// --- Utility Functions ---
-function closeAllPopups() {
-  const popups = document.querySelectorAll('.popup');
-  popups.forEach(popup => {
-    popup.style.display = 'none'; // Hide all popups
-  });
-}
-
-// --- Book Visit Popup Functions ---
+// --- Book Visit ---
 function openBookVisitPopup() {
-  const popup = document.getElementById('book-visit-popup');
-  if (popup) {
-    popup.style.display = 'block';
+  showPopup('book-visit-popup');
+}
+
+// --- Find Clinic Map ---
+function searchClinics() {
+  const searchInput = document.getElementById('clinic-search').value.trim();
+  const mapIframe = document.getElementById('google-map');
+
+  if (searchInput) {
+    // Update the iframe's src attribute with the new search query
+    const query = encodeURIComponent(searchInput);
+    mapIframe.src = `https://maps.google.com/maps?q=${query}&layer=c&output=embed`;
+    console.log(`Searching for: ${searchInput}`);
   } else {
-    console.error('Book Visit Popup not found in the DOM.');
+    alert('Please enter a location to search.');
   }
 }
 
-// Call the function after the DOM is loaded
+function openFindClinicPopup() {
+  const popup = document.getElementById('find-clinic-popup');
+  if (popup) {
+    popup.style.display = 'flex'; // Show the popup
+    console.log('Find Clinic Popup opened.');
+  } else {
+    console.error('Find Clinic Popup not found.');
+  }
+}
+
+function closeFindClinicPopup() {
+  const popup = document.getElementById('find-clinic-popup');
+  if (popup) {
+    popup.style.display = 'none'; // Hide the popup
+    console.log('Find Clinic Popup closed.');
+  } else {
+    console.error('Find Clinic Popup not found.');
+  }
+}
+
+// --- Video Call ---
+function setupVideoCallButtons() {
+  document.querySelectorAll('.video-call-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const type = button.getAttribute('data-type');
+      startVideoCall(type);
+    });
+  });
+}
+
+function startVideoCall(type) {
+  console.log(`Starting a video call for ${type}...`);
+  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    .then(stream => {
+      const videoElement = document.getElementById('local-video');
+      if (videoElement) {
+        videoElement.srcObject = stream;
+        openVideoCallPopup();
+      }
+      window.localStream = stream;
+    })
+    .catch(err => {
+      console.error('Media error:', err);
+      alert('Please allow camera and microphone access.');
+    });
+}
+
+function openVideoCallPopup() {
+  showPopup('video-call-popup');
+}
+
+function closeVideoCallPopup() {
+  hidePopup('video-call-popup');
+  if (window.localStream) {
+    window.localStream.getTracks().forEach(track => track.stop());
+    window.localStream = null;
+  }
+}
+
+function endVideoCall() {
+  closeVideoCallPopup();
+  alert('Video call ended.');
+}
+
+function toggleMute() {
+  const stream = window.localStream;
+  if (stream) {
+    const audioTrack = stream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    alert(audioTrack.enabled ? 'Microphone Unmuted' : 'Microphone Muted');
+  }
+}
+
+function toggleCamera() {
+  const stream = window.localStream;
+  if (stream) {
+    const videoTrack = stream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    alert(videoTrack.enabled ? 'Camera On' : 'Camera Off');
+  }
+}
+
+// --- DOM Ready ---
 document.addEventListener('DOMContentLoaded', () => {
   loadCommonHTML(() => {
+    setupVideoCallButtons();
     console.log('Common content loaded and initialized.');
   });
+  function navigateToMessages() {
+  // Example: Fetch the user's role from a global variable, localStorage, or an API
+  const userRole = localStorage.getItem('profileRole'); // Replace with actual role-fetching logic
+
+  if (userRole === 'doctor') {
+    window.location.href = '../../doctors/messages.html'; // Redirect to the doctor's messages page
+  } else if (userRole === 'patient') {
+    window.location.href = '../../patients/messages.html'; // Redirect to the patient's messages page
+  } else {
+    alert('Unable to determine your role. Please contact support.');
+  }
+}
 });

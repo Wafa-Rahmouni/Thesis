@@ -212,7 +212,3 @@ function confirmLogout() {
   }
 }
 
-// Populate the appointments table on page load
-document.addEventListener('DOMContentLoaded', function () {
-  populateAppointmentsTable(); // Populate the table on page load
-});

@@ -40,9 +40,11 @@
         <li><a href="#" id="profile-link">My Profile</a></li>
         <li><a href="/messages.html">Messages</a></li>
       </ul>
-<button class="book-button" onclick="openBookVisitPopup()">Book Visit</button>        <div class="icon-buttons">
+      <button class="book-button" onclick="openBookVisitPopup()">Book Visit</button>
+      <div class="icon-buttons">
         <button class="icon-button" title="Notifications"><i class="fa fa-bell"></i></button>
         <button class="icon-button" title="Language" onclick="toggleLanguagePopup()"><i class="fa fa-globe"></i></button>
+        <!-- Removed the Find Clinic Icon Button -->
         <button class="icon-button" title="Logout"><i class="fa fa-sign-out"></i></button>
       </div>
     </div>
@@ -58,38 +60,40 @@
       <button class="popup-button" onclick="translatePage('fr')">Français</button>
     </div>
   </div>
-<!-- Book Visit Popup -->
-<div id="book-visit-popup" class="popup" style="display: none;">
-  <div class="popup-content">
-    <span class="close-btn" onclick="closeBookVisitPopup()">&times;</span>
-    <h3>Book a Visit</h3>
-    <form id="book-visit-form" onsubmit="handleBooking(event)">
-      <div class="form-group">
-        <label for="visit-date">Date:</label>
-        <input type="date" id="visit-date" required />
-      </div>
-      <div class="form-group">
-        <label for="visit-time">Time:</label>
-        <input type="time" id="visit-time" required />
-      </div>
-      <div class="form-group">
-        <label for="visit-type">Visit Type:</label>
-        <select id="visit-type" required>
-          <option value="In-Person">In-Person</option>
-          <option value="Virtual">Virtual</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="visit-reason">Reason for Visit:</label>
-        <textarea id="visit-reason" rows="4" placeholder="Enter reason for visit..." required></textarea>
-      </div>
-      <div class="popup-actions">
-        <button type="submit" class="popup-button confirm">Book Visit</button>
-        <button type="button" class="popup-button cancel" onclick="closeBookVisitPopup()">Cancel</button>
-      </div>
-    </form>
+
+  <!-- Book Visit Popup -->
+  <div id="book-visit-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeBookVisitPopup()">&times;</span>
+      <h3>Book a Visit</h3>
+      <form id="book-visit-form" onsubmit="handleBooking(event)">
+        <div class="form-group">
+          <label for="visit-date">Date:</label>
+          <input type="date" id="visit-date" required />
+        </div>
+        <div class="form-group">
+          <label for="visit-time">Time:</label>
+          <input type="time" id="visit-time" required />
+        </div>
+        <div class="form-group">
+          <label for="visit-type">Visit Type:</label>
+          <select id="visit-type" required>
+            <option value="In-Person">In-Person</option>
+            <option value="Virtual">Virtual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="visit-reason">Reason for Visit:</label>
+          <textarea id="visit-reason" rows="4" placeholder="Enter reason for visit..." required></textarea>
+        </div>
+        <div class="popup-actions">
+          <button type="submit" class="popup-button confirm">Book Visit</button>
+          <button type="button" class="popup-button cancel" onclick="closeBookVisitPopup()">Cancel</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
+
   <!-- Notifications Popup -->
   <div id="notifications-popup" class="popup" style="display: none;">
     <div class="popup-content">
@@ -170,10 +174,55 @@
     </div>
   </div>
 
+  <!-- Video Call Popup -->
+  <div id="video-call-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeVideoCallPopup()">&times;</span>
+      <h3>Video Call</h3>
+      <video id="local-video" autoplay playsinline muted></video>
+      <div class="mini-video">
+        <video id="remote-video" autoplay playsinline></video>
+      </div>
+      <div class="popup-actions">
+        <button class="icon-button mute" onclick="toggleMute()" title="Mute/Unmute">
+          <i class="fa fa-microphone"></i>
+        </button>
+        <button class="icon-button end-call" onclick="endVideoCall()" title="End Call">
+          <i class="fa fa-phone"></i>
+        </button>
+        <button class="icon-button camera" onclick="toggleCamera()" title="Toggle Camera">
+          <i class="fa fa-video-camera"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Find Clinic Popup -->
+  <div id="find-clinic-popup" class="popup" style="display: none;">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closeFindClinicPopup()">&times;</span>
+      <h3>Find a Clinic</h3>
+      <div class="search-bar">
+        <input
+          type="text"
+          id="clinic-search"
+          placeholder="Search for clinics or locations..."
+        />
+        <button onclick="searchClinics()">Search</button>
+      </div>
+      <div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+      <div class="popup-actions">
+        <button class="popup-button cancel" onclick="closeFindClinicPopup()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Breadcrumb -->
   <div class="breadcrumb">
     <a href="#">Home</a> &gt; <span id="breadcrumb-page">Page Name</span>
   </div>
 </body>
+
 <script src="conscript.js"></script>
+
 </html>

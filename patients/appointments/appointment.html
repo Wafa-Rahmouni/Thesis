@@ -27,9 +27,8 @@
 
     .appointments-options {
       display: flex;
-      justify-content: center;
+      justify-content: left;
       gap: 30px;
-      margin-top: 40px;
     }
   </style>
 </head>
@@ -57,61 +56,81 @@
     </div>
     
   <!-- APPOINTMENT OPTIONS -->
-  <div class="appointments-container">
-    <div class="appointments-options">
-      <button class="tab-button" onclick="window.location.href='upcoming-appointments.html'">Upcoming Appointments</button>
-      <button class="tab-button" onclick="window.location.href='past-appointments.html'">Past Appointments</button>
-    </div>
-    <!-- Default Content / Summary -->
-    <div class="appointments-summary" style="margin-top: 50px;">
-      <h2>Today's Summary</h2>
-      <p>Here's a quick overview of your appointments.</p>
+ <div class="appointments-container">
+  <div class="appointments-options">
+    <button class="tab-button" id="upcoming-btn">Upcoming Appointments</button>
+    <button class="tab-button" id="past-btn">Past Appointments</button>
+  </div>
 
-      <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
-        <div class="consultation-card">
-          <div>
-            <h3>Dr. Aisha Sharma</h3>
-            <p>Video Consultation • Today • 11:00 AM</p>
-          </div>
-          <span class="status status-upcoming">Upcoming</span>
+  <!-- Upcoming Appointments -->
+  <div id="upcoming-container" class="appointments-summary" style="margin-top: 50px;">
+    <h2>Upcoming Appointments</h2>
+    <p>Here's a quick overview of your upcoming appointments.</p>
+    <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
+      <div class="consultation-card">
+        <div>
+          <h3>Dr. Aisha Sharma</h3>
+          <p>Video Consultation • Today • 11:00 AM</p>
         </div>
+        <span class="status status-upcoming">Upcoming</span>
+      </div>
 
-        <div class="consultation-card">
-          <div>
-            <h3>Dr. Lucas Grant</h3>
-            <p>Phone Call • Today • 2:00 PM</p>
-          </div>
-          <span class="status status-upcoming">Upcoming</span>
+      <div class="consultation-card">
+        <div>
+          <h3>Dr. Lucas Grant</h3>
+          <p>Phone Call • Today • 2:00 PM</p>
         </div>
-
-        <div class="consultation-card">
-          <div>
-            <h3>Dr. Rebecca Lin</h3>
-            <p>In-Person • 10 days ago</p>
-          </div>
-          <span class="status status-completed">Completed</span>
-        </div>
-
-        <div class="consultation-card">
-          <div>
-            <h3>Dr. Omar Ali</h3>
-            <p>Video Call • 2 weeks ago</p>
-          </div>
-          <span class="status status-completed">Completed</span>
-        </div>
+        <span class="status status-upcoming">Upcoming</span>
       </div>
     </div>
   </div>
-</body>
+
+  <!-- Past Appointments -->
+  <div id="past-container" class="appointments-summary" style="margin-top: 50px; display: none;">
+    <h2>Past Appointments</h2>
+    <p>Here's a quick overview of your past appointments.</p>
+    <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
+      <div class="consultation-card">
+        <div>
+          <h3>Dr. Rebecca Lin</h3>
+          <p>In-Person • 10 days ago</p>
+        </div>
+        <span class="status status-completed">Completed</span>
+      </div>
+
+      <div class="consultation-card">
+        <div>
+          <h3>Dr. Omar Ali</h3>
+          <p>Video Call • 2 weeks ago</p>
+        </div>
+        <span class="status status-completed">Completed</span>
+      </div>
+    </div>
+  </div>
+</div>
 
   <script src="../script0.js"></script>
-  <script src="../common.js"></script>
+  <script src="../../doctors/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       loadCommonHTML(() => {
         console.log('Common content loaded and initialized.');
         initializeCommonEventListeners();
       });
-    });
+  const upcomingBtn = document.getElementById('upcoming-btn');
+  const pastBtn = document.getElementById('past-btn');
+  const upcomingContainer = document.getElementById('upcoming-container');
+  const pastContainer = document.getElementById('past-container');
+
+  upcomingBtn.addEventListener('click', () => {
+    upcomingContainer.style.display = 'block';
+    pastContainer.style.display = 'none';
+  });
+
+  pastBtn.addEventListener('click', () => {
+    upcomingContainer.style.display = 'none';
+    pastContainer.style.display = 'block';
+  });
+  });
   </script>
 </html>

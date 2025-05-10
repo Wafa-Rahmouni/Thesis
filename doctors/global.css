@@ -225,14 +225,12 @@ tr:not(:last-child) {
 }
 
 .action-buttons button {
-  margin-right: 8px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
+  margin: 5px;
+  padding: 10px 15px;
   font-size: 14px;
-  color: white;
-  transition: all 0.2s ease;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .action-buttons .confirm { background: #3b82f6; }
@@ -243,6 +241,24 @@ tr:not(:last-child) {
 
 .action-buttons .cancel { background: #ef4444; }
 .action-buttons .cancel:hover { background: #dc2626; }
+
+.action-buttons .update {
+  background-color: #007BFF;
+  color: white;
+}
+
+.action-buttons .update:hover {
+  background-color: #0056b3;
+}
+
+.action-buttons .video-call-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.action-buttons .video-call-button:hover {
+  background-color: #218838;
+}
 
 .modal {
   position: fixed;
@@ -347,6 +363,38 @@ tr:not(:last-child) {
   margin-bottom: 12px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
+}
+
+#reschedule-form {
+  margin-top: 20px;
+  text-align: left;
+}
+
+#reschedule-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+#reschedule-form input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#reschedule-form button {
+  background-color: #007BFF;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#reschedule-form button:hover {
+  background-color: #0056b3;
 }
 
 /* Consultation Card Styles */
@@ -468,6 +516,10 @@ tr:not(:last-child) {
   .consultation-options {
     grid-template-columns: 1fr;
   }
+
+  #video-call-popup .popup-content video {
+    max-height: 50vh; /* Reduce video height for smaller screens */
+  }
 }
 
 @media (max-width: 480px) {
@@ -484,6 +536,10 @@ tr:not(:last-child) {
   
   .modal-content {
     width: 95%;
+  }
+
+  #video-call-popup .popup-content video {
+    max-height: 40vh; /* Further reduce video height for very small screens */
   }
 }
 .language-popup {
@@ -988,4 +1044,222 @@ background-color: #bbb;
   object-fit: cover; /* Ensures the image fits within the circle */
   border: 2px solid #ccc; /* Optional: Add a border around the image */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Add a shadow for better appearance */
+}
+/* Video Call Popup Styling */
+#video-call-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex; /* Flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent dark background */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+#video-call-popup .popup-content {
+  background-color: #1a1a1a; /* Dark background for Skype-like feel */
+  border-radius: 15px; /* Rounded corners */
+  padding: 20px;
+  width: 90%; /* Full width for smaller screens */
+  max-width: 800px; /* Limit the width */
+  height: auto; /* Adjust height dynamically */
+  max-height: 90%; /* Limit the height to 90% of the viewport */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  justify-content: space-between; /* Space between video and buttons */
+  color: #fff; /* White text for contrast */
+}
+
+#video-call-popup .popup-content video {
+  width: 100%; /* Make the video take the full width of the container */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 70vh; /* Limit the video height to 70% of the viewport */
+  border-radius: 10px;
+  background-color: #000; /* Black background for the video element */
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  object-fit: cover; /* Ensure the video fits perfectly within the container */
+}
+
+#video-call-popup .mini-video {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 150px;
+  height: 100px;
+  border-radius: 10px;
+  background-color: #000;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+#video-call-popup .mini-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure the mini video fits perfectly */
+}
+
+#video-call-popup .popup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Increase spacing between buttons */
+}
+
+#video-call-popup .popup-actions button {
+  padding: 15px 30px; /* Increase button size */
+  font-size: 18px; /* Increase font size */
+  border: none;
+  border-radius: 50px; /* Rounded buttons for a modern look */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  color: #fff;
+}
+
+#video-call-popup .popup-actions .end-call {
+  background-color: #f44336; /* Red for "End Call" */
+}
+
+#video-call-popup .popup-actions .end-call:hover {
+  background-color: #d32f2f;
+}
+
+#video-call-popup .popup-actions .mute {
+  background-color: #555; /* Gray for "Mute" */
+}
+
+#video-call-popup .popup-actions .mute:hover {
+  background-color: #444;
+}
+
+#video-call-popup .popup-actions .camera {
+  background-color: #38DB7C; /* Green for "Camera On/Off" */
+}
+
+#video-call-popup .popup-actions .camera:hover {
+  background-color: #2dc76c;
+}
+
+#video-call-popup .close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+#video-call-popup .close-btn:hover {
+  color: #f44336;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #video-call-popup .popup-content {
+    width: 95%; /* Adjust width for smaller screens */
+    max-width: 600px; /* Reduce max width */
+    padding: 15px;
+  }
+
+  #video-call-popup .popup-content video {
+    max-height: 50vh; /* Reduce video height for smaller screens */
+  }
+
+  #video-call-popup .popup-actions button {
+    padding: 10px 20px; /* Adjust button size */
+    font-size: 16px; /* Adjust font size */
+  }
+}
+
+@media (max-width: 480px) {
+  #video-call-popup .popup-content {
+    width: 100%; /* Full width for very small screens */
+    max-width: none;
+    padding: 10px;
+  }
+
+  #video-call-popup .popup-content video {
+    max-height: 40vh; /* Further reduce video height */
+  }
+
+  #video-call-popup .popup-actions {
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 10px; /* Reduce spacing between buttons */
+  }
+}
+  #video-call-popup .popup-actions button {
+    width: 100%; /* Full width buttons */
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  #find-clinic-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none; /* Initially hidden */
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+  z-index: 1000;
+}
+
+#find-clinic-popup .popup-content {
+  background-color: #1a1a1a; /* Dark background */
+  border-radius: 15px;
+  padding: 20px;
+  width: 90%;
+  max-width: 800px;
+  height: auto;
+  max-height: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+}
+
+#find-clinic-popup .search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+#find-clinic-popup .search-bar input {
+  width: 70%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#find-clinic-popup .search-bar button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#find-clinic-popup .search-bar button:hover {
+  background-color: #0056b3;
+}
+
+#map {
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
 }

@@ -31,7 +31,7 @@
       <button class="tab-button" data-page="prescriptions.html">Prescriptions</button>
       <button class="tab-button active" data-page="emergencies.html">Emergencies</button>
     </div>
-    
+  </div>
 
   <!-- APPOINTMENTS SECTION -->
   <div class="appointments-container">
@@ -56,11 +56,20 @@
   <!-- ACTION MODAL -->
   <div class="modal" id="action-modal" style="display: none;">
     <div class="modal-content">
-      <h3>Are you sure you want to update this appointment?</h3>
+      <h3>Update Appointment</h3>
+      <p>What action would you like to take for this appointment?</p>
       <div class="action-buttons">
-        <button class="confirm" onclick="updateStatus('Confirmed')">Confirm</button>
-        <button class="reschedule" onclick="updateStatus('Rescheduled')">Reschedule</button>
+        <button class="confirm" onclick="updateStatus('Confirmed')">Confirm</button> 
+        <button class="reschedule" onclick="showRescheduleForm()">Reschedule</button>
         <button class="cancel" onclick="updateStatus('Cancelled')">Cancel</button>
+      </div>
+      <div id="reschedule-form" style="display: none; margin-top: 20px;">
+        <h4>Reschedule Appointment</h4>
+        <label for="new-date">New Date:</label>
+        <input type="date" id="new-date" />
+        <label for="new-time">New Time:</label>
+        <input type="time" id="new-time" />
+        <button onclick="rescheduleAppointment()">Save Changes</button>
       </div>
       <button class="close" onclick="closeModal()">Close</button>
     </div>
@@ -69,5 +78,15 @@
   <!-- JS -->
 <script src="scripts.js"></script>
 <script src="./common.js"></script>
+<script>
+appointments.push({
+  id: nextAppointmentId++,
+  patient: "New Patient",
+  date: visitDate,
+  time: visitTime,
+  type: visitType,
+  status: "Scheduled",
+});
+</script>
 </body>
 </html>

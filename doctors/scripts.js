@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAppointments();
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  renderAppointments(); // Render existing appointments
+});
+
 // --- Tab Navigation ---
 function setupTabNavigation() {
   const tabButtons = document.querySelectorAll(".tab-button");
@@ -33,29 +37,27 @@ function setupTabNavigation() {
 }
 
 // --- Appointments Rendering ---
-const appointments = [
-  { id: 1, patient: "John Doe", date: "2025-05-05", time: "10:00 AM", type: "In-person", status: "Scheduled" },
-  { id: 2, patient: "Jane Smith", date: "2025-05-06", time: "2:00 PM", type: "Video", status: "Scheduled" },
-];
-
 function renderAppointments() {
-  const tbody = document.getElementById("appointments-table-body");
-  if (!tbody) return;
+  const appointments = [
+    { id: 1, patient: "John Doe", date: "2025-05-05", time: "10:00 AM", type: "In-person", status: "Scheduled" },
+    { id: 2, patient: "Jane Smith", date: "2025-05-06", time: "2:00 PM", type: "Video", status: "Scheduled" },
+  ];
 
+  const tbody = document.getElementById("appointments-table-body");
   tbody.innerHTML = "";
 
   appointments.forEach(appt => {
     const row = document.createElement("tr");
+    row.id = `appointment-${appt.id}`;
     row.innerHTML = `
       <td>${appt.patient}</td>
-      <td>${appt.date}</td>
-      <td>${appt.time}</td>
+      <td class="date">${appt.date}</td>
+      <td class="time">${appt.time}</td>
       <td>${appt.type}</td>
-      <td id="status-${appt.id}">${appt.status}</td>
+      <td class="status">${appt.status}</td>
       <td class="action-buttons">
-        <button class="confirm" onclick="openModal(${appt.id})">Confirm</button>
-        <button class="reschedule" onclick="openModal(${appt.id})">Reschedule</button>
-        <button class="cancel" onclick="openModal(${appt.id})">Cancel</button>
+        <button class="update" onclick="openModal(${appt.id})">Update</button>
+        <button class="video-call-button" onclick="startVideoCall('appointment')">Join Call</button>
       </td>
     `;
     tbody.appendChild(row);
@@ -70,17 +72,53 @@ function openModal(id) {
 
 function closeModal() {
   document.getElementById("action-modal").style.display = "none";
+  document.getElementById("reschedule-form").style.display = "none"; // Hide reschedule form
   selectedAppointmentId = null;
 }
 
 function updateStatus(status) {
-  const appt = appointments.find(a => a.id === selectedAppointmentId);
-  if (appt) {
-    appt.status = status;
-    const statusCell = document.getElementById(`status-${appt.id}`);
-    if (statusCell) statusCell.textContent = status;
+  const appointmentRow = document.querySelector(`#appointment-${selectedAppointmentId}`);
+  if (appointmentRow) {
+    const statusCell = appointmentRow.querySelector(".status");
+    if (statusCell) {
+      statusCell.textContent = status;
+    }
   }
   closeModal();
+}
+
+function showRescheduleForm() {
+  document.getElementById("reschedule-form").style.display = "block";
+}
+
+function rescheduleAppointment() {
+  const newDate = document.getElementById("new-date").value;
+  const newTime = document.getElementById("new-time").value;
+
+  if (!newDate || !newTime) {
+    alert("Please select both a new date and time.");
+    return;
+  }
+
+  const appointmentRow = document.querySelector(`#appointment-${selectedAppointmentId}`);
+  if (appointmentRow) {
+    const dateCell = appointmentRow.querySelector(".date");
+    const timeCell = appointmentRow.querySelector(".time");
+
+    if (dateCell && timeCell) {
+      dateCell.textContent = newDate;
+      timeCell.textContent = newTime;
+    }
+  }
+
+  alert("Appointment rescheduled successfully!");
+  closeModal();
+}
+
+// Start a video call
+function startVideoCall(type) {
+  console.log(`Starting a video call for ${type}...`);
+  // Add your video call logic here
 }
 
 // --- Load Common HTML ---
@@ -322,6 +360,24 @@ function redirectToMessages() {
     window.location.href = "patients/messages.html"; // Redirect to Patients Messages page
   } else {
     alert("Please log in to access messages.");
-    window.location.href = "login.html"; // Redirect to login page if no role is found
+    window.location.href = "home.html"; // Redirect to login page if no role is found
   }
+}
+
+// --- Booking Form Handling ---
+function handleBookingForm(event) {
+  event.preventDefault(); // Prevent form submission
+
+  // Get form values
+  const patientName = document.getElementById("patient-name").value;
+  const appointmentDate = document.getElementById("appointment-date").value;
+  const appointmentTime = document.getElementById("appointment-time").value;
+  const appointmentType = document.getElementById("appointment-type").value;
+  const appointmentStatus = document.getElementById("appointment-status").value;
+
+  // Call the addBooking function from common.js
+  addBooking(patientName, appointmentDate, appointmentTime, appointmentType, appointmentStatus);
+
+  // Clear the form
+  document.getElementById("booking-form").reset();
 }
