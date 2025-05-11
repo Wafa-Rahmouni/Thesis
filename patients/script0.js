@@ -308,7 +308,7 @@ function closeLogoutPopup() {
 function confirmLogout() {
   console.log('User logged out.');
   // Redirect to the login page or perform logout logic
-  window.location.href = '/login.html'; // Adjust the path to your login page
+  window.location.href = '/home.html'; // Adjust the path to your login page
 }
 
 // Initialize event listeners for common content

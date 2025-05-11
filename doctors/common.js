@@ -151,43 +151,172 @@ function confirmLogout() {
 }
 
 // --- Book Visit ---
-function openBookVisitPopup() {
-  showPopup('book-visit-popup');
-}
-
-// --- Find Clinic Map ---
 function searchClinics() {
-  const searchInput = document.getElementById('clinic-search').value.trim();
-  const mapIframe = document.getElementById('google-map');
+  const searchInput = document.getElementById("clinic-search").value.trim();
+  const mapIframe = document.getElementById("google-map");
 
   if (searchInput) {
-    // Update the iframe's src attribute with the new search query
     const query = encodeURIComponent(searchInput);
-    mapIframe.src = `https://maps.google.com/maps?q=${query}&layer=c&output=embed`;
+    mapIframe.src = `https://maps.google.com/maps?q=${query}&output=embed`;
     console.log(`Searching for: ${searchInput}`);
   } else {
-    alert('Please enter a location to search.');
+    alert("Please enter a location to search.");
   }
 }
 
 function openFindClinicPopup() {
-  const popup = document.getElementById('find-clinic-popup');
+  const popup = document.getElementById("find-clinic-popup");
   if (popup) {
-    popup.style.display = 'flex'; // Show the popup
-    console.log('Find Clinic Popup opened.');
+    popup.style.display = "flex"; // Show the popup
+    console.log("Find Clinic Popup opened.");
   } else {
-    console.error('Find Clinic Popup not found.');
+    console.error("Find Clinic Popup not found.");
   }
 }
 
 function closeFindClinicPopup() {
-  const popup = document.getElementById('find-clinic-popup');
+  const popup = document.getElementById("find-clinic-popup");
   if (popup) {
-    popup.style.display = 'none'; // Hide the popup
-    console.log('Find Clinic Popup closed.');
+    popup.style.display = "none"; // Hide the popup
+    console.log("Find Clinic Popup closed.");
   } else {
-    console.error('Find Clinic Popup not found.');
+    console.error("Find Clinic Popup not found.");
   }
+}
+
+// --- Book Visit Popup Functions ---
+function openBookVisitPopup() {
+  closeAllPopups(); // Close other popups
+  const popup = document.getElementById('book-visit-popup');
+  if (popup) {
+    popup.style.display = 'block';
+  }
+}
+
+function closeBookVisitPopup() {
+  const popup = document.getElementById('book-visit-popup');
+  if (popup) {
+    popup.style.display = 'none';
+  }
+}
+
+// --- Booking Form Handling ---
+function handleBooking(event) {
+  event.preventDefault(); // Prevent the form from refreshing the page
+
+  // Get form values
+  const patientName = document.getElementById('name').value.trim();
+  const visitDate = document.getElementById('visit-date').value;
+  const visitTime = document.getElementById('visit-time').value;
+  const visitType = document.getElementById('visit-type').value;
+
+  if (!patientName || !visitDate || !visitTime || !visitType) {
+    alert('Please fill in all the required fields.');
+    return;
+  }
+
+  // Add the new appointment to the `appointments` array
+  addNewAppointment(patientName, visitDate, visitTime, visitType, 'Pending');
+
+  // Close the booking popup
+  closeBookVisitPopup();
+
+  // Reset the booking form
+  document.getElementById('book-visit-form').reset();
+}
+
+// --- Add New Appointment ---
+function addNewAppointment(patient, date, time, type, status = 'Pending') {
+  // Generate a new unique ID for the appointment
+  const newId = appointments.length > 0 ? appointments[appointments.length - 1].id + 1 : 1;
+
+  // Create a new appointment object
+  const newAppointment = {
+    id: newId,
+    patient: patient,
+    date: date,
+    time: time,
+    type: type,
+    status: status
+  };
+
+  // Add the new appointment to the `appointments` array
+  appointments.push(newAppointment);
+
+  // Refresh the appointments table
+  populateAppointmentsTable();
+}
+
+// --- Populate Appointments Table ---
+function populateAppointmentsTable() {
+  const tableBody = document.getElementById('appointments-table-body');
+  if (!tableBody) return; // Ensure the table body exists
+
+  tableBody.innerHTML = ''; // Clear existing rows
+
+  appointments.forEach(appointment => {
+    const row = document.createElement('tr');
+
+    // Add row content
+    row.innerHTML = `
+      <td>${appointment.patient}</td>
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.status}</td>
+      <td class="action-buttons">
+        <button class="confirm" onclick="updateStatus(${appointment.id}, 'Confirmed')">Confirm</button>
+        <button class="reschedule" onclick="updateStatus(${appointment.id}, 'Rescheduled')">Reschedule</button>
+        <button class="cancel" onclick="updateStatus(${appointment.id}, 'Cancelled')">Cancel</button>
+      </td>
+    `;
+
+    // Append the row to the table body
+    tableBody.appendChild(row);
+  });
+}
+
+// Profile modal functionality
+const profileLink = document.getElementById('profile-link');
+if (profileLink) {
+  profileLink.addEventListener('click', function (e) {
+    e.preventDefault();
+    openProfileModal();
+  });
+}
+
+const closeProfileButton = document.querySelector('#profile-modal .close');
+if (closeProfileButton) {
+  closeProfileButton.addEventListener('click', closeProfileModal);
+}
+
+// Enable form editing
+const editButton = document.getElementById('edit-btn');
+if (editButton) {
+  editButton.addEventListener('click', function () {
+    toggleForm(true);
+    document.getElementById('file-input-container').style.display = 'block'; // Show file input for profile picture
+  });
+}
+
+// Cancel editing
+const cancelButton = document.getElementById('cancel-btn');
+if (cancelButton) {
+  cancelButton.addEventListener('click', function () {
+    toggleForm(false);
+    document.getElementById('file-input-container').style.display = 'none'; // Hide file input
+  });
+}
+
+// Save changes
+const profileForm = document.getElementById('profile-form');
+if (profileForm) {
+  profileForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    alert('Profile updated!');
+    toggleForm(false);
+    document.getElementById('file-input-container').style.display = 'none'; // Hide file input after saving
+  });
 }
 
 // --- Video Call ---
@@ -259,15 +388,104 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Common content loaded and initialized.');
   });
   function navigateToMessages() {
-  // Example: Fetch the user's role from a global variable, localStorage, or an API
-  const userRole = localStorage.getItem('profileRole'); // Replace with actual role-fetching logic
+    // Example: Fetch the user's role from a global variable, localStorage, or an API
+    const userRole = localStorage.getItem('profileRole'); // Replace with actual role-fetching logic
 
-  if (userRole === 'doctor') {
-    window.location.href = '../../doctors/messages.html'; // Redirect to the doctor's messages page
-  } else if (userRole === 'patient') {
-    window.location.href = '../../patients/messages.html'; // Redirect to the patient's messages page
-  } else {
-    alert('Unable to determine your role. Please contact support.');
+    if (userRole === 'doctor') {
+      window.location.href = '../../doctors/messages.html'; // Redirect to the doctor's messages page
+    } else if (userRole === 'patient') {
+      window.location.href = '../../patients/messages.html'; // Redirect to the patient's messages page
+    } else {
+      alert('Unable to determine your role. Please contact support.');
+    }
+  }
+});
+
+// Sample appointment data
+const appointments = [
+  {
+    id: 1,
+    patient: 'John Smith',
+    date: '2025-05-05',
+    time: '09:00 AM',
+    type: 'General Checkup',
+    status: 'Pending'
+  },
+  {
+    id: 2,
+    patient: 'Emma Johnson',
+    date: '2025-05-05',
+    time: '10:30 AM',
+    type: 'Follow-up',
+    status: 'Confirmed'
+  }
+];
+
+// Function to open the action modal
+let currentAppointmentId = null;
+function openModal(appointmentId) {
+  currentAppointmentId = appointmentId;
+  document.getElementById('action-modal').style.display = 'flex';
+  document.getElementById('modal-reschedule-form').style.display = 'none';
+  document.getElementById('modal-title').textContent = 'Are you sure you want to update this appointment?';
+  document.getElementById('confirm-button').style.display = 'inline-block';
+  document.getElementById('reschedule-button').style.display = 'inline-block';
+  document.getElementById('cancel-button').style.display = 'inline-block';
+}
+
+// Function to close the modal
+function closeModal() {
+  document.getElementById('action-modal').style.display = 'none';
+}
+
+// Function to show reschedule form
+function showRescheduleForm() {
+  document.getElementById('modal-title').textContent = 'Reschedule Appointment';
+  document.getElementById('modal-reschedule-form').style.display = 'block';
+  document.getElementById('confirm-button').textContent = 'Confirm Reschedule';
+  document.getElementById('reschedule-button').style.display = 'none';
+  document.getElementById('cancel-button').style.display = 'none';
+}
+
+// Function to update appointment status
+function updateStatus(appointmentId, status) {
+  const appointmentIndex = appointments.findIndex(appt => appt.id === appointmentId);
+
+  if (appointmentIndex !== -1) {
+    appointments[appointmentIndex].status = status;
+
+    if (status === 'Rescheduled') {
+      const newDate = document.getElementById('reschedule-date').value;
+      const newTime = document.getElementById('reschedule-time').value;
+
+      if (newDate) {
+        appointments[appointmentIndex].date = newDate;
+      }
+
+      if (newTime) {
+        appointments[appointmentIndex].time = formatTime(newTime);
+      }
+    }
+
+    populateAppointmentsTable();
+    closeModal();
   }
 }
-});
+
+// Function to format time from 24-hour to 12-hour format
+function formatTime(time) {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
+
+// Function to confirm logout
+function confirmLogout() {
+  const logoutConfirmed = confirm("Are you sure you want to log out?");
+  if (logoutConfirmed) {
+    // Redirect to the login page or perform logout logic
+    window.location.href = "home.html";
+  }
+}

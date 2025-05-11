@@ -109,28 +109,6 @@
   </div>
 </div>
 
-  <script src="../script0.js"></script>
-  <script src="../../doctors/common.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCommonHTML(() => {
-        console.log('Common content loaded and initialized.');
-        initializeCommonEventListeners();
-      });
-  const upcomingBtn = document.getElementById('upcoming-btn');
-  const pastBtn = document.getElementById('past-btn');
-  const upcomingContainer = document.getElementById('upcoming-container');
-  const pastContainer = document.getElementById('past-container');
-
-  upcomingBtn.addEventListener('click', () => {
-    upcomingContainer.style.display = 'block';
-    pastContainer.style.display = 'none';
-  });
-
-  pastBtn.addEventListener('click', () => {
-    upcomingContainer.style.display = 'none';
-    pastContainer.style.display = 'block';
-  });
-  });
-  </script>
+<script src="/patients/script0.js"></script>
+<script src="../../doctors/common.js"></script>
 </html>

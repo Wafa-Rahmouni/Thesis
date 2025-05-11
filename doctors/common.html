@@ -200,7 +200,6 @@
   <!-- Find Clinic Popup -->
   <div id="find-clinic-popup" class="popup" style="display: none;">
     <div class="popup-content">
-      <span class="close-btn" onclick="closeFindClinicPopup()">&times;</span>
       <h3>Find a Clinic</h3>
       <div class="search-bar">
         <input
@@ -210,7 +209,15 @@
         />
         <button onclick="searchClinics()">Search</button>
       </div>
-      <div id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+      <div class="map-container">
+        <iframe
+          id="google-map"
+          src="https://maps.google.com/maps?q=saida&output=embed"
+          loading="lazy"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <!-- Close Button Below the Map -->
       <div class="popup-actions">
         <button class="popup-button cancel" onclick="closeFindClinicPopup()">Close</button>
       </div>
