@@ -193,6 +193,7 @@ function openBookVisitPopup() {
   }
 }
 
+// Function to close the booking popup
 function closeBookVisitPopup() {
   const popup = document.getElementById('book-visit-popup');
   if (popup) {
@@ -202,26 +203,38 @@ function closeBookVisitPopup() {
 
 // --- Booking Form Handling ---
 function handleBooking(event) {
-  event.preventDefault(); // Prevent the form from refreshing the page
+  event.preventDefault();
 
-  // Get form values
   const patientName = document.getElementById('name').value.trim();
   const visitDate = document.getElementById('visit-date').value;
   const visitTime = document.getElementById('visit-time').value;
   const visitType = document.getElementById('visit-type').value;
+  const clinic = document.getElementById('clinic').value;
+  const visitReason = document.getElementById('visit-reason').value;
 
-  if (!patientName || !visitDate || !visitTime || !visitType) {
+  if (!patientName || !visitDate || !visitTime || !visitType || !clinic || !visitReason) {
     alert('Please fill in all the required fields.');
     return;
   }
 
-  // Add the new appointment to the `appointments` array
-  addNewAppointment(patientName, visitDate, visitTime, visitType, 'Pending');
+  const newAppointment = {
+    id: Date.now(),
+    patient: patientName,
+    date: visitDate,
+    time: visitTime,
+    type: visitType,
+    clinic: clinic,
+    reason: visitReason,
+    status: 'Upcoming',
+  };
 
-  // Close the booking popup
-  closeBookVisitPopup();
+  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+  appointments.push(newAppointment);
+  localStorage.setItem('appointments', JSON.stringify(appointments));
 
-  // Reset the booking form
+  // Trigger table updates
+  populateUpcomingAppointmentsTable();
+
   document.getElementById('book-visit-form').reset();
 }
 
@@ -272,6 +285,58 @@ function populateAppointmentsTable() {
     `;
 
     // Append the row to the table body
+    tableBody.appendChild(row);
+  });
+}
+
+// --- Populate Upcoming Appointments Table ---
+function populateUpcomingAppointmentsTable() {
+  const tableBody = document.getElementById('upcoming-table-body');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = '';
+
+  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+  const patientName = document.getElementById('name')?.value || 'John Doe';
+
+  const upcomingAppointments = appointments.filter(
+    appt => appt.patient === patientName && appt.status === 'Upcoming'
+  );
+
+  upcomingAppointments.forEach(appointment => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.clinic}</td>
+      <td>${appointment.reason}</td>
+      <td>${appointment.status}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+// --- Populate Doctor Appointments Table ---
+function populateDoctorAppointmentsTable() {
+  const tableBody = document.getElementById('doctor-appointments-table-body');
+  if (!tableBody) return;
+
+  tableBody.innerHTML = '';
+
+  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+  appointments.forEach(appointment => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${appointment.patient}</td>
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.clinic}</td>
+      <td>${appointment.reason}</td>
+      <td>${appointment.status}</td>
+    `;
     tableBody.appendChild(row);
   });
 }
@@ -399,27 +464,13 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Unable to determine your role. Please contact support.');
     }
   }
+  populateDoctorAppointmentsTable();
+  populateUpcomingAppointmentsTable();
 });
 
-// Sample appointment data
-const appointments = [
-  {
-    id: 1,
-    patient: 'John Smith',
-    date: '2025-05-05',
-    time: '09:00 AM',
-    type: 'General Checkup',
-    status: 'Pending'
-  },
-  {
-    id: 2,
-    patient: 'Emma Johnson',
-    date: '2025-05-05',
-    time: '10:30 AM',
-    type: 'Follow-up',
-    status: 'Confirmed'
-  }
-];
+// Global appointments array
+const appointments = [];
+let nextAppointmentId = 1; // Unique ID for each appointment
 
 // Function to open the action modal
 let currentAppointmentId = null;
@@ -436,40 +487,6 @@ function openModal(appointmentId) {
 // Function to close the modal
 function closeModal() {
   document.getElementById('action-modal').style.display = 'none';
-}
-
-// Function to show reschedule form
-function showRescheduleForm() {
-  document.getElementById('modal-title').textContent = 'Reschedule Appointment';
-  document.getElementById('modal-reschedule-form').style.display = 'block';
-  document.getElementById('confirm-button').textContent = 'Confirm Reschedule';
-  document.getElementById('reschedule-button').style.display = 'none';
-  document.getElementById('cancel-button').style.display = 'none';
-}
-
-// Function to update appointment status
-function updateStatus(appointmentId, status) {
-  const appointmentIndex = appointments.findIndex(appt => appt.id === appointmentId);
-
-  if (appointmentIndex !== -1) {
-    appointments[appointmentIndex].status = status;
-
-    if (status === 'Rescheduled') {
-      const newDate = document.getElementById('reschedule-date').value;
-      const newTime = document.getElementById('reschedule-time').value;
-
-      if (newDate) {
-        appointments[appointmentIndex].date = newDate;
-      }
-
-      if (newTime) {
-        appointments[appointmentIndex].time = formatTime(newTime);
-      }
-    }
-
-    populateAppointmentsTable();
-    closeModal();
-  }
 }
 
 // Function to format time from 24-hour to 12-hour format
@@ -489,3 +506,12 @@ function confirmLogout() {
     window.location.href = "home.html";
   }
 }
+
+// Listen for changes in localStorage
+window.addEventListener('storage', (event) => {
+  if (event.key === 'appointments') {
+    // Refresh both tables when appointments are updated
+    populateDoctorAppointmentsTable();
+    populateUpcomingAppointmentsTable();
+  }
+});

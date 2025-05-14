@@ -62,37 +62,54 @@
   </div>
 
   <!-- Book Visit Popup -->
-  <div id="book-visit-popup" class="popup" style="display: none;">
-    <div class="popup-content">
-      <span class="close-btn" onclick="closeBookVisitPopup()">&times;</span>
-      <h3>Book a Visit</h3>
-      <form id="book-visit-form" onsubmit="handleBooking(event)">
-        <div class="form-group">
-          <label for="visit-date">Date:</label>
-          <input type="date" id="visit-date" required />
-        </div>
-        <div class="form-group">
-          <label for="visit-time">Time:</label>
-          <input type="time" id="visit-time" required />
-        </div>
-        <div class="form-group">
-          <label for="visit-type">Visit Type:</label>
-          <select id="visit-type" required>
-            <option value="In-Person">In-Person</option>
-            <option value="Virtual">Virtual</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="visit-reason">Reason for Visit:</label>
-          <textarea id="visit-reason" rows="4" placeholder="Enter reason for visit..." required></textarea>
-        </div>
-        <div class="popup-actions">
-          <button type="submit" class="popup-button confirm">Book Visit</button>
-          <button type="button" class="popup-button cancel" onclick="closeBookVisitPopup()">Cancel</button>
-        </div>
-      </form>
-    </div>
+<div id="book-visit-popup" class="popup" style="display: none;">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closeBookVisitPopup()">&times;</span>
+    <h3>Book a Visit</h3>
+    <form id="book-visit-form" onsubmit="handleBooking(event)">
+      <div class="form-group">
+        <label for="visit-date">Date:</label>
+        <input type="date" id="visit-date" required />
+      </div>
+      <div class="form-group">
+        <label for="visit-time">Time:</label>
+        <input type="time" id="visit-time" required />
+      </div>
+      <div class="form-group">
+        <label for="visit-type">Visit Type:</label>
+        <select id="visit-type" required>
+          <option value="In-Person">In-Person</option>
+          <option value="Virtual">Virtual</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="clinic">Choose Clinic:</label>
+        <select id="clinic" required>
+          <option value="" disabled selected>Select a clinic</option>
+          <option value="Clinic A">Clinic A</option>
+          <option value="Clinic B">Clinic B</option>
+          <option value="Clinic C">Clinic C</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="visit-reason">Reason for Visit:</label>
+        <select id="visit-reason" required>
+          <option value="" disabled selected>Select a reason</option>
+          <option value="General Checkup">General Checkup</option>
+          <option value="Follow-up">Follow-up</option>
+          <option value="Consultation">Consultation</option>
+          <option value="Vaccination">Vaccination</option>
+          <option value="Lab Results">Lab Results</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="popup-actions">
+        <button type="submit" class="popup-button confirm">Book Visit</button>
+        <button type="button" class="popup-button cancel" onclick="closeBookVisitPopup()">Cancel</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- Notifications Popup -->
   <div id="notifications-popup" class="popup" style="display: none;">

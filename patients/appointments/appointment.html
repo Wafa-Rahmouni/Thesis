@@ -32,10 +32,10 @@
     }
   </style>
 </head>
-  
-<body>
+  <!-- NAVBAR -->
   <!-- Placeholder for dynamically loading common content -->
   <div id="common-container"></div>
+
   <!-- BREADCRUMB -->
   <div class="breadcrumb">
     <a href="#">Home</a> &gt; <a href="#">Appointments</a> &gt; <span>Clinics</span>
@@ -46,7 +46,7 @@
     <h1>Appointments</h1>
     <p>View, confirm, reschedule, or cancel patient appointments.</p>
     <div class="tabs">
-      <button class="tab-button" data-tab="appointments">Appointments</button>
+      <button class="tab-button" data-tab="appointments" >Appointments</button>
       <button class="tab-button" data-tab="consultation">Consultations</button>
       <button class="tab-button" data-tab="history">History</button>
       <button class="tab-button" data-tab="clinics">Clinics</button>
@@ -55,60 +55,101 @@
       <button class="tab-button" data-tab="reminders">Reminders</button>
     </div>
     
-  <!-- APPOINTMENT OPTIONS -->
- <div class="appointments-container">
-  <div class="appointments-options">
-    <button class="tab-button" id="upcoming-btn">Upcoming Appointments</button>
-    <button class="tab-button" id="past-btn">Past Appointments</button>
-  </div>
+ <body>
+  <!-- Common HTML will be dynamically loaded here -->
+  <div id="common-container"></div>
 
-  <!-- Upcoming Appointments -->
-  <div id="upcoming-container" class="appointments-summary" style="margin-top: 50px;">
-    <h2>Upcoming Appointments</h2>
-    <p>Here's a quick overview of your upcoming appointments.</p>
-    <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Aisha Sharma</h3>
-          <p>Video Consultation • Today • 11:00 AM</p>
-        </div>
-        <span class="status status-upcoming">Upcoming</span>
-      </div>
+  <div class="appointments-container">
+    <!-- Tabs for Upcoming and Past Appointments -->
+    <div class="appointments-options">
+      <button class="tab-button" id="upcoming-btn">Upcoming Appointments</button>
+      <button class="tab-button" id="past-btn">Past Appointments</button>
+    </div>
 
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Lucas Grant</h3>
-          <p>Phone Call • Today • 2:00 PM</p>
-        </div>
-        <span class="status status-upcoming">Upcoming</span>
-      </div>
+    <!-- Upcoming Appointments Table -->
+    <div id="upcoming-container" class="appointments-summary" style="margin-top: 50px;">
+      <h2>Upcoming Appointments</h2>
+      <table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Type</th>
+      <th>Clinic</th>
+      <th>Reason</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+        <tbody id="upcoming-table-body">
+          <!-- Upcoming appointments will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Past Appointments Table -->
+    <div id="past-container" class="appointments-summary" style="margin-top: 50px; display: none;">
+      <h2>Past Appointments</h2>
+      <table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Type</th>
+      <th>Clinic</th>
+      <th>Reason</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+        <tbody id="past-table-body">
+          <!-- Past appointments will be dynamically added here -->
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Past Appointments -->
-  <div id="past-container" class="appointments-summary" style="margin-top: 50px; display: none;">
-    <h2>Past Appointments</h2>
-    <p>Here's a quick overview of your past appointments.</p>
-    <div style="display: flex; gap: 40px; flex-wrap: wrap; margin-top: 20px;">
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Rebecca Lin</h3>
-          <p>In-Person • 10 days ago</p>
-        </div>
-        <span class="status status-completed">Completed</span>
-      </div>
+  <!-- JS -->
+  <script src="/patients/script0.js"></script>
+  <script src="../../doctors/common.js"></script>
+  <script src="conscript.js"></script>
+  <script>
+    // Load common HTML dynamically
+    document.addEventListener('DOMContentLoaded', () => {
+      const commonContainer = document.getElementById('common-container');
+      if (commonContainer) {
+        fetch('../../doctors/common.html')
+          .then(response => response.text())
+          .then(data => {
+            commonContainer.innerHTML = data;
 
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Omar Ali</h3>
-          <p>Video Call • 2 weeks ago</p>
-        </div>
-        <span class="status status-completed">Completed</span>
-      </div>
-    </div>
-  </div>
-</div>
+            // Initialize any event listeners or scripts in the common HTML
+            initializeCommonEventListeners();
+          })
+          .catch(error => console.error('Error loading common HTML:', error));
+      }
 
-<script src="/patients/script0.js"></script>
-<script src="../../doctors/common.js"></script>
+      // Tab functionality for Upcoming and Past Appointments
+      const upcomingBtn = document.getElementById('upcoming-btn');
+      const pastBtn = document.getElementById('past-btn');
+      const upcomingContainer = document.getElementById('upcoming-container');
+      const pastContainer = document.getElementById('past-container');
+
+      if (upcomingBtn && pastBtn && upcomingContainer && pastContainer) {
+        upcomingBtn.addEventListener('click', () => {
+          upcomingContainer.style.display = 'block';
+          pastContainer.style.display = 'none';
+        });
+
+        pastBtn.addEventListener('click', () => {
+          upcomingContainer.style.display = 'none';
+          pastContainer.style.display = 'block';
+        });
+      } else {
+        console.error('One or more elements for tab functionality are missing.');
+      }
+    });
+  </script>
+  <script src="../../doctors/scripts.js"></script>
+  <script src="../../doctors/common.js"></script>
+  
+</body>
 </html>
