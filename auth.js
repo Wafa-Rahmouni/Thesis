@@ -159,7 +159,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 });
 
 // --- Modal Logic (runs once on page load, not inside any handler) ---
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   console.log('DOM fully loaded');
   
   const loginModal = document.getElementById('loginModal');
@@ -290,5 +290,46 @@ document.addEventListener('DOMContentLoaded', function() {
         if (doctorFields) doctorFields.style.display = 'none';
       }
     });
+  }
+
+  // --- Auto-login after email confirmation ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const accessToken = urlParams.get('access_token');
+  const type = urlParams.get('type');
+
+  if (accessToken && type === 'signup') {
+    // Set the session using the access token
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: urlParams.get('refresh_token') || ''
+    });
+
+    if (error) {
+      alert('Error during auto-login: ' + error.message);
+      return;
+    }
+
+    // Fetch the user profile and redirect based on role
+    const user = data.session?.user;
+    if (user) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        alert('Profile fetch error: ' + profileError.message);
+        return;
+      }
+
+      if (profile.role === 'doctor') {
+        window.location.href = '/doctors/appointments.html';
+      } else if (profile.role === 'patient') {
+        window.location.href = '/patients/appointments.html';
+      } else {
+        alert('Unknown role!');
+      }
+    }
   }
 });
