@@ -9,10 +9,14 @@
 
 </head>
 <body>
-<!-- Preloader -->
-<div id="preloader">
-    <div class="spinner"></div>
-</div>
+    <!-- Placeholder for dynamically loading common content -->
+    <div id="common-container"></div>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
 <div id="main-content">
     <!-- Header Section -->
     <header>
@@ -121,7 +125,6 @@
       
             <label>
                 <select id="formRoleSelector" class="input" required>
-                    <option value="" disabled selected hidden></option>                    
                     <option value="patient">Patient</option>
                     <option value="doctor">Doctor</option>
                 </select>
@@ -295,8 +298,15 @@
       <script> window.chtlConfig = { chatbotId: "5541694675" } </script>
 <script async data-id="5541694675" id="chatling-embed-script" type="text/javascript" src="https://chatling.ai/js/embed.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="doctors/common.js"></script>
-<script src="./script.js"></script>
+<script src="auth.js"></script>
+<script>
+window.addEventListener('load', function() {
+  var preloader = document.getElementById('preloader');
+  var mainContent = document.getElementById('main-content');
+  if (preloader) preloader.style.display = 'none';
+  if (mainContent) mainContent.style.display = 'block';
+});
+</script>
     
 </body>
 </html>
