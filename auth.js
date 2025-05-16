@@ -142,9 +142,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       console.log('Redirecting based on role:', profile.role);
 
       if (profile.role === 'doctor') {
-        window.location.href = '/doctors/dashboard.html';
+        window.location.href = '/doctors/appointments.html';
       } else if (profile.role === 'patient') {
-        window.location.href = '/patients/dashboard.html';
+        window.location.href = '/patients/appointments.html';
       } else {
         alert('Unknown role!');
       }
