@@ -206,9 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
           if (profile) {
             console.log('User role:', profile.role);
             if (profile.role === 'doctor') {
-              window.location.href = '/doctors/dashboard.html';
+              window.location.href = '/doctors/appointments.html';
             } else if (profile.role === 'patient') {
-              window.location.href = '/patients/dashboard.html';
+              window.location.href = '/patients/appointments.html';
             }
           }
         });
