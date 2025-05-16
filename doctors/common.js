@@ -1,3 +1,19 @@
+// --- Initialize Supabase ---
+const SUPABASE_URL = 'https://maxavwnmszjyhahhgbzw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1heGF2d25tc3pqeWhhaGhnYnp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMTY4NTgsImV4cCI6MjA2Mjg5Mjg1OH0.Kxo53BVFW2r9G9GX4hqVTS2vEV-YkUb15xcIN2T7RsI';
+
+// Initialize the Supabase client
+window.supabase = window.supabase || null;
+// Function to initialize Supabase
+function initializeSupabase() {
+  if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase initialized');
+  } else {
+    console.error('Supabase library not loaded!');
+  }
+}
+
 // --- Load Common HTML ---
 function loadCommonHTML(callback) {
   console.log('Attempting to load common HTML...');
@@ -106,7 +122,7 @@ function toggleFileInput(show) {
 // --- Popup Handling ---
 function showPopup(id) {
   const el = document.getElementById(id);
-  if (el) el.style.display = 'flex';
+  if (el) el.style.display = 'flex';yyy
 }
 
 function hidePopup(id) {
@@ -162,6 +178,7 @@ function searchClinics() {
   } else {
     alert("Please enter a location to search.");
   }
+  logHistory('find_clinic', { query: document.getElementById("clinic-search").value.trim() });
 }
 
 function openFindClinicPopup() {
@@ -202,7 +219,7 @@ function closeBookVisitPopup() {
 }
 
 // --- Booking Form Handling ---
-function handleBooking(event) {
+async function handleBooking(event) {
   event.preventDefault();
 
   const patientName = document.getElementById('name').value.trim();
@@ -218,7 +235,6 @@ function handleBooking(event) {
   }
 
   const newAppointment = {
-    id: Date.now(),
     patient: patientName,
     date: visitDate,
     time: visitTime,
@@ -226,84 +242,101 @@ function handleBooking(event) {
     clinic: clinic,
     reason: visitReason,
     status: 'Upcoming',
+    created_at: new Date().toISOString()
   };
 
-  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-  appointments.push(newAppointment);
-  localStorage.setItem('appointments', JSON.stringify(appointments));
+  try {
+    // Insert the appointment into Supabase
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([newAppointment])
+      .select(); // Add .select() to get the inserted row(s)
 
-  // Trigger table updates
-  populateUpcomingAppointmentsTable();
-
-  document.getElementById('book-visit-form').reset();
+    if (error) throw error;
+    const newAppointmentId = data && data[0] && data[0].id;
+    logHistory('booking', { appointment_id: newAppointmentId });
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+  }
+    // Close the booking popup
+  closeBookVisitPopup();
 }
 
+
 // --- Add New Appointment ---
-function addNewAppointment(patient, date, time, type, status = 'Pending') {
-  // Generate a new unique ID for the appointment
-  const newId = appointments.length > 0 ? appointments[appointments.length - 1].id + 1 : 1;
+async function addNewAppointment(patient, date, time, type, status = 'Pending') {
+  try {
+    // Create a new appointment object
+    const newAppointment = {
+      patient: patient,
+      date: date,
+      time: time,
+      type: type,
+      status: status,
+      created_at: new Date().toISOString()
+    };
 
-  // Create a new appointment object
-  const newAppointment = {
-    id: newId,
-    patient: patient,
-    date: date,
-    time: time,
-    type: type,
-    status: status
-  };
-
-  // Add the new appointment to the `appointments` array
-  appointments.push(newAppointment);
-
-  // Refresh the appointments table
-  populateAppointmentsTable();
+    // Insert the appointment into Supabase
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert([newAppointment]);
+    
+    if (error) throw error;
+    
+    console.log('New appointment added:', data);
+    
+    // Refresh the appointments table
+    await populateAppointmentsTable();
+    
+  } catch (error) {
+    console.error('Error adding appointment:', error);
+    alert('Failed to add appointment. Please try again.');
+  }
 }
 
 // --- Populate Appointments Table ---
-function populateAppointmentsTable() {
-  const tableBody = document.getElementById('appointments-table-body');
-  if (!tableBody) return; // Ensure the table body exists
+async function populateUpcomingAppointmentsTable() {
+  const upcomingTableBody = document.getElementById('upcoming-table-body');
+  if (!upcomingTableBody) return;
+  upcomingTableBody.innerHTML = '';
 
-  tableBody.innerHTML = ''; // Clear existing rows
+  const pastTableBody = document.getElementById('past-table-body');
+  if (pastTableBody) pastTableBody.innerHTML = '';
 
-  appointments.forEach(appointment => {
-    const row = document.createElement('tr');
+  let patientName = '';
+  if (supabase.auth && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      patientName = user.user_metadata?.full_name || user.email;
+    }
+  }
+  if (!patientName) {
+    patientName = document.getElementById('name')?.value || 'John Doe';
+  }
 
-    // Add row content
-    row.innerHTML = `
-      <td>${appointment.patient}</td>
-      <td>${appointment.date}</td>
-      <td>${appointment.time}</td>
-      <td>${appointment.type}</td>
-      <td>${appointment.status}</td>
-      <td class="action-buttons">
-        <button class="confirm" onclick="updateStatus(${appointment.id}, 'Confirmed')">Confirm</button>
-        <button class="reschedule" onclick="updateStatus(${appointment.id}, 'Rescheduled')">Reschedule</button>
-        <button class="cancel" onclick="updateStatus(${appointment.id}, 'Cancelled')">Cancel</button>
-      </td>
-    `;
+  // Fetch all appointments for this patient
+  const { data: allAppointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('patient', patientName)
+    .order('date', { ascending: true });
 
-    // Append the row to the table body
-    tableBody.appendChild(row);
-  });
-}
+  if (error) {
+    console.error('Error fetching patient appointments:', error);
+    return;
+  }
 
-// --- Populate Upcoming Appointments Table ---
-function populateUpcomingAppointmentsTable() {
-  const tableBody = document.getElementById('upcoming-table-body');
-  if (!tableBody) return;
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  tableBody.innerHTML = '';
+  let hasUpcoming = false;
+  let hasPast = false;
 
-  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-  const patientName = document.getElementById('name')?.value || 'John Doe';
+  allAppointments.forEach(appointment => {
+    const appointmentDate = new Date(appointment.date);
+    appointmentDate.setHours(0, 0, 0, 0);
 
-  const upcomingAppointments = appointments.filter(
-    appt => appt.patient === patientName && appt.status === 'Upcoming'
-  );
-
-  upcomingAppointments.forEach(appointment => {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${appointment.date}</td>
@@ -313,19 +346,132 @@ function populateUpcomingAppointmentsTable() {
       <td>${appointment.reason}</td>
       <td>${appointment.status}</td>
     `;
-    tableBody.appendChild(row);
+
+    if (appointmentDate >= today && appointment.status.toLowerCase() === 'upcoming') {
+      upcomingTableBody.appendChild(row);
+      hasUpcoming = true;
+    } else {
+      if (pastTableBody) {
+        pastTableBody.appendChild(row);
+        hasPast = true;
+      }
+    }
   });
+
+  if (!hasUpcoming) {
+    upcomingTableBody.innerHTML = '<tr><td colspan="6">No upcoming appointments found.</td></tr>';
+  }
+  if (pastTableBody && !hasPast) {
+    pastTableBody.innerHTML = '<tr><td colspan="6">No past appointments found.</td></tr>';
+  }
+}
+
+// --- Update Appointment Status ---
+async function updateStatus(appointmentId, newStatus) {
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: newStatus })
+      .eq('id', appointmentId);
+    
+    if (error) throw error;
+    
+    console.log(`Appointment ${appointmentId} updated to ${newStatus}`);
+    
+    // Refresh the tables
+    await populateAppointmentsTable();
+    await populateUpcomingAppointmentsTable();
+    
+    alert(`Appointment ${newStatus}`);
+    
+  } catch (error) {
+    console.error('Error updating appointment:', error);
+    alert('Failed to update appointment status. Please try again.');
+  }
+}
+
+// --- Populate Upcoming Appointments Table ---
+async function populateUpcomingAppointmentsTable() {
+  const upcomingTableBody = document.getElementById('upcoming-table-body');
+  if (!upcomingTableBody) return;
+  upcomingTableBody.innerHTML = '';
+
+  const pastTableBody = document.getElementById('past-table-body');
+  if (pastTableBody) pastTableBody.innerHTML = '';
+
+  let patientName = '';
+  if (supabase.auth && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      patientName = user.user_metadata?.full_name || user.email;
+    }
+  }
+  if (!patientName) {
+    patientName = document.getElementById('name')?.value || 'John Doe';
+  }
+
+  // Fetch all appointments for this patient
+  const { data: allAppointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('patient', patientName)
+    .order('date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching patient appointments:', error);
+    return;
+  }
+
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let hasUpcoming = false;
+  let hasPast = false;
+
+  allAppointments.forEach(appointment => {
+    const appointmentDate = new Date(appointment.date);
+    appointmentDate.setHours(0, 0, 0, 0);
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.clinic}</td>
+      <td>${appointment.reason}</td>
+      <td>${appointment.status}</td>
+    `;
+
+    if (appointmentDate >= today && appointment.status.toLowerCase() === 'upcoming') {
+      upcomingTableBody.appendChild(row);
+      hasUpcoming = true;
+    } else {
+      if (pastTableBody) {
+        pastTableBody.appendChild(row);
+        hasPast = true;
+      }
+    }
+  });
+
+  if (!hasUpcoming) {
+    upcomingTableBody.innerHTML = '<tr><td colspan="6">No upcoming appointments found.</td></tr>';
+  }
+  if (pastTableBody && !hasPast) {
+    pastTableBody.innerHTML = '<tr><td colspan="6">No past appointments found.</td></tr>';
+  }
 }
 
 // --- Populate Doctor Appointments Table ---
-function populateDoctorAppointmentsTable() {
+async function populateDoctorAppointmentsTable() {
   const tableBody = document.getElementById('doctor-appointments-table-body');
   if (!tableBody) return;
-
   tableBody.innerHTML = '';
-
-  const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-
+  const { data: appointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .order('date', { ascending: true });
+  if (error) return;
   appointments.forEach(appointment => {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -409,6 +555,7 @@ function startVideoCall(type) {
       console.error('Media error:', err);
       alert('Please allow camera and microphone access.');
     });
+  logHistory('video_call', { type });
 }
 
 function openVideoCallPopup() {
@@ -447,34 +594,66 @@ function toggleCamera() {
 }
 
 // --- DOM Ready ---
-document.addEventListener('DOMContentLoaded', () => {
-  loadCommonHTML(() => {
-    setupVideoCallButtons();
-    console.log('Common content loaded and initialized.');
-  });
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load Supabase script dynamically
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  script.onload = function() {
+    // Initialize Supabase once script is loaded
+    initializeSupabase();
+    
+    // Continue with other initialization
+    loadCommonHTML(async () => {
+      setupVideoCallButtons();
+      console.log('Common content loaded and initialized.');
+      
+      // Populate tables after Supabase is initialized
+      await populateDoctorAppointmentsTable();
+      await populateUpcomingAppointmentsTable();
+    });
+  };
+  document.head.appendChild(script);
+  
   function navigateToMessages() {
-    // Example: Fetch the user's role from a global variable, localStorage, or an API
-    const userRole = localStorage.getItem('profileRole'); // Replace with actual role-fetching logic
-
-    if (userRole === 'doctor') {
-      window.location.href = '../../doctors/messages.html'; // Redirect to the doctor's messages page
-    } else if (userRole === 'patient') {
-      window.location.href = '../../patients/messages.html'; // Redirect to the patient's messages page
-    } else {
-      alert('Unable to determine your role. Please contact support.');
+    // Example: Fetch the user's role from Supabase
+    async function checkUserRole() {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          alert('You must be logged in to access messages.');
+          return;
+        }
+        
+        // Get user profile
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (profile.role === 'doctor') {
+          window.location.href = '../../doctors/messages.html';
+        } else if (profile.role === 'patient') {
+          window.location.href = '../../patients/messages.html';
+        } else {
+          alert('Unable to determine your role. Please contact support.');
+        }
+      } catch (error) {
+        console.error('Error checking user role:', error);
+        alert('An error occurred. Please try again later.');
+      }
     }
+    
+    checkUserRole();
   }
-  populateDoctorAppointmentsTable();
-  populateUpcomingAppointmentsTable();
 });
 
-// Global appointments array
-const appointments = [];
-let nextAppointmentId = 1; // Unique ID for each appointment
-
 // Function to open the action modal
-let currentAppointmentId = null;
-function openModal(appointmentId) {
+window.currentAppointmentId = null;function openModal(appointmentId) {
   currentAppointmentId = appointmentId;
   document.getElementById('action-modal').style.display = 'flex';
   document.getElementById('modal-reschedule-form').style.display = 'none';
@@ -499,19 +678,78 @@ function formatTime(time) {
 }
 
 // Function to confirm logout
-function confirmLogout() {
+async function confirmLogout() {
   const logoutConfirmed = confirm("Are you sure you want to log out?");
   if (logoutConfirmed) {
-    // Redirect to the login page or perform logout logic
-    window.location.href = "home.html";
+    try {
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Redirect to the login page
+      window.location.href = "home.html";
+    } catch (error) {
+      console.error('Error signing out:', error);
+      alert('Failed to sign out. Please try again.');
+    }
   }
 }
 
-// Listen for changes in localStorage
-window.addEventListener('storage', (event) => {
-  if (event.key === 'appointments') {
-    // Refresh both tables when appointments are updated
-    populateDoctorAppointmentsTable();
-    populateUpcomingAppointmentsTable();
+// Real-time updates with Supabase subscriptions
+function setupRealtimeUpdates() {
+  // Subscribe to changes in the appointments table
+  const appointmentsSubscription = supabase
+    .channel('public:appointments')
+    .on('postgres_changes', 
+      { event: '*', schema: 'public', table: 'appointments' }, 
+      async (payload) => {
+        console.log('Change received:', payload);
+        // Refresh both tables when appointments are updated
+        await populateDoctorAppointmentsTable();
+        await populateUpcomingAppointmentsTable();
+      }
+    )
+    .subscribe();
+}
+
+// Log a user action to the history table in Supabase
+async function logHistory(action, details = {}) {
+  if (!window.supabase) {
+    console.error('Supabase not initialized');
+    return;
   }
-});
+
+  // Try to get user info (if using Supabase Auth)
+  let user_id = null;
+  let user_email = null;
+  if (supabase.auth && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      user_id = user.id;
+      user_email = user.email;
+    }
+  }
+
+  const { error } = await supabase
+    .from('history')
+    .insert([{
+      user_id,
+      user_email,
+      action,
+      details,
+      timestamp: new Date().toISOString()
+    }]);
+
+  if (error) {
+    console.error('Failed to log history:', error);
+  }
+}
+
+// Video call
+logHistory('video_call', { doctor: 'Dr. Smith', duration: '15min' });
+
+// Reminder set
+logHistory('reminder_set', { date, time, note });
+
+// Message sent
+logHistory('message', { to: 'Dr. Lee', content: 'Hello...' });

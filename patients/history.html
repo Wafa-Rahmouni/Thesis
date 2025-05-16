@@ -8,6 +8,42 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stylesg.css"> <!-- Adjust path as needed -->
   <link rel="stylesheet" href="../../doctors/global.css"> <!-- Linking the external CSS -->
+  <style>
+.appointments-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.appointments-container th, .appointments-container td {
+  border: 1px solid #e0e0e0;
+  padding: 0.75em 1em;
+  text-align: left;
+  vertical-align: top;
+}
+.appointments-container th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+.appointments-container tr:nth-child(even) {
+  background: #fafafa;
+}
+.history-action {
+  font-weight: bold;
+  color: #1976d2;
+  text-transform: capitalize;
+}
+.history-details {
+  font-family: "Fira Mono", "Consolas", monospace;
+  font-size: 0.95em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #f8f8f8;
+  border-radius: 4px;
+  padding: 0.5em;
+}
+</style>
 </head>
 <body>
 
@@ -33,68 +69,33 @@
       <button class="tab-button" data-tab="emergency">Emergency</button>
       <button class="tab-button" data-tab="reminders">Reminders</button>
     </div>
-    
+  </div>
 
   <!-- APPOINTMENT HISTORY TABLE -->
   <div class="appointments-container">
-    <h2>Past Appointments</h2>
     <table>
       <thead>
         <tr>
-          <th>Doctor</th>
-          <th>Date</th>
           <th>Time</th>
-          <th>Type</th>
-          <th>Status</th>
+          <th>Action</th>
           <th>Details</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>Dr. Sofia Malik</td>
-          <td>Mar 18, 2025</td>
-          <td>09:00 AM</td>
-          <td>Video</td>
-          <td><span class="patient-status status-completed">Completed</span></td>
-          <td>Routine dental checkup, advised regular flossing</td>
-        </tr>
-        <tr>
-          <td>Dr. Lucas Grant</td>
-          <td>Feb 28, 2025</td>
-          <td>11:30 AM</td>
-          <td>Phone</td>
-          <td><span class="patient-status status-cancelled">Cancelled</span></td>
-          <td>Appointment cancelled due to emergency rescheduling</td>
-        </tr>
-        <tr>
-          <td>Dr. Aisha Sharma</td>
-          <td>Jan 15, 2025</td>
-          <td>03:00 PM</td>
-          <td>In-Person</td>
-          <td><span class="patient-status status-rescheduled">Rescheduled</span></td>
-          <td>Moved from Jan 10 due to clinic maintenance</td>
-        </tr>
-        <tr>
-          <td>Dr. James Lee</td>
-          <td>Dec 10, 2024</td>
-          <td>01:00 PM</td>
-          <td>Video</td>
-          <td><span class="patient-status status-completed">Completed</span></td>
-          <td>Follow-up for wisdom tooth extraction</td>
-        </tr>
-      </tbody>
+      <tbody id="history-table-body"></tbody>
     </table>
   </div>
-</body>
-<script src="conscript.js"></script>
-<script src="/patients/script0.js"></script>
-<script src="../../doctors/common.js"></script>
+
+  <script src="/patients/script0.js"></script>
+  <script src="../../doctors/common.js"></script>
+  <script src="/patients/history.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       loadCommonHTML(() => {
         console.log('Common content loaded and initialized.');
         initializeCommonEventListeners();
+        renderHistory(); // Call the function to load history from Supabase
       });
     });
   </script>
+</body>
 </html>

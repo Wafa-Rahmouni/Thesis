@@ -1,84 +1,121 @@
-const appointments = [
-  { id: 1, patient: "John Doe", date: "2025-05-05", time: "10:00 AM", type: "In-person", status: "Scheduled" },
-  { id: 2, patient: "Jane Smith", date: "2025-05-06", time: "2:00 PM", type: "Video", status: "Scheduled" },
-];
 
 let selectedAppointmentId = null;
 
-// Add page navigation to tabs when the document is loaded
-document.addEventListener("DOMContentLoaded", function() {
-  // Set up navigation for each tab button
-  const tabButtons = document.querySelectorAll('.tabs button');
-  tabButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Get the tab name and navigate to the corresponding page
-      const tabName = this.textContent.trim().toLowerCase();
-      navigateToPage(tabName);
-    });
+// Fetch and render appointments from Supabase
+async function renderAppointments() {
+  const tableBody = document.getElementById('appointments-table-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+
+  // Get patient name (from auth or form, adjust as needed)
+  let patientName = '';
+  if (window.supabase && supabase.auth && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      patientName = user.user_metadata?.full_name || user.email;
+    }
+  }
+  if (!patientName) {
+    patientName = document.getElementById('name')?.value || 'John Doe';
+  }
+
+  // Fetch appointments from Supabase
+  const { data: appointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('patient', patientName)
+    .order('date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching appointments:', error);
+    tableBody.innerHTML = '<tr><td colspan="6">Failed to load appointments.</td></tr>';
+    return;
+  }
+
+  if (!appointments || appointments.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="6">No appointments found.</td></tr>';
+    return;
+  }
+
+  appointments.forEach(appointment => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.clinic}</td>
+      <td>${appointment.reason}</td>
+      <td>${appointment.status}</td>
+    `;
+    tableBody.appendChild(row);
   });
-  
-  // Render appointments for the current page
+}
+
+// Call renderAppointments on page load
+document.addEventListener("DOMContentLoaded", function() {
   renderAppointments();
+  // ...other initialization code...
 });
 
-// Function to navigate to the correct page based on tab name
-function navigateToPage(tabName) {
-  // Define page mappings (tab name to HTML file)
-  const pageMap = {
-    'appointments': 'appointments.html',
-    'patients': 'patients.html',
-    'consultations': 'consultations.html',
-    'prescriptions': 'prescriptions.html',
-    'emergencies': 'emergencies.html',
-    'messages': 'messages.html'
-  };
-  
-  // Get the page URL
-  const pageUrl = pageMap[tabName] || 'appointments.html'; // Default to appointments if not found
-  
-  // Navigate to the page
-  window.location.href = pageUrl;
-}
+// --- Remove hardcoded data ---
+// const appointments = [ ... ]; // DELETE THIS
 
-function renderAppointments() {
-  const tbody = document.getElementById("appointments-table-body");
-  if (!tbody) return; // Exit if element doesn't exist on this page
-  
-  tbody.innerHTML = "";
+let selectedAppointmentId = null;
 
-  appointments.forEach((appt) => {
-    const row = document.createElement("tr");
+// Fetch and render appointments from Supabase
+async function renderAppointments() {
+  const tableBody = document.getElementById('appointments-table-body');
+  if (!tableBody) return;
+  tableBody.innerHTML = '';
+
+  // Get patient name (from auth or form, adjust as needed)
+  let patientName = '';
+  if (window.supabase && supabase.auth && supabase.auth.getUser) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      patientName = user.user_metadata?.full_name || user.email;
+    }
+  }
+  if (!patientName) {
+    patientName = document.getElementById('name')?.value || 'John Doe';
+  }
+
+  // Fetch appointments from Supabase
+  const { data: appointments, error } = await supabase
+    .from('appointments')
+    .select('*')
+    .eq('patient', patientName)
+    .order('date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching appointments:', error);
+    tableBody.innerHTML = '<tr><td colspan="6">Failed to load appointments.</td></tr>';
+    return;
+  }
+
+  if (!appointments || appointments.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="6">No appointments found.</td></tr>';
+    return;
+  }
+
+  appointments.forEach(appointment => {
+    const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${appt.patient}</td>
-      <td>${appt.date}</td>
-      <td>${appt.time}</td>
-      <td>${appt.type}</td>
-      <td id="status-${appt.id}">${appt.status}</td>
-      <td class="action-buttons">
-        <button class="confirm" onclick="openModal(${appt.id})">Confirm</button>
-        <button class="reschedule" onclick="openModal(${appt.id})">Reschedule</button>
-        <button class="cancel" onclick="openModal(${appt.id})">Cancel</button>
-      </td>
+      <td>${appointment.date}</td>
+      <td>${appointment.time}</td>
+      <td>${appointment.type}</td>
+      <td>${appointment.clinic}</td>
+      <td>${appointment.reason}</td>
+      <td>${appointment.status}</td>
     `;
-    tbody.appendChild(row);
+    tableBody.appendChild(row);
   });
 }
 
-function openModal(id) {
-  selectedAppointmentId = id;
-  document.getElementById("action-modal").style.display = "flex";
-}
+// Call renderAppointments on page load
+document.addEventListener("DOMContentLoaded", function() {
+  renderAppointments();
+  // ...other initialization code...
+});
 
-function closeModal() {
-  document.getElementById("action-modal").style.display = "none";
-  selectedAppointmentId = null;
-}
-
-function updateStatus(status) {
-  const appt = appointments.find(a => a.id === selectedAppointmentId);
-  if (appt) {
-    appt.status = status;
-    document.getElementById(`status-${appt.id}`).innerText = status;
-  }
-  closeModal();
-}
+// The rest of your navigation and modal logic remains unchanged

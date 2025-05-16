@@ -28,26 +28,7 @@
       <button class="tab-button" data-tab="emergency">Emergency</button>
       <button class="tab-button" data-tab="reminders">Reminders</button>
     </div>
-    
-  <div class="appointments-container">
-    <!-- Consultation Tab Content -->
-    <div class="consultation-list">
-      <h2>Upcoming Consultations</h2>
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Aisha Sharma</h3>
-          <p>Video Consultation • Wed, May 15 • 11:00 AM</p>
-        </div>
-        <span class="status status-upcoming">Upcoming</span>
-      </div>
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Lucas Grant</h3>
-          <p>Phone Call • Mon, May 20 • 2:00 PM</p>
-        </div>
-        <span class="status status-upcoming">Upcoming</span>
-      </div>
-      
+
       <h2>Request a New Consultation</h2>
       <div class="consultation-options">
         <div class="consultation-option">
@@ -63,65 +44,10 @@
           <h3>Message Consultation</h3>
           <p>Send your concerns to a dentist and get a reply.</p>
 <button onclick="window.location.href='/messages.html'">Start Chat</button>        </div>
-      </div>
-      
-      <h2>Past Consultations</h2>
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Rebecca Lin</h3>
-          <p>In-Person • Apr 12, 2024</p>
         </div>
-        <span class="status status-completed">Completed</span>
-      </div>
-      <div class="consultation-card">
-        <div>
-          <h3>Dr. Omar Ali</h3>
-          <p>Video Call • Mar 3, 2024</p>
-        </div>
-        <span class="status status-completed">Completed</span>
-      </div>
-    </div>
 
-    <!-- Appointments Tab Content -->
-    <div class="appointments-table" style="display: none;">
-      <h2>Upcoming Appointments</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Patient</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="appointments-table-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="modal" id="action-modal" style="display: none;">
-    <div class="modal-content">
-      <h3 id="modal-title">Are you sure you want to update this appointment?</h3>
-      <div id="modal-reschedule-form" style="display: none;">
-        <div class="reschedule-form">
-          <label for="reschedule-date">New Date</label>
-          <input type="date" id="reschedule-date">
-          
-          <label for="reschedule-time">New Time</label>
-          <input type="time" id="reschedule-time">
-        </div>
-      </div>
-      <button class="confirm" id="confirm-button" onclick="updateStatus('Confirmed')">Confirm</button>
-      <button class="reschedule" id="reschedule-button" onclick="showRescheduleForm()">Reschedule</button>
-      <button class="cancel" id="cancel-button" onclick="updateStatus('Cancelled')">Cancel</button>
-      <button class="close" onclick="closeModal()">Close</button>
-    </div>
-  </div>
 
 </body>
-<script src="conscript.js"></script>
 <script src="script0.js"></script>
 <script src="../../doctors/common.js"></script>
   <script>

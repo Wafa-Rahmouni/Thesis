@@ -36,30 +36,7 @@
   <!-- REMINDERS SECTION -->
   <div class="appointments-container">
     <h2>Upcoming Reminders</h2>
-
-    <div class="consultation-card">
-      <div>
-        <h3>Routine Cleaning</h3>
-        <p>May 9, 2025 - 09:00 AM</p>
-      </div>
-      <div class="status status-upcoming">Upcoming</div>
-    </div>
-
-    <div class="consultation-card">
-      <div>
-        <h3>Post-op Checkup</h3>
-        <p>May 12, 2025 - 11:30 AM</p>
-      </div>
-      <div class="status status-upcoming">Upcoming</div>
-    </div>
-
-    <div class="consultation-card">
-      <div>
-        <h3>Medication Reminder</h3>
-        <p>May 13, 2025 - 08:00 AM</p>
-      </div>
-      <div class="status status-upcoming">Upcoming</div>
-    </div>
+    <div id="reminders-list"></div>
 
     <h2 style="margin-top: 40px;">Set New Reminder</h2>
     <div class="reschedule-form">
@@ -76,9 +53,9 @@
     </div>
   </div>
 </body>
-<script src="conscript.js"></script>
 <script src="/patients/script0.js"></script>
 <script src="../../doctors/common.js"></script>
+<script src="/patients/reminders.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       loadCommonHTML(() => {
