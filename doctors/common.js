@@ -46,108 +46,150 @@ function initializeCommonEventListeners() {
 
   const profileForm = document.getElementById('profile-form');
   if (profileForm) {
-    profileForm.addEventListener('submit', e => {
-      e.preventDefault();
-      alert('Profile updated!');
-      toggleForm(false);
-      toggleFileInput(false);
-    });
+    profileForm.addEventListener('submit', saveProfileChanges);
   }
 }
 
+// Utility to add click listeners by ID or selector
 function addClickListener(idOrSelector, handler) {
   const element = document.getElementById(idOrSelector) || document.querySelector(`#${idOrSelector}`);
   if (element) element.addEventListener('click', handler);
 }
 
+// Utility to add click listeners by [title] attribute
 function addClickListenerByTitle(title, handler) {
   const element = document.querySelector(`[title="${title}"]`);
   if (element) element.addEventListener('click', handler);
 }
 
 // --- Profile Modal ---
-function openProfileModal() {
+
+// Open the profile modal and load user data from Supabase
+async function openProfileModal() {
   closeAllPopups();
   showPopup('profile-modal');
+  await loadProfileData();
 }
 
-function closeProfileModal() {
-  hidePopup('profile-modal');
+// Load profile data from Supabase and fill the form
+async function loadProfileData() {
+  if (!window.supabase) return;
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile, error } = await window.supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (error || !profile) return;
+
+  document.getElementById('name').value = [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+  document.getElementById('address').value = profile.address || '';
+  document.getElementById('gender').value = profile.gender || '';
+  document.getElementById('dob').value = profile.dob || '';
+  document.getElementById('phone').value = profile.phone || '';
+  document.getElementById('email').value = profile.email || '';
+  if (profile.profile_picture_url) {
+    document.getElementById('profile-img').src = profile.profile_picture_url;
+  }
   toggleForm(false);
+  toggleFileInput(false);
 }
 
+// Enable editing
 function enableProfileEditing() {
   toggleForm(true);
   toggleFileInput(true);
 }
 
-function cancelProfileEditing() {
+// Cancel editing and reload data
+async function cancelProfileEditing() {
+  await loadProfileData();
   toggleForm(false);
   toggleFileInput(false);
 }
 
-function saveProfileChanges() {
-  alert('Profile saved!');
+// Save changes to Supabase
+async function saveProfileChanges(e) {
+  if (e) e.preventDefault();
+  if (!window.supabase) return;
+
+  // Get the current user
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // Parse name into first and last
+  const fullName = document.getElementById('name').value.trim();
+  const [first_name, ...rest] = fullName.split(' ');
+  const last_name = rest.join(' ');
+
+  // Prepare update data
+  const updateData = {
+    first_name,
+    last_name,
+    address: document.getElementById('address').value,
+    gender: document.getElementById('gender').value,
+    dob: document.getElementById('dob').value,
+    phone: document.getElementById('phone').value,
+    email: document.getElementById('email').value
+  };
+
+  // Optional: handle profile picture upload here if needed
+
+  // Update in Supabase
+  const { error } = await window.supabase
+    .from('profiles')
+    .update(updateData)
+    .eq('id', user.id);
+
+  if (error) {
+    alert('Failed to save profile: ' + error.message);
+    return;
+  }
+
+  alert('Profile updated!');
+  await loadProfileData();
   toggleForm(false);
   toggleFileInput(false);
 }
 
+// Helpers for enabling/disabling form fields and file input
 function toggleForm(editable) {
   const form = document.getElementById('profile-form');
   if (!form) return;
-  form.querySelectorAll('input, select').forEach(input => input.disabled = !editable);
+  const fields = form.querySelectorAll('input, select');
+  fields.forEach(input => (input.disabled = !editable));
   document.getElementById('edit-btn').style.display = editable ? 'none' : 'inline-block';
   document.getElementById('save-btn').style.display = editable ? 'inline-block' : 'none';
   document.getElementById('cancel-btn').style.display = editable ? 'inline-block' : 'none';
 }
-
 function toggleFileInput(show) {
-  const inputContainer = document.getElementById('file-input-container');
-  if (inputContainer) inputContainer.style.display = show ? 'block' : 'none';
+  const fileInputContainer = document.getElementById('file-input-container');
+  if (fileInputContainer) fileInputContainer.style.display = show ? 'block' : 'none';
 }
 
 // --- Popup Handling ---
 function showPopup(id) {
   const el = document.getElementById(id);
-  if (el) el.style.display = 'flex';yyy
+  if (el) el.style.display = 'flex';
 }
-
 function hidePopup(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = 'none';
 }
-
 function closeAllPopups() {
   document.querySelectorAll('.popup').forEach(popup => popup.style.display = 'none');
 }
 
-function openLanguagePopup() {
-  closeAllPopups();
-  showPopup('language-popup');
-}
-
-function closeLanguagePopup() {
-  hidePopup('language-popup');
-}
-
-function openNotificationsPopup() {
-  closeAllPopups();
-  showPopup('notifications-popup');
-}
-
-function closeNotificationsPopup() {
-  hidePopup('notifications-popup');
-}
-
-function openLogoutPopup() {
-  closeAllPopups();
-  showPopup('logout-popup');
-}
-
-function closeLogoutPopup() {
-  hidePopup('logout-popup');
-}
-
+// Language, Notifications, Logout popups
+function openLanguagePopup() { closeAllPopups(); showPopup('language-popup'); }
+function closeLanguagePopup() { hidePopup('language-popup'); }
+function openNotificationsPopup() { closeAllPopups(); showPopup('notifications-popup'); }
+function closeNotificationsPopup() { hidePopup('notifications-popup'); }
+function openLogoutPopup() { closeAllPopups(); showPopup('logout-popup'); }
+function closeLogoutPopup() { hidePopup('logout-popup'); }
 function confirmLogout() {
   console.log('User logged out.');
   window.location.href = "/home.html";
@@ -157,7 +199,6 @@ function confirmLogout() {
 function searchClinics() {
   const searchInput = document.getElementById("clinic-search").value.trim();
   const mapIframe = document.getElementById("google-map");
-
   if (searchInput) {
     const query = encodeURIComponent(searchInput);
     mapIframe.src = `https://maps.google.com/maps?q=${query}&output=embed`;
@@ -167,21 +208,19 @@ function searchClinics() {
   }
   logHistory('find_clinic', { query: document.getElementById("clinic-search").value.trim() });
 }
-
 function openFindClinicPopup() {
   const popup = document.getElementById("find-clinic-popup");
   if (popup) {
-    popup.style.display = "flex"; // Show the popup
+    popup.style.display = "flex";
     console.log("Find Clinic Popup opened.");
   } else {
     console.error("Find Clinic Popup not found.");
   }
 }
-
 function closeFindClinicPopup() {
   const popup = document.getElementById("find-clinic-popup");
   if (popup) {
-    popup.style.display = "none"; // Hide the popup
+    popup.style.display = "none";
     console.log("Find Clinic Popup closed.");
   } else {
     console.error("Find Clinic Popup not found.");
@@ -190,14 +229,12 @@ function closeFindClinicPopup() {
 
 // --- Book Visit Popup Functions ---
 function openBookVisitPopup() {
-  closeAllPopups(); // Close other popups
+  closeAllPopups();
   const popup = document.getElementById('book-visit-popup');
   if (popup) {
     popup.style.display = 'block';
   }
 }
-
-// Function to close the booking popup
 function closeBookVisitPopup() {
   const popup = document.getElementById('book-visit-popup');
   if (popup) {
@@ -208,7 +245,6 @@ function closeBookVisitPopup() {
 // --- Booking Form Handling ---
 async function handleBooking(event) {
   event.preventDefault();
-
   const patientName = document.getElementById('name').value.trim();
   const visitDate = document.getElementById('visit-date').value;
   const visitTime = document.getElementById('visit-time').value;
@@ -233,11 +269,10 @@ async function handleBooking(event) {
   };
 
   try {
-    // Insert the appointment into Supabase
     const { data, error } = await window.supabase
       .from('appointments')
       .insert([newAppointment])
-      .select(); // Add .select() to get the inserted row(s)
+      .select();
 
     if (error) throw error;
     const newAppointmentId = data && data[0] && data[0].id;
@@ -245,14 +280,12 @@ async function handleBooking(event) {
   } catch (error) {
     console.error('Error creating appointment:', error);
   }
-  // Close the booking popup
   closeBookVisitPopup();
 }
 
 // --- Add New Appointment ---
 async function addNewAppointment(patient, date, time, type, status = 'Pending') {
   try {
-    // Create a new appointment object
     const newAppointment = {
       patient: patient,
       date: date,
@@ -261,19 +294,12 @@ async function addNewAppointment(patient, date, time, type, status = 'Pending') 
       status: status,
       created_at: new Date().toISOString()
     };
-
-    // Insert the appointment into Supabase
     const { data, error } = await window.supabase
       .from('appointments')
       .insert([newAppointment]);
-    
     if (error) throw error;
-    
     console.log('New appointment added:', data);
-    
-    // Refresh the appointments table
     await populateAppointmentsTable();
-    
   } catch (error) {
     console.error('Error adding appointment:', error);
     alert('Failed to add appointment. Please try again.');
@@ -300,7 +326,6 @@ async function populateUpcomingAppointmentsTable() {
     patientName = document.getElementById('name')?.value || 'John Doe';
   }
 
-  // Fetch all appointments for this patient
   const { data: allAppointments, error } = await window.supabase
     .from('appointments')
     .select('*')
@@ -312,7 +337,6 @@ async function populateUpcomingAppointmentsTable() {
     return;
   }
 
-  // Get today's date in YYYY-MM-DD format
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -359,17 +383,13 @@ async function updateStatus(appointmentId, newStatus) {
       .from('appointments')
       .update({ status: newStatus })
       .eq('id', appointmentId);
-    
+
     if (error) throw error;
-    
+
     console.log(`Appointment ${appointmentId} updated to ${newStatus}`);
-    
-    // Refresh the tables
     await populateAppointmentsTable();
     await populateUpcomingAppointmentsTable();
-    
     alert(`Appointment ${newStatus}`);
-    
   } catch (error) {
     console.error('Error updating appointment:', error);
     alert('Failed to update appointment status. Please try again.');
@@ -401,49 +421,6 @@ async function populateDoctorAppointmentsTable() {
   });
 }
 
-// Profile modal functionality
-const profileLink = document.getElementById('profile-link');
-if (profileLink) {
-  profileLink.addEventListener('click', function (e) {
-    e.preventDefault();
-    openProfileModal();
-  });
-}
-
-const closeProfileButton = document.querySelector('#profile-modal .close');
-if (closeProfileButton) {
-  closeProfileButton.addEventListener('click', closeProfileModal);
-}
-
-// Enable form editing
-const editButton = document.getElementById('edit-btn');
-if (editButton) {
-  editButton.addEventListener('click', function () {
-    toggleForm(true);
-    document.getElementById('file-input-container').style.display = 'block'; // Show file input for profile picture
-  });
-}
-
-// Cancel editing
-const cancelButton = document.getElementById('cancel-btn');
-if (cancelButton) {
-  cancelButton.addEventListener('click', function () {
-    toggleForm(false);
-    document.getElementById('file-input-container').style.display = 'none'; // Hide file input
-  });
-}
-
-// Save changes
-const profileForm = document.getElementById('profile-form');
-if (profileForm) {
-  profileForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    alert('Profile updated!');
-    toggleForm(false);
-    document.getElementById('file-input-container').style.display = 'none'; // Hide file input after saving
-  });
-}
-
 // --- Video Call ---
 function setupVideoCallButtons() {
   document.querySelectorAll('.video-call-button').forEach(button => {
@@ -453,7 +430,6 @@ function setupVideoCallButtons() {
     });
   });
 }
-
 function startVideoCall(type) {
   console.log(`Starting a video call for ${type}...`);
   navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -471,11 +447,7 @@ function startVideoCall(type) {
     });
   logHistory('video_call', { type });
 }
-
-function openVideoCallPopup() {
-  showPopup('video-call-popup');
-}
-
+function openVideoCallPopup() { showPopup('video-call-popup'); }
 function closeVideoCallPopup() {
   hidePopup('video-call-popup');
   if (window.localStream) {
@@ -483,12 +455,10 @@ function closeVideoCallPopup() {
     window.localStream = null;
   }
 }
-
 function endVideoCall() {
   closeVideoCallPopup();
   alert('Video call ended.');
 }
-
 function toggleMute() {
   const stream = window.localStream;
   if (stream) {
@@ -497,7 +467,6 @@ function toggleMute() {
     alert(audioTrack.enabled ? 'Microphone Unmuted' : 'Microphone Muted');
   }
 }
-
 function toggleCamera() {
   const stream = window.localStream;
   if (stream) {
@@ -509,67 +478,23 @@ function toggleCamera() {
 
 // --- DOM Ready ---
 document.addEventListener('DOMContentLoaded', async () => {
-  // DO NOT dynamically load the Supabase script or call initializeSupabase here!
-
   loadCommonHTML(async () => {
     setupVideoCallButtons();
     console.log('Common content loaded and initialized.');
-
-    // Populate tables after Supabase is initialized
     await populateDoctorAppointmentsTable();
     await populateUpcomingAppointmentsTable();
   });
 });
 
-// Function to open the action modal
-window.currentAppointmentId = null;function openModal(appointmentId) {
-  currentAppointmentId = appointmentId;
-  document.getElementById('action-modal').style.display = 'flex';
-  document.getElementById('modal-reschedule-form').style.display = 'none';
-  document.getElementById('modal-title').textContent = 'Are you sure you want to update this appointment?';
-  document.getElementById('confirm-button').style.display = 'inline-block';
-  document.getElementById('reschedule-button').style.display = 'inline-block';
-  document.getElementById('cancel-button').style.display = 'inline-block';
-}
-
-// Function to close the modal
-function closeModal() {
-  document.getElementById('action-modal').style.display = 'none';
-}
-
-// Function to format time from 24-hour to 12-hour format
-function formatTime(time) {
-  const [hours, minutes] = time.split(':');
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
-}
-
-// Function to confirm logout
-async function confirmLogout() {
-  try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    console.log('User logged out.');
-    window.location.href = "/home.html"; // or login page
-  } catch (err) {
-    console.error('Error during logout:', err.message);
-    alert('Failed to log out. Please try again.');
-  }
-}
-
-
-// Real-time updates with Supabase subscriptions
+// --- Real-time updates with Supabase subscriptions ---
 function setupRealtimeUpdates() {
-  // Subscribe to changes in the appointments table
-  const appointmentsSubscription = supabase
+  if (!window.supabase || !window.supabase.channel) return;
+  window.supabase
     .channel('public:appointments')
-    .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'appointments' }, 
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'appointments' },
       async (payload) => {
         console.log('Change received:', payload);
-        // Refresh both tables when appointments are updated
         await populateDoctorAppointmentsTable();
         await populateUpcomingAppointmentsTable();
       }
@@ -577,25 +502,22 @@ function setupRealtimeUpdates() {
     .subscribe();
 }
 
-// Log a user action to the history table in Supabase
+// --- Log a user action to the history table in Supabase ---
 async function logHistory(action, details = {}) {
   if (!window.supabase) {
     console.error('Supabase not initialized');
     return;
   }
-
-  // Try to get user info (if using Supabase Auth)
   let user_id = null;
   let user_email = null;
-  if (supabase.auth && supabase.auth.getUser) {
-    const { data: { user } } = await supabase.auth.getUser();
+  if (window.supabase.auth && window.supabase.auth.getUser) {
+    const { data: { user } } = await window.supabase.auth.getUser();
     if (user) {
       user_id = user.id;
       user_email = user.email;
     }
   }
-
-  const { error } = await supabase
+  const { error } = await window.supabase
     .from('history')
     .insert([{
       user_id,
@@ -604,7 +526,6 @@ async function logHistory(action, details = {}) {
       details,
       timestamp: new Date().toISOString()
     }]);
-
   if (error) {
     console.error('Failed to log history:', error);
   }
