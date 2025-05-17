@@ -79,7 +79,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       if (role === 'doctor') {
         window.location.href = 'doctors/appointments.html';
       } else if (role === 'patient') {
-        window.location.href = 'patients/appointments.html';
+        window.location.href = '/patients/appointments/appointment.html';
       } else {
         alert('Unknown role!');
       }
@@ -144,7 +144,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       if (profile.role === 'doctor') {
         window.location.href = '/doctors/appointments.html';
       } else if (profile.role === 'patient') {
-        window.location.href = '/patients/appointments.html';
+        window.location.href = '/patients/appointments/appointment.html';
       } else {
         alert('Unknown role!');
       }
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (profile.role === 'doctor') {
               window.location.href = '/doctors/appointments.html';
             } else if (profile.role === 'patient') {
-              window.location.href = '/patients/appointments.html';
+              window.location.href = '/patients/appointments/appointment.html';
             }
           }
         });
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (profile.role === 'doctor') {
         window.location.href = '/doctors/appointments.html';
       } else if (profile.role === 'patient') {
-        window.location.href = '/patients/appointments.html';
+        window.location.href = '/patients/appointments/appointment.html';
       } else {
         alert('Unknown role!');
       }
