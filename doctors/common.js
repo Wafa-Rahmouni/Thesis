@@ -48,6 +48,12 @@ function initializeCommonEventListeners() {
   if (profileForm) {
     profileForm.addEventListener('submit', saveProfileChanges);
   }
+
+  // Attach the profile picture upload handler
+  const fileInput = document.getElementById('file-input');
+  if (fileInput) {
+    fileInput.addEventListener('change', handleProfilePicUpload);
+  }
 }
 
 // Utility to add click listeners by ID or selector
@@ -85,7 +91,8 @@ async function loadProfileData() {
 
   if (error || !profile) return;
 
-  document.getElementById('name').value = [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+  document.getElementById('first_name').value = profile.first_name || '';
+  document.getElementById('last_name').value = profile.last_name || '';
   document.getElementById('address').value = profile.address || '';
   document.getElementById('gender').value = profile.gender || '';
   document.getElementById('dob').value = profile.dob || '';
@@ -120,15 +127,10 @@ async function saveProfileChanges(e) {
   const { data: { user } } = await window.supabase.auth.getUser();
   if (!user) return;
 
-  // Parse name into first and last
-  const fullName = document.getElementById('name').value.trim();
-  const [first_name, ...rest] = fullName.split(' ');
-  const last_name = rest.join(' ');
-
-  // Prepare update data
+  // Get values directly from the separate fields
   const updateData = {
-    first_name,
-    last_name,
+    first_name: document.getElementById('first_name').value.trim(),
+    last_name: document.getElementById('last_name').value.trim(),
     address: document.getElementById('address').value,
     gender: document.getElementById('gender').value,
     dob: document.getElementById('dob').value,
@@ -153,6 +155,60 @@ async function saveProfileChanges(e) {
   await loadProfileData();
   toggleForm(false);
   toggleFileInput(false);
+}
+
+// Add this function to handle profile picture upload and update
+async function handleProfilePicUpload(event) {
+  const file = event.target.files[0];
+  if (!file || !window.supabase) return;
+
+  // Get current user
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // Use a unique filename (e.g., user id + timestamp)
+  const fileExt = file.name.split('.').pop();
+  const filePath = `profile-pictures/${user.id}_${Date.now()}.${fileExt}`;
+
+  // Upload to Supabase Storage (bucket: 'avatars')
+  let { error: uploadError } = await window.supabase.storage
+    .from('avatars')
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) {
+    alert('Failed to upload image: ' + uploadError.message);
+    return;
+  }
+
+  // Get the public URL
+  const { data: { publicUrl } } = window.supabase.storage
+    .from('avatars')
+    .getPublicUrl(filePath);
+
+  // Update the profile in Supabase
+  const { error: updateError } = await window.supabase
+    .from('profiles')
+    .update({ profile_picture_url: publicUrl })
+    .eq('id', user.id);
+
+  if (updateError) {
+    alert('Failed to update profile picture: ' + updateError.message);
+    return;
+  }
+
+  // Update the image in the modal immediately
+  document.getElementById('profile-img').src = publicUrl;
+}
+
+// --- Image Preview for Profile Picture ---
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('profile-img').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 // Helpers for enabling/disabling form fields and file input
@@ -190,8 +246,10 @@ function openNotificationsPopup() { closeAllPopups(); showPopup('notifications-p
 function closeNotificationsPopup() { hidePopup('notifications-popup'); }
 function openLogoutPopup() { closeAllPopups(); showPopup('logout-popup'); }
 function closeLogoutPopup() { hidePopup('logout-popup'); }
-function confirmLogout() {
-  console.log('User logged out.');
+async function confirmLogout() {
+  if (window.supabase && window.supabase.auth) {
+    await window.supabase.auth.signOut();
+  }
   window.location.href = "/home.html";
 }
 

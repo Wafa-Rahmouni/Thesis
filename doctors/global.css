@@ -1308,3 +1308,14 @@ background-color: #bbb;
 #find-clinic-popup[style*="display: block"] {
   display: flex !important;
 }
+
+/* Add to your CSS file */
+#profile-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: block;
+  margin: 0 auto;
+}
