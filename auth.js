@@ -311,13 +311,3 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
 });
-
-// --- Logout Handler ---
-const logoutBtn = document.getElementById('logoutBtn'); // Use your logout button's actual ID
-
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async function () {
-    await supabase.auth.signOut();
-    window.location.href = '/home.html'; // or '/' if your home page is index.html
-  });
-}

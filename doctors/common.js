@@ -163,7 +163,7 @@ function closeLogoutPopup() {
 
 function confirmLogout() {
   console.log('User logged out.');
-  window.location.href = '/home.html';
+  window.location.href = "/home.html";
 }
 
 // --- Book Visit ---
