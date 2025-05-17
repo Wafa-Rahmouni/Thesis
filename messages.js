@@ -1,5 +1,3 @@
-// messaging.js (fully fixed and rewritten)
-
 let currentChat = null;
 let isNewMessage = true;
 
@@ -40,27 +38,22 @@ document.getElementById('chat-send-btn').onclick = async function () {
       return;
     }
 
-    console.log('Looking for recipient:', recipientInput);
-
-    // Email match (case-insensitive)
-    let { data: emailProfile, error: emailError } = await window.supabase
+    // Try to find recipient by email
+    let { data: emailProfile } = await window.supabase
       .from('profiles')
       .select('id, first_name, last_name, email, profile_picture_url')
       .ilike('email', recipientInput.toLowerCase())
       .maybeSingle();
 
-    console.log('Email profile result:', emailProfile, emailError);
-
     let recipientProfile = emailProfile;
 
+    // If not found by email, try by name
     if (!recipientProfile) {
-      const { data: nameMatches, error: nameError } = await window.supabase
+      const { data: nameMatches } = await window.supabase
         .from('profiles')
         .select('id, first_name, last_name, email, profile_picture_url')
         .or(`first_name.ilike.%${recipientInput}%,last_name.ilike.%${recipientInput}%`)
         .limit(2);
-
-      console.log('Name matches result:', nameMatches, nameError);
 
       if (nameMatches && nameMatches.length === 1) {
         recipientProfile = nameMatches[0];
@@ -126,6 +119,7 @@ document.getElementById('chat-send-btn').onclick = async function () {
   }
 };
 
+// Load conversation and render chat bubbles
 async function loadConversation(chat) {
   const { data: { user } } = await window.supabase.auth.getUser();
   const { data: convoMsgs } = await window.supabase
@@ -134,65 +128,26 @@ async function loadConversation(chat) {
     .or(`and(user_id.eq.${user.id},recipient_id.eq.${chat.recipient_id}),and(user_id.eq.${chat.recipient_id},recipient_id.eq.${user.id})`)
     .order('date', { ascending: true });
 
-  const unreadIds = (convoMsgs || []).filter(msg => msg.user_id !== user.id && msg.status === 'Unread').map(msg => msg.id);
-  if (unreadIds.length > 0) {
-    await window.supabase.from('messages').update({ status: 'Read' }).in('id', unreadIds);
-    if (window.reloadMessages) window.reloadMessages();
-  }
-
   const chatBody = document.getElementById("chat-conversation-body");
   chatBody.innerHTML = "";
-  chatBody.style.display = "flex";
-  chatBody.style.flexDirection = "column";
-  chatBody.style.gap = "5px";
-  chatBody.style.overflowY = "auto";
-  chatBody.style.maxHeight = "400px";
-  chatBody.style.padding = "10px";
 
   (convoMsgs || []).forEach(msg => {
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble ' + (msg.user_id === user.id ? 'chat-bubble-right' : 'chat-bubble-left');
-    bubble.style.maxWidth = '70%';
-    bubble.style.padding = '10px 15px';
-    bubble.style.margin = '5px 10px';
-    bubble.style.borderRadius = '20px';
-    bubble.style.display = 'inline-block';
-    bubble.style.position = 'relative';
-    bubble.style.fontSize = '14px';
-    bubble.style.lineHeight = '1.4';
-    bubble.style.wordWrap = 'break-word';
-
-    if (msg.user_id === user.id) {
-      // Sender (right bubble)
-      bubble.style.backgroundColor = '#007bff';
-      bubble.style.color = '#fff';
-      bubble.style.borderBottomRightRadius = '0';
-      bubble.style.marginLeft = 'auto';
-      bubble.style.marginRight = '10px';
-    } else {
-      // Recipient (left bubble)
-      bubble.style.backgroundColor = '#e5e5ea';
-      bubble.style.color = '#000';
-      bubble.style.borderBottomLeftRadius = '0';
-      bubble.style.marginRight = 'auto';
-      bubble.style.marginLeft = '10px';
-    }
-
     bubble.innerHTML = `
       <div>${msg.content}</div>
-      <div style="font-size:11px; color:#aaa; margin-top:4px;">
+      <div class="chat-bubble-meta">
         ${msg.user_id === user.id ? 'You' : chat.recipient_name} • 
         ${new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         ${msg.user_id === user.id ? `<span style="margin-left:8px; font-size:11px; color:${msg.status === 'Read' ? '#38DB7C' : '#888'}">${msg.status}</span>` : ''}
       </div>`;
-
     chatBody.appendChild(bubble);
   });
 
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-
+// Attach handlers to "View" buttons and mark unread as read before loading conversation
 function attachViewHandlers(data) {
   document.querySelectorAll('button[data-message-id]').forEach(btn => {
     btn.onclick = async function () {
@@ -231,11 +186,32 @@ function attachViewHandlers(data) {
       document.getElementById('chat-modal').style.display = 'flex';
       document.getElementById('chat-reply').value = '';
 
+      // Mark all unread messages as read BEFORE loading the conversation
+      const { data: unreadMsgs } = await window.supabase
+        .from('messages')
+        .select('id')
+        .eq('recipient_id', user.id)
+        .eq('status', 'Unread')
+        .eq('subject', message.subject)
+        .eq('user_id', otherUserId);
+
+      if (unreadMsgs && unreadMsgs.length > 0) {
+        const unreadIds = unreadMsgs.map(m => m.id);
+        await window.supabase
+          .from('messages')
+          .update({ status: 'Read' })
+          .in('id', unreadIds);
+      }
+
+      // 1. Reload the table (so status changes in the list)
+      if (window.reloadMessages) await window.reloadMessages();
+      // 2. Load the conversation (so status changes in the chat)
       await loadConversation(currentChat);
     };
   });
 }
 
+// Load messages table
 async function loadMessages() {
   const tableBody = document.getElementById('messages-table-body');
   tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
@@ -280,6 +256,7 @@ async function loadMessages() {
 window.reloadMessages = loadMessages;
 document.addEventListener('DOMContentLoaded', loadMessages);
 
+// Recipient autocomplete
 document.getElementById('chat-recipient').addEventListener('input', async function () {
   const query = this.value.trim();
   const datalist = document.getElementById('recipient-suggestions');
