@@ -169,6 +169,114 @@
     .close:hover {
       background-color: #999;
     }
+
+    /* --- Message Modal Enhanced Styles --- */
+.message-modal-content {
+  max-width: 500px;
+  padding: 30px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(26, 115, 232, 0.12);
+}
+
+.message-modal-content h3 {
+  margin-bottom: 10px;
+  color: #1a73e8;
+  font-size: 22px;
+}
+
+.message-meta {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+#view-message-sender {
+  font-weight: 600;
+  color: #1a73e8;
+}
+
+#view-message-date {
+  font-size: 13px;
+  color: #888;
+}
+
+#view-message-status {
+  font-size: 13px;
+  color: #38DB7C;
+  background: #e6f9f0;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font-weight: 500;
+}
+
+.message-content-box {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 16px;
+  min-height: 80px;
+  margin-bottom: 18px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 15px;
+  color: #222;
+}
+
+.reply-label {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* --- Chat Conversation Styles --- */
+.chat-conversation-body {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 18px 12px 18px 12px;
+  min-height: 120px;
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.chat-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  position: relative;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(56,219,124,0.07);
+}
+
+.chat-bubble-left {
+  align-self: flex-start;
+  background: #fff;
+  color: #222;
+  border-bottom-left-radius: 6px;
+}
+
+.chat-bubble-right {
+  align-self: flex-end;
+  background: #38DB7C;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.chat-bubble-meta {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  text-align: right;
+}
   </style>
 </head>
 <body>
@@ -197,119 +305,266 @@
         </tr>
       </thead>
       <tbody id="messages-table-body">
-        <!-- Sample Data Rows -->
-        <tr>
-          <td>MSG-001</td>
-          <td>John Doe</td>
-          <td>Question about Toothache</td>
-          <td>2025-05-05</td>
-          <td>Unread</td>
-          <td><button onclick="showMessageModal(1)">View</button></td>
-        </tr>
-        <tr>
-          <td>MSG-002</td>
-          <td>Jane Smith</td>
-          <td>Prescription Follow-up</td>
-          <td>2025-04-28</td>
-          <td>Read</td>
-          <td><button onclick="showMessageModal(2)">View</button></td>
-        </tr>
+        <!-- Messages will be loaded here dynamically -->
       </tbody>
     </table>
   </div>
 
-  <!-- Send Message Modal -->
+  <!-- Message Modals -->
   <div class="modal" id="send-message-modal">
     <div class="modal-content">
       <h3>Send New Message</h3>
       <label for="recipient">Recipient</label>
-      <input type="text" id="recipient" placeholder="Enter recipient's name" />
+      <input type="text" id="recipient" placeholder="Enter recipient's name" autocomplete="off" />
+      <!-- The datalist will be added dynamically -->
       <label for="subject">Subject</label>
       <input type="text" id="subject" placeholder="Enter message subject" />
       <label for="message-body">Message</label>
       <textarea id="message-body" placeholder="Write your message here..." rows="4"></textarea>
       <div class="action-buttons">
-        <button onclick="sendMessage()">Send</button>
-        <button class="close" onclick="closeSendMessageModal()">Close</button>
+        <button id="send-message-btn">Send</button>
+        <button class="close" id="close-send-message-btn">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Message Viewing Modal -->
   <div class="modal" id="message-modal">
-    <div class="modal-content">
-      <h3>View Message</h3>
-      <p id="message-content">Here will be the message content...</p>
-      <textarea id="reply-message" placeholder="Write your reply here..." rows="4" style="width: 100%;"></textarea>
+    <div class="modal-content message-modal-content">
+      <h3 id="view-message-subject">Conversation</h3>
+      <div class="message-meta">
+        <span id="view-message-sender"></span>
+        <span id="view-message-date"></span>
+        <span id="view-message-status"></span>
+      </div>
+      <div id="chat-conversation-body" class="chat-conversation-body"></div>
+      <label for="reply-message" class="reply-label">Reply:</label>
+      <textarea id="reply-message" placeholder="Write your reply here..." rows="3"></textarea>
       <div class="action-buttons">
-        <button onclick="sendReply()">Send Reply</button>
-        <button class="close" onclick="closeMessageModal()">Close</button>
+        <button id="send-reply-btn">Send Reply</button>
+        <button class="close" id="close-message-btn">Close</button>
       </div>
     </div>
   </div>
 
   <!-- JS -->
   <script>
-    // Function to open the Send Message modal
-    function openSendMessageModal() {
-      var modal = document.getElementById("send-message-modal");
-      modal.style.display = "flex";
-    }
+    // Encapsulate message modal logic to avoid polluting global scope
+    document.addEventListener('DOMContentLoaded', function () {
+      // Send Message Modal
+      const sendMessageModal = document.getElementById("send-message-modal");
+      const openSendMessageBtn = document.querySelector(".new-message-button");
+      const closeSendMessageBtn = document.getElementById("close-send-message-btn");
+      const sendMsgBtn = document.getElementById("send-message-btn");
 
-    // Function to close the Send Message modal
-    function closeSendMessageModal() {
-      var modal = document.getElementById("send-message-modal");
-      modal.style.display = "none";
-    }
-
-    // Function to send a new message
-    function sendMessage() {
-      var recipient = document.getElementById("recipient").value;
-      var subject = document.getElementById("subject").value;
-      var messageBody = document.getElementById("message-body").value;
-
-      if (!recipient || !subject || !messageBody) {
-        alert("Please fill in all fields before sending the message.");
-        return;
+      if (openSendMessageBtn) {
+        openSendMessageBtn.addEventListener("click", () => {
+          sendMessageModal.style.display = "flex";
+        });
+      }
+      if (closeSendMessageBtn) {
+        closeSendMessageBtn.addEventListener("click", () => {
+          sendMessageModal.style.display = "none";
+        });
+      }
+      if (sendMsgBtn) {
+        sendMsgBtn.addEventListener("click", async () => {
+          const recipient = document.getElementById("recipient").value;
+          const subject = document.getElementById("subject").value;
+          const messageBody = document.getElementById("message-body").value;
+          if (!recipient || !subject || !messageBody) {
+            alert("Please fill in all fields before sending the message.");
+            return;
+          }
+          // Insert into Supabase
+          const { data: { user } } = await window.supabase.auth.getUser();
+          await window.supabase
+            .from('messages')
+            .insert([{
+              user_id: user.id,
+              patient_name: recipient,
+              subject: subject,
+              content: messageBody,
+              date: new Date().toISOString(),
+              status: 'Unread'
+            }]);
+          alert("Message sent to " + recipient + " with subject: " + subject);
+          sendMessageModal.style.display = "none";
+          if (window.reloadMessages) window.reloadMessages();
+        });
       }
 
-      alert("Message sent to " + recipient + " with subject: " + subject);
-      closeSendMessageModal();
-    }
+      // View Message Modal
+      const messageModal = document.getElementById("message-modal");
+      const closeMessageBtn = document.getElementById("close-message-btn");
+      const sendReplyBtn = document.getElementById("send-reply-btn");
 
-    // Function to show the modal for viewing a message
-    function showMessageModal(messageId) {
-      var modal = document.getElementById("message-modal");
-      document.getElementById("message-content").innerText = "This is the content of message ID " + messageId;
-      modal.style.display = "flex";
-    }
+      // Store current conversation context
+      let currentConversation = {};
 
-    // Function to close the message modal
-    function closeMessageModal() {
-      var modal = document.getElementById("message-modal");
-      modal.style.display = "none";
-    }
+      // Attach to all "View" buttons in the table
+      function attachViewHandlers(data) {
+        document.querySelectorAll('button[data-message-id]').forEach(btn => {
+          btn.addEventListener('click', async function () {
+            const messageId = btn.getAttribute('data-message-id');
+            const message = data.find(m => m.id == messageId);
+            if (!message) return;
 
-    // Function to send a reply to a message
-    function sendReply() {
-      var replyContent = document.getElementById("reply-message").value;
-      alert("Your reply has been sent: " + replyContent);
-      closeMessageModal();
-    }
-  </script>
-  <!-- Supabase library from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Your Supabase client initializer -->
-<script src="/supabaseClient.js"></script>
-  <script src="/doctors/scripts.js"></script>
-  <script src="/doctors/common.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCommonHTML(() => {
-        console.log('Common content loaded and initialized.');
-        initializeCommonEventListeners(); // Reinitialize event listeners
-      });
+            // Store context for reply
+            currentConversation = {
+              patient_name: message.patient_name,
+              subject: message.subject
+            };
+
+            // Fetch all messages in the conversation (by patient_name and subject)
+            const { data: convoMsgs } = await window.supabase
+              .from('messages')
+              .select('*')
+              .eq('patient_name', message.patient_name)
+              .eq('subject', message.subject)
+              .order('date', { ascending: true });
+
+            // Mark all unread messages as read (not sent by current user)
+            const { data: { user } } = await window.supabase.auth.getUser();
+            const unreadIds = (convoMsgs || [])
+              .filter(msg => msg.user_id !== user.id && msg.status === 'Unread')
+              .map(msg => msg.id);
+
+            if (unreadIds.length > 0) {
+              await window.supabase
+                .from('messages')
+                .update({ status: 'Read' })
+                .in('id', unreadIds);
+              convoMsgs.forEach(msg => {
+                if (unreadIds.includes(msg.id)) msg.status = 'Read';
+              });
+              if (window.reloadMessages) window.reloadMessages();
+            }
+
+            // Render chat bubbles
+            const chatBody = document.getElementById("chat-conversation-body");
+            chatBody.innerHTML = "";
+            (convoMsgs || []).forEach(msg => {
+              const bubble = document.createElement('div');
+              bubble.className = 'chat-bubble ' + (msg.user_id === user.id ? 'chat-bubble-right' : 'chat-bubble-left');
+              bubble.innerHTML = `
+                <div>${msg.content}</div>
+                <div class="chat-bubble-meta">
+                  ${msg.user_id === user.id ? 'You' : msg.patient_name}
+                  • ${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  ${msg.user_id === user.id ? `<span style="margin-left:8px;font-size:11px;color:${msg.status === 'Read' ? '#38DB7C' : '#888'}">${msg.status}</span>` : ''}
+                </div>
+              `;
+              chatBody.appendChild(bubble);
+            });
+
+            // Fill header info
+            document.getElementById("view-message-subject").innerText = message.subject || "Conversation";
+            document.getElementById("view-message-sender").innerText = message.patient_name || "";
+            document.getElementById("view-message-date").innerText = message.date ? new Date(message.date).toLocaleString() : "";
+            document.getElementById("view-message-status").innerText = message.status || "";
+
+            document.getElementById("reply-message").value = "";
+            document.getElementById("message-modal").style.display = "flex";
+            chatBody.scrollTop = chatBody.scrollHeight;
+          });
+        });
+      }
+
+      // Reply logic: store reply and reload conversation
+      if (sendReplyBtn) {
+        sendReplyBtn.addEventListener("click", async () => {
+          const replyContent = document.getElementById("reply-message").value.trim();
+          if (!replyContent) {
+            alert("Please enter a reply.");
+            return;
+          }
+          const { data: { user } } = await window.supabase.auth.getUser();
+          await window.supabase
+            .from('messages')
+            .insert([{
+              user_id: user.id,
+              patient_name: currentConversation.patient_name,
+              subject: currentConversation.subject,
+              content: replyContent,
+              date: new Date().toISOString(),
+              status: 'Unread'
+            }]);
+          document.getElementById("reply-message").value = "";
+          // Reload the conversation in the modal
+          // Simulate clicking the last opened "View" button
+          document.querySelectorAll('button[data-message-id]').forEach(btn => {
+            if (btn.getAttribute('data-message-id') === currentConversation.lastMessageId) {
+              btn.click();
+            }
+          });
+          if (window.reloadMessages) window.reloadMessages();
+        });
+      }
+
+      if (closeMessageBtn) {
+        closeMessageBtn.addEventListener("click", () => {
+          messageModal.style.display = "none";
+        });
+      }
+
+      // Expose for table reload
+      window.attachViewHandlers = attachViewHandlers;
     });
+  </script>
+
+  <!-- Supabase and app scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabaseClient.js"></script>
+  <script src="./doctors/scripts.js"></script>
+  <script src="./doctors/common.js"></script>
+  <script>
+document.addEventListener('DOMContentLoaded', async function () {
+  // Fetch and display messages from Supabase
+  async function loadMessages() {
+    const tableBody = document.getElementById('messages-table-body');
+    tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+
+    const { data, error } = await window.supabase
+      .from('messages')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      tableBody.innerHTML = `<tr><td colspan="6">Failed to load messages.</td></tr>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="6">No messages found.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = '';
+    data.forEach(msg => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${msg.id}</td>
+        <td>${msg.patient_name}</td>
+        <td>${msg.subject}</td>
+        <td>${msg.date ? new Date(msg.date).toLocaleDateString() : ''}</td>
+        <td style="color:${msg.status === 'Unread' ? '#e53935' : '#38DB7C'};font-weight:600;">
+          ${msg.status}
+        </td>
+        <td><button data-message-id="${msg.id}">View</button></td>
+      `;
+      tableBody.appendChild(tr);
+    });
+
+    // Attach modal openers for new buttons
+    window.attachViewHandlers(data);
+  }
+
+  // Call on page load
+  loadMessages();
+
+  // Optionally, reload messages after sending/replying
+  window.reloadMessages = loadMessages;
+});
   </script>
 </body>
 </html>

@@ -77,6 +77,28 @@ async function openProfileModal() {
   await loadProfileData();
 }
 
+// Close the profile modal
+function closeProfileModal() {
+  hidePopup('profile-modal');
+}
+
+// Expose modal functions globally for inline HTML onclick handlers (safe)
+if (typeof openProfileModal === "function") window.openProfileModal = openProfileModal;
+if (typeof closeProfileModal === "function") window.closeProfileModal = closeProfileModal;
+
+// Expose other popup/modal functions if needed
+if (typeof openLanguagePopup === "function") window.openLanguagePopup = openLanguagePopup;
+if (typeof closeLanguagePopup === "function") window.closeLanguagePopup = closeLanguagePopup;
+if (typeof openNotificationsPopup === "function") window.openNotificationsPopup = openNotificationsPopup;
+if (typeof closeNotificationsPopup === "function") window.closeNotificationsPopup = closeNotificationsPopup;
+if (typeof openLogoutPopup === "function") window.openLogoutPopup = openLogoutPopup;
+if (typeof closeLogoutPopup === "function") window.closeLogoutPopup = closeLogoutPopup;
+if (typeof confirmLogout === "function") window.confirmLogout = confirmLogout;
+if (typeof openBookVisitPopup === "function") window.openBookVisitPopup = openBookVisitPopup;
+if (typeof closeBookVisitPopup === "function") window.closeBookVisitPopup = closeBookVisitPopup;
+if (typeof openFindClinicPopup === "function") window.openFindClinicPopup = openFindClinicPopup;
+if (typeof closeFindClinicPopup === "function") window.closeFindClinicPopup = closeFindClinicPopup;
+
 // Load profile data from Supabase and fill the form
 async function loadProfileData() {
   if (!window.supabase) return;
@@ -588,3 +610,59 @@ async function logHistory(action, details = {}) {
     console.error('Failed to log history:', error);
   }
 }
+
+// --- Profile Modal ---
+function closeProfileModal() {
+  hidePopup('profile-modal');
+}
+
+// Expose modal functions globally for inline HTML onclick handlers
+window.closeProfileModal = closeProfileModal;
+window.openProfileModal = openProfileModal;
+// Add any other modal functions used in onclick attributes
+
+// --- Recipient Autocomplete for Messages ---
+async function setupRecipientAutocomplete() {
+  const recipientInput = document.getElementById('recipient');
+  if (!recipientInput) return;
+
+  // Create datalist if not present
+  let dataList = document.getElementById('recipient-suggestions');
+  if (!dataList) {
+    dataList = document.createElement('datalist');
+    dataList.id = 'recipient-suggestions';
+    recipientInput.setAttribute('list', 'recipient-suggestions');
+    recipientInput.parentNode.insertBefore(dataList, recipientInput.nextSibling);
+  }
+
+  recipientInput.addEventListener('input', async function () {
+    const query = recipientInput.value.trim();
+    if (query.length < 2) {
+      dataList.innerHTML = '';
+      return;
+    }
+    // Fetch matching profiles from Supabase
+    const { data, error } = await window.supabase
+      .from('profiles')
+      .select('first_name, last_name, email')
+      .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+      .limit(10);
+
+    if (error) {
+      dataList.innerHTML = '';
+      return;
+    }
+
+    // Populate datalist with suggestions
+    dataList.innerHTML = '';
+    data.forEach(profile => {
+      const option = document.createElement('option');
+      option.value = `${profile.first_name} ${profile.last_name}`.trim();
+      option.label = profile.email;
+      dataList.appendChild(option);
+    });
+  });
+}
+
+// Call this after DOM is ready
+document.addEventListener('DOMContentLoaded', setupRecipientAutocomplete);

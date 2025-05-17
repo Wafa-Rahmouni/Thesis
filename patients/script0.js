@@ -91,49 +91,6 @@ function initializeCommonEventListeners() {
   if (confirmLogoutButton) {
     confirmLogoutButton.addEventListener('click', confirmLogout);
   }
-
-  // Profile modal functionality
-  const profileLink = document.getElementById('profile-link');
-  if (profileLink) {
-    profileLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.getElementById('profile-modal').style.display = 'flex';
-    });
-  }
-
-  const closeProfileButton = document.querySelector('#profile-modal .close');
-  if (closeProfileButton) {
-    closeProfileButton.addEventListener('click', closeProfileModal);
-  }
-
-  // Enable form editing
-  const editButton = document.getElementById('edit-btn');
-  if (editButton) {
-    editButton.addEventListener('click', function () {
-      toggleForm(true);
-      document.getElementById('file-input-container').style.display = 'block'; // Show file input for profile picture
-    });
-  }
-
-  // Cancel editing
-  const cancelButton = document.getElementById('cancel-btn');
-  if (cancelButton) {
-    cancelButton.addEventListener('click', function () {
-      toggleForm(false);
-      document.getElementById('file-input-container').style.display = 'none'; // Hide file input
-    });
-  }
-
-  // Save changes
-  const profileForm = document.getElementById('profile-form');
-  if (profileForm) {
-    profileForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      alert('Profile updated!');
-      toggleForm(false);
-      document.getElementById('file-input-container').style.display = 'none'; // Hide file input after saving
-    });
-  }
 }
 
 // Language popup functions
@@ -206,25 +163,6 @@ function confirmLogout() {
   console.log('User logged out.');
   // Redirect to the login page or perform logout logic
   window.location.href = '/login.html'; // Adjust the path to your login page
-}
-
-// Profile modal functions
-function closeProfileModal() {
-  const profileModal = document.getElementById('profile-modal');
-  if (profileModal) {
-    profileModal.style.display = 'none';
-    toggleForm(false); // Reset form if closed during editing
-  }
-}
-
-function toggleForm(editable) {
-  const form = document.getElementById('profile-form');
-  const fields = form.querySelectorAll('input, select');
-  fields.forEach(input => (input.disabled = !editable));
-
-  document.getElementById('edit-btn').style.display = editable ? 'none' : 'inline-block';
-  document.getElementById('save-btn').style.display = editable ? 'inline-block' : 'none';
-  document.getElementById('cancel-btn').style.display = editable ? 'inline-block' : 'none';
 }
 
 // Switch language function (optional)
