@@ -564,17 +564,17 @@ document.getElementById('chat-send-btn').onclick = async function() {
     // Try exact email match first
     let { data: recipientProfile } = await window.supabase
       .from('profiles')
-      .select('id, full_name, profile_pic_url, email')
+      .select('id, first_name, last_name, profile_pic_url, email')
       .eq('email', recipientInput)
       .maybeSingle();
 
-    // If not found, try full_name or phone (case-insensitive, partial match)
+    // If not found, try first_name or last_name (case-insensitive, partial match)
     if (!recipientProfile) {
       const { data } = await window.supabase
         .from('profiles')
-        .select('id, full_name, profile_pic_url, email')
+        .select('id, first_name, last_name, profile_pic_url, email')
         .or(
-          `full_name.ilike.%${recipientInput}%,phone.ilike.%${recipientInput}%`
+          `first_name.ilike.%${recipientInput}%,last_name.ilike.%${recipientInput}%`
         )
         .maybeSingle();
       recipientProfile = data;
@@ -602,7 +602,9 @@ document.getElementById('chat-send-btn').onclick = async function() {
       subject: subject,
       recipient_email: recipientProfile.email,
       recipient_pic: recipientProfile.profile_pic_url || '/default-avatar.png',
-      recipient_name: recipientProfile.full_name || recipientProfile.email
+      recipient_name: (recipientProfile.first_name && recipientProfile.last_name)
+  ? `${recipientProfile.first_name} ${recipientProfile.last_name}`
+  : (recipientProfile.email || "Unknown")
     };
     document.getElementById('chat-fields').style.display = 'none';
     document.getElementById('chat-recipient').disabled = true;
@@ -772,7 +774,7 @@ document.getElementById('chat-recipient').addEventListener('input', async functi
   // Search by email, name, or phone (case-insensitive)
   const { data: matches } = await window.supabase
     .from('profiles')
-    .select('id, full_name, email, phone')
+    .select('id, first_name, last_name, email, phone')
     .or(`email.ilike.%${query}%,full_name.ilike.%${query}%,phone.ilike.%${query}%`)
     .limit(10);
   (matches || []).forEach(profile => {
