@@ -377,11 +377,24 @@
           }
           // Insert into Supabase
           const { data: { user } } = await window.supabase.auth.getUser();
+          // Example: look up recipient by email (adjust as needed)
+          const { data: recipientProfile } = await window.supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', recipient) // or use another unique field
+            .single();
+
+          if (!recipientProfile) {
+            alert("Recipient not found.");
+            return;
+          }
+
           await window.supabase
             .from('messages')
             .insert([{
               user_id: user.id,
-              patient_name: recipient,
+              recipient_id: recipientProfile.id,
+              patient_name: recipient, // or recipientProfile.name
               subject: subject,
               content: messageBody,
               date: new Date().toISOString(),
@@ -419,7 +432,7 @@
             const { data: convoMsgs } = await window.supabase
               .from('messages')
               .select('*')
-              .eq('patient_name', message.patient_name)
+              .or(`and(user_id.eq.${user.id},recipient_id.eq.${recipientId}),and(user_id.eq.${recipientId},recipient_id.eq.${user.id})`)
               .eq('subject', message.subject)
               .order('date', { ascending: true });
 
