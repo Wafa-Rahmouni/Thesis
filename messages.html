@@ -554,18 +554,32 @@ document.getElementById('chat-send-btn').onclick = async function() {
 
   // New message mode
   if (isNewMessage) {
-    const recipientInput = document.getElementById('chat-recipient').value.trim();
+    const recipientInput = document.getElementById('chat-recipient').value.trim().toLowerCase();
     const subject = document.getElementById('chat-subject').value.trim();
     if (!recipientInput || !subject) {
       alert('Please fill in recipient and subject.');
       return;
     }
-    // Look up recipient by email, full_name, or phone
-    const { data: recipientProfile } = await window.supabase
+
+    // Try exact email match first
+    let { data: recipientProfile } = await window.supabase
       .from('profiles')
       .select('id, full_name, profile_pic_url, email')
-      .or(`email.eq.${recipientInput},full_name.eq.${recipientInput},phone.eq.${recipientInput}`)
+      .eq('email', recipientInput)
       .maybeSingle();
+
+    // If not found, try full_name or phone (case-insensitive, partial match)
+    if (!recipientProfile) {
+      const { data } = await window.supabase
+        .from('profiles')
+        .select('id, full_name, profile_pic_url, email')
+        .or(
+          `full_name.ilike.%${recipientInput}%,phone.ilike.%${recipientInput}%`
+        )
+        .maybeSingle();
+      recipientProfile = data;
+    }
+
     if (!recipientProfile) {
       alert('Recipient not found.');
       return;
