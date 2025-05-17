@@ -1,3 +1,4 @@
+// No Supabase initialization here; use window.supabase from supabaseClient.js
 function formatDetails(details, action = '') {
   if (action === 'booking' && typeof details === 'object' && details.appointment_id) {
     return `Booking ID: <b>${details.appointment_id}</b>`;
@@ -18,7 +19,7 @@ async function renderHistory() {
   const tableBody = document.getElementById('history-table-body');
   if (!window.supabase || !tableBody) return;
 
-  const { data: logs, error } = await supabase
+  const { data: logs, error } = await window.supabase
     .from('history')
     .select('*')
     .order('timestamp', { ascending: false });

@@ -1,6 +1,6 @@
 async function getCurrentUser() {
-  if (window.supabase && supabase.auth && supabase.auth.getUser) {
-    const { data: { user } } = await supabase.auth.getUser();
+  if (window.supabase && window.supabase.auth && window.supabase.auth.getUser) {
+    const { data: { user } } = await window.supabase.auth.getUser();
     if (user) return { user_id: user.id, user_email: user.email };
   }
   return { user_id: null, user_email: null };
@@ -16,7 +16,7 @@ async function renderReminders() {
     return;
   }
 
-  const { data: reminders, error } = await supabase
+  const { data: reminders, error } = await window.supabase
     .from('reminders')
     .select('*')
     .eq('user_email', user_email)
@@ -47,7 +47,7 @@ async function addReminder() {
     alert('Please fill all fields and make sure you are logged in.');
     return;
   }
-  const { error } = await supabase
+  const { error } = await window.supabase
     .from('reminders')
     .insert([{ user_id, user_email, title, date, time }]);
   if (error) {

@@ -1,3 +1,7 @@
+// --- No Supabase Initialization Here ---
+// (Supabase is initialized globally in supabaseClient.js, do not re-initialize here)
+
+// Tab navigation logic
 const tabButtons = document.querySelectorAll(".tab-button");
 
 // Map tab keys to full paths (from project root)
@@ -35,17 +39,13 @@ tabButtons.forEach(button => {
 
 // Load common HTML
 function loadCommonHTML(callback) {
-  fetch('/doctors/common.html') // Adjust the path to `common.html` as needed
+  fetch('/doctors/common.html')
     .then(response => response.text())
     .then(data => {
       const commonContainer = document.getElementById('common-container');
       if (commonContainer) {
         commonContainer.innerHTML = data;
-
-        // Reinitialize event listeners for dynamically loaded content
         initializeCommonEventListeners();
-
-        // Execute the callback after the common content is loaded
         if (callback) callback();
       }
     })

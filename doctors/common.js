@@ -1,18 +1,5 @@
-// --- Initialize Supabase ---
-const SUPABASE_URL = 'https://maxavwnmszjyhahhgbzw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1heGF2d25tc3pqeWhhaGhnYnp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMTY4NTgsImV4cCI6MjA2Mjg5Mjg1OH0.Kxo53BVFW2r9G9GX4hqVTS2vEV-YkUb15xcIN2T7RsI';
-
-// Initialize the Supabase client
-window.supabase = window.supabase || null;
-// Function to initialize Supabase
-function initializeSupabase() {
-  if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase initialized');
-  } else {
-    console.error('Supabase library not loaded!');
-  }
-}
+// --- Remove Supabase Initialization ---
+// (Supabase is now initialized globally in supabaseClient.js, do not re-initialize here)
 
 // --- Load Common HTML ---
 function loadCommonHTML(callback) {
@@ -247,7 +234,7 @@ async function handleBooking(event) {
 
   try {
     // Insert the appointment into Supabase
-    const { data, error } = await supabase
+    const { data, error } = await window.supabase
       .from('appointments')
       .insert([newAppointment])
       .select(); // Add .select() to get the inserted row(s)
@@ -258,10 +245,9 @@ async function handleBooking(event) {
   } catch (error) {
     console.error('Error creating appointment:', error);
   }
-    // Close the booking popup
+  // Close the booking popup
   closeBookVisitPopup();
 }
-
 
 // --- Add New Appointment ---
 async function addNewAppointment(patient, date, time, type, status = 'Pending') {
@@ -277,7 +263,7 @@ async function addNewAppointment(patient, date, time, type, status = 'Pending') 
     };
 
     // Insert the appointment into Supabase
-    const { data, error } = await supabase
+    const { data, error } = await window.supabase
       .from('appointments')
       .insert([newAppointment]);
     
@@ -304,8 +290,8 @@ async function populateUpcomingAppointmentsTable() {
   if (pastTableBody) pastTableBody.innerHTML = '';
 
   let patientName = '';
-  if (supabase.auth && supabase.auth.getUser) {
-    const { data: { user } } = await supabase.auth.getUser();
+  if (window.supabase.auth && window.supabase.auth.getUser) {
+    const { data: { user } } = await window.supabase.auth.getUser();
     if (user) {
       patientName = user.user_metadata?.full_name || user.email;
     }
@@ -315,7 +301,7 @@ async function populateUpcomingAppointmentsTable() {
   }
 
   // Fetch all appointments for this patient
-  const { data: allAppointments, error } = await supabase
+  const { data: allAppointments, error } = await window.supabase
     .from('appointments')
     .select('*')
     .eq('patient', patientName)
@@ -369,7 +355,7 @@ async function populateUpcomingAppointmentsTable() {
 // --- Update Appointment Status ---
 async function updateStatus(appointmentId, newStatus) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await window.supabase
       .from('appointments')
       .update({ status: newStatus })
       .eq('id', appointmentId);
@@ -390,84 +376,12 @@ async function updateStatus(appointmentId, newStatus) {
   }
 }
 
-// --- Populate Upcoming Appointments Table ---
-async function populateUpcomingAppointmentsTable() {
-  const upcomingTableBody = document.getElementById('upcoming-table-body');
-  if (!upcomingTableBody) return;
-  upcomingTableBody.innerHTML = '';
-
-  const pastTableBody = document.getElementById('past-table-body');
-  if (pastTableBody) pastTableBody.innerHTML = '';
-
-  let patientName = '';
-  if (supabase.auth && supabase.auth.getUser) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      patientName = user.user_metadata?.full_name || user.email;
-    }
-  }
-  if (!patientName) {
-    patientName = document.getElementById('name')?.value || 'John Doe';
-  }
-
-  // Fetch all appointments for this patient
-  const { data: allAppointments, error } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('patient', patientName)
-    .order('date', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching patient appointments:', error);
-    return;
-  }
-
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  let hasUpcoming = false;
-  let hasPast = false;
-
-  allAppointments.forEach(appointment => {
-    const appointmentDate = new Date(appointment.date);
-    appointmentDate.setHours(0, 0, 0, 0);
-
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${appointment.date}</td>
-      <td>${appointment.time}</td>
-      <td>${appointment.type}</td>
-      <td>${appointment.clinic}</td>
-      <td>${appointment.reason}</td>
-      <td>${appointment.status}</td>
-    `;
-
-    if (appointmentDate >= today && appointment.status.toLowerCase() === 'upcoming') {
-      upcomingTableBody.appendChild(row);
-      hasUpcoming = true;
-    } else {
-      if (pastTableBody) {
-        pastTableBody.appendChild(row);
-        hasPast = true;
-      }
-    }
-  });
-
-  if (!hasUpcoming) {
-    upcomingTableBody.innerHTML = '<tr><td colspan="6">No upcoming appointments found.</td></tr>';
-  }
-  if (pastTableBody && !hasPast) {
-    pastTableBody.innerHTML = '<tr><td colspan="6">No past appointments found.</td></tr>';
-  }
-}
-
 // --- Populate Doctor Appointments Table ---
 async function populateDoctorAppointmentsTable() {
   const tableBody = document.getElementById('doctor-appointments-table-body');
   if (!tableBody) return;
   tableBody.innerHTML = '';
-  const { data: appointments, error } = await supabase
+  const { data: appointments, error } = await window.supabase
     .from('appointments')
     .select('*')
     .order('date', { ascending: true });
@@ -595,61 +509,16 @@ function toggleCamera() {
 
 // --- DOM Ready ---
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load Supabase script dynamically
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  script.onload = function() {
-    // Initialize Supabase once script is loaded
-    initializeSupabase();
-    
-    // Continue with other initialization
-    loadCommonHTML(async () => {
-      setupVideoCallButtons();
-      console.log('Common content loaded and initialized.');
-      
-      // Populate tables after Supabase is initialized
-      await populateDoctorAppointmentsTable();
-      await populateUpcomingAppointmentsTable();
-    });
-  };
-  document.head.appendChild(script);
-  
-  function navigateToMessages() {
-    // Example: Fetch the user's role from Supabase
-    async function checkUserRole() {
-      try {
-        // Get current user
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          alert('You must be logged in to access messages.');
-          return;
-        }
-        
-        // Get user profile
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (profile.role === 'doctor') {
-          window.location.href = '../../doctors/messages.html';
-        } else if (profile.role === 'patient') {
-          window.location.href = '../../patients/messages.html';
-        } else {
-          alert('Unable to determine your role. Please contact support.');
-        }
-      } catch (error) {
-        console.error('Error checking user role:', error);
-        alert('An error occurred. Please try again later.');
-      }
-    }
-    
-    checkUserRole();
-  }
+  // DO NOT dynamically load the Supabase script or call initializeSupabase here!
+
+  loadCommonHTML(async () => {
+    setupVideoCallButtons();
+    console.log('Common content loaded and initialized.');
+
+    // Populate tables after Supabase is initialized
+    await populateDoctorAppointmentsTable();
+    await populateUpcomingAppointmentsTable();
+  });
 });
 
 // Function to open the action modal
@@ -740,12 +609,3 @@ async function logHistory(action, details = {}) {
     console.error('Failed to log history:', error);
   }
 }
-
-// Video call
-logHistory('video_call', { doctor: 'Dr. Smith', duration: '15min' });
-
-// Reminder set
-logHistory('reminder_set', { date, time, note });
-
-// Message sent
-logHistory('message', { to: 'Dr. Lee', content: 'Hello...' });

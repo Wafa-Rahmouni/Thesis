@@ -1,9 +1,3 @@
-// --- Initialize Supabase ---
-const SUPABASE_URL = 'https://maxavwnmszjyhahhgbzw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1heGF2d25tc3pqeWhhaGhnYnp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczMTY4NTgsImV4cCI6MjA2Mjg5Mjg1OH0.Kxo53BVFW2r9G9GX4hqVTS2vEV-YkUb15xcIN2T7RsI';
-console.log('Initializing Supabase client...');
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-console.log('Supabase client initialized:', !!supabase);
 
 // --- Registration Handler ---
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -25,7 +19,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   const gender = document.querySelector('#patientFields select')?.value || null;
   const dob = document.querySelector('#patientFields input[type="date"]')?.value || null;
 
-  // Doctor fields (use similar unique names if possible)
+  // Doctor fields
   const specialization = document.querySelector('#doctorFields input[placeholder="Specialization"]')?.value || null;
   const years_experience = document.querySelector('#doctorFields input[type="number"]')?.value || null;
   const clinic_name = document.querySelector('#doctorFields input[placeholder="Clinic/Hospital Name"]')?.value || null;
@@ -41,9 +35,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       return;
     }
 
-    // Only insert profile if session exists (user is authenticated)
-    if (data.session && data.user) {
-      const userId = data.user.id;
+    // 2. Insert profile data regardless of session (user may need to verify email)
+    const userId = data.user?.id || data.session?.user?.id;
+    if (userId) {
       const profileData = {
         id: userId,
         email,
@@ -59,23 +53,17 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         clinic_name: role === 'doctor' ? clinic_name : null,
         work_hours: role === 'doctor' ? work_hours : null
       };
-      
-      console.log('Attempting to insert profile data:', profileData);
-      
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([profileData]);
-        
+        .upsert([profileData], { onConflict: 'id' }); // upsert ensures no duplicate
       if (profileError) {
         alert('Profile creation error: ' + profileError.message);
         return;
       }
-      
-      console.log('Profile successfully created');
+    }
 
-      // Redirect immediately after registration if user is signed in
-      console.log('Redirecting to:', role === 'doctor' ? 'doctors/appointments.html' : 'patients/appointments.html');
-      
+    // 3. Redirect or show message
+    if (data.session && data.user) {
       if (role === 'doctor') {
         window.location.href = 'doctors/appointments.html';
       } else if (role === 'patient') {
@@ -83,21 +71,11 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       } else {
         alert('Unknown role!');
       }
-      return;
     } else {
-      // After successful registration
       alert('Registration successful! Please check your email to verify your account, then log in.');
       document.getElementById('loginModal').style.display = 'none';
-      // No redirect here!
     }
-
-    // If user is not signed in (email verification required)
-    console.log('Email verification required before login.');
-    alert('Registration successful! Please check your email to verify your account, then log in.');
-    document.getElementById('loginModal').style.display = 'none';
-    
   } catch (err) {
-    console.error('Unexpected error during registration:', err);
     alert('An unexpected error occurred: ' + err.message);
   }
 });
