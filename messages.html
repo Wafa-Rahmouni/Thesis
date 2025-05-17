@@ -696,7 +696,12 @@ function attachViewHandlers(data) {
       document.getElementById('recipient-status').innerText = 'Active now';
       document.getElementById('chat-modal').style.display = 'flex';
       document.getElementById('chat-reply').value = '';
-      await loadConversation(currentChat);
+      // Always load the conversation for this subject and both user IDs
+      await loadConversation({
+        recipient_id: otherUserId,
+        subject: message.subject,
+        recipient_name: currentChat.recipient_name
+      });
     };
   });
 }
