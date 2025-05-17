@@ -6,9 +6,7 @@
   <title>SanteNet - Messages</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/doctors/global.css"> <!-- Linking the external CSS -->
-  
-  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/doctors/global.css">
   <style>
 
     /* Messages Container */
@@ -277,21 +275,191 @@
   margin-top: 4px;
   text-align: right;
 }
+/* Messenger-style popup in bottom right */
+.chat-popup-modal {
+  position: fixed !important;
+  bottom: 30px;
+  right: 30px;
+  top: auto !important;
+  left: auto !important;
+  width: 370px;
+  height: 520px;
+  display: none;
+  background: none;
+  box-shadow: none;
+  align-items: flex-end;
+  justify-content: flex-end;
+  z-index: 2000;
+}
+.chat-popup-content {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(26, 115, 232, 0.18);
+  background: #fff;
+}
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #38DB7C 0%, #1a73e8 100%);
+  color: #fff;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e0e0e0;
+}
+.chat-header-pic {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  background: #e0e0e0;
+}
+.chat-header-name {
+  font-weight: 600;
+  font-size: 17px;
+  color: #fff;
+}
+.chat-header-status {
+  font-size: 13px;
+  color: #e0ffe7;
+}
+.chat-header .close {
+  margin-left: auto;
+  background: #ccc;
+  color: #fff;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.chat-header .close:hover {
+  background: #999;
+}
+.chat-conversation-body {
+  background: #f5f5f5;
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.5;
+  position: relative;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(56,219,124,0.07);
+  display: flex;
+  flex-direction: column;
+}
+.chat-bubble-left {
+  align-self: flex-start;
+  background: #fff;
+  color: #222;
+  border-bottom-left-radius: 6px;
+}
+.chat-bubble-right {
+  align-self: flex-end;
+  background: #38DB7C;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+.chat-bubble-meta {
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chat-reply-section {
+  background: #fafafa;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #eee;
+}
+.chat-reply-section textarea {
+  flex: 1;
+  resize: none;
+  border-radius: 18px;
+  border: 1px solid #ddd;
+  padding: 10px 14px;
+  font-size: 15px;
+  outline: none;
+  transition: border 0.2s;
+}
+.chat-reply-section textarea:focus {
+  border: 1.5px solid #1a73e8;
+}
+.chat-send-btn {
+  background: #38DB7C;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.chat-send-btn:hover {
+  background: #2dc76c;
+}
+.chat-fields {
+  padding: 16px 18px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+}
+.chat-fields input, .chat-fields textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  margin-bottom: 0;
+}
+.chat-fields label {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+.chat-fields input:disabled, .chat-fields textarea:disabled {
+  background: #f3f3f3;
+  color: #888;
+}
   </style>
 </head>
 <body>
-  <!-- Placeholder for dynamically loading common content -->
+  <!-- Common content will be loaded here -->
   <div id="common-container"></div>
 
-  <!-- Breadcrumb -->
-  <div class="breadcrumb">
-    <a href="#">Home</a> &gt; <span>Messages</span>
-  </div>
-
-  <!-- Messages Section -->
   <div class="messages-container">
     <h2>Patient Messages</h2>
-    <button class="new-message-button" onclick="openSendMessageModal()">Send New Message</button>
+    <button class="new-message-button" id="open-new-message">Send New Message</button>
     <p>Use the table below to view and respond to patient messages. You can reply directly to patients for any queries related to their appointments, treatments, or prescriptions.</p>
     <table>
       <thead>
@@ -304,280 +472,299 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="messages-table-body">
-        <!-- Messages will be loaded here dynamically -->
-      </tbody>
+      <tbody id="messages-table-body"></tbody>
     </table>
   </div>
 
-  <!-- Message Modals -->
-  <div class="modal" id="send-message-modal">
-    <div class="modal-content">
-      <h3>Send New Message</h3>
-      <label for="recipient">Recipient</label>
-      <input type="text" id="recipient" placeholder="Enter recipient's name" autocomplete="off" />
-      <!-- The datalist will be added dynamically -->
-      <label for="subject">Subject</label>
-      <input type="text" id="subject" placeholder="Enter message subject" />
-      <label for="message-body">Message</label>
-      <textarea id="message-body" placeholder="Write your message here..." rows="4"></textarea>
-      <div class="action-buttons">
-        <button id="send-message-btn">Send</button>
-        <button class="close" id="close-send-message-btn">Close</button>
+  <!-- Messenger-style Chat Popup -->
+  <div class="modal chat-popup-modal" id="chat-modal">
+    <div class="modal-content chat-popup-content">
+      <div class="chat-header">
+        <img id="recipient-pic" class="chat-header-pic" src="/default-avatar.png" alt="Recipient" />
+        <div>
+          <div id="recipient-name" class="chat-header-name"></div>
+          <div id="recipient-status" class="chat-header-status"></div>
+        </div>
+        <button class="close" id="close-chat-btn" title="Close">&times;</button>
       </div>
-    </div>
-  </div>
-
-  <div class="modal" id="message-modal">
-    <div class="modal-content message-modal-content">
-      <h3 id="view-message-subject">Conversation</h3>
-      <div class="message-meta">
-        <span id="view-message-sender"></span>
-        <span id="view-message-date"></span>
-        <span id="view-message-status"></span>
+      <div class="chat-fields" id="chat-fields">
+        <label for="chat-recipient">Recipient (Email, Name, or Phone)</label>
+        <input id="chat-recipient" type="text" placeholder="Enter recipient's email, name, or phone" autocomplete="off" list="recipient-suggestions" />
+        <datalist id="recipient-suggestions"></datalist>
+        <label for="chat-subject">Subject</label>
+        <input id="chat-subject" type="text" placeholder="Enter subject" />
       </div>
       <div id="chat-conversation-body" class="chat-conversation-body"></div>
-      <label for="reply-message" class="reply-label">Reply:</label>
-      <textarea id="reply-message" placeholder="Write your reply here..." rows="3"></textarea>
-      <div class="action-buttons">
-        <button id="send-reply-btn">Send Reply</button>
-        <button class="close" id="close-message-btn">Close</button>
+      <div class="chat-reply-section">
+        <textarea id="chat-reply" placeholder="Write your message..." rows="2"></textarea>
+        <button id="chat-send-btn" class="chat-send-btn"><i class="fa fa-paper-plane"></i></button>
       </div>
     </div>
   </div>
 
-  <!-- JS -->
+  <!-- Load common content -->
   <script>
-    // Encapsulate message modal logic to avoid polluting global scope
-    document.addEventListener('DOMContentLoaded', function () {
-      // Send Message Modal
-      const sendMessageModal = document.getElementById("send-message-modal");
-      const openSendMessageBtn = document.querySelector(".new-message-button");
-      const closeSendMessageBtn = document.getElementById("close-send-message-btn");
-      const sendMsgBtn = document.getElementById("send-message-btn");
-
-      if (openSendMessageBtn) {
-        openSendMessageBtn.addEventListener("click", () => {
-          sendMessageModal.style.display = "flex";
+    document.addEventListener('DOMContentLoaded', function() {
+      fetch('/common.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('common-container').innerHTML = html;
+        })
+        .catch(err => {
+          console.warn('Could not load common content:', err);
         });
-      }
-      if (closeSendMessageBtn) {
-        closeSendMessageBtn.addEventListener("click", () => {
-          sendMessageModal.style.display = "none";
-        });
-      }
-      if (sendMsgBtn) {
-        sendMsgBtn.addEventListener("click", async () => {
-          const recipient = document.getElementById("recipient").value;
-          const subject = document.getElementById("subject").value;
-          const messageBody = document.getElementById("message-body").value;
-          if (!recipient || !subject || !messageBody) {
-            alert("Please fill in all fields before sending the message.");
-            return;
-          }
-          // Insert into Supabase
-          const { data: { user } } = await window.supabase.auth.getUser();
-          // Example: look up recipient by email (adjust as needed)
-          const { data: recipientProfile } = await window.supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', recipient) // or use another unique field
-            .single();
-
-          if (!recipientProfile) {
-            alert("Recipient not found.");
-            return;
-          }
-
-          await window.supabase
-            .from('messages')
-            .insert([{
-              user_id: user.id,
-              recipient_id: recipientProfile.id,
-              patient_name: recipient, // or recipientProfile.name
-              subject: subject,
-              content: messageBody,
-              date: new Date().toISOString(),
-              status: 'Unread'
-            }]);
-          alert("Message sent to " + recipient + " with subject: " + subject);
-          sendMessageModal.style.display = "none";
-          if (window.reloadMessages) window.reloadMessages();
-        });
-      }
-
-      // View Message Modal
-      const messageModal = document.getElementById("message-modal");
-      const closeMessageBtn = document.getElementById("close-message-btn");
-      const sendReplyBtn = document.getElementById("send-reply-btn");
-
-      // Store current conversation context
-      let currentConversation = {};
-
-      // Attach to all "View" buttons in the table
-      function attachViewHandlers(data) {
-        document.querySelectorAll('button[data-message-id]').forEach(btn => {
-          btn.addEventListener('click', async function () {
-            const messageId = btn.getAttribute('data-message-id');
-            const message = data.find(m => m.id == messageId);
-            if (!message) return;
-
-            // Store context for reply
-            currentConversation = {
-              patient_name: message.patient_name,
-              subject: message.subject
-            };
-
-            // Fetch all messages in the conversation (by patient_name and subject)
-            const { data: convoMsgs } = await window.supabase
-              .from('messages')
-              .select('*')
-              .or(`and(user_id.eq.${user.id},recipient_id.eq.${recipientId}),and(user_id.eq.${recipientId},recipient_id.eq.${user.id})`)
-              .eq('subject', message.subject)
-              .order('date', { ascending: true });
-
-            // Mark all unread messages as read (not sent by current user)
-            const { data: { user } } = await window.supabase.auth.getUser();
-            const unreadIds = (convoMsgs || [])
-              .filter(msg => msg.user_id !== user.id && msg.status === 'Unread')
-              .map(msg => msg.id);
-
-            if (unreadIds.length > 0) {
-              await window.supabase
-                .from('messages')
-                .update({ status: 'Read' })
-                .in('id', unreadIds);
-              convoMsgs.forEach(msg => {
-                if (unreadIds.includes(msg.id)) msg.status = 'Read';
-              });
-              if (window.reloadMessages) window.reloadMessages();
-            }
-
-            // Render chat bubbles
-            const chatBody = document.getElementById("chat-conversation-body");
-            chatBody.innerHTML = "";
-            (convoMsgs || []).forEach(msg => {
-              const bubble = document.createElement('div');
-              bubble.className = 'chat-bubble ' + (msg.user_id === user.id ? 'chat-bubble-right' : 'chat-bubble-left');
-              bubble.innerHTML = `
-                <div>${msg.content}</div>
-                <div class="chat-bubble-meta">
-                  ${msg.user_id === user.id ? 'You' : msg.patient_name}
-                  • ${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  ${msg.user_id === user.id ? `<span style="margin-left:8px;font-size:11px;color:${msg.status === 'Read' ? '#38DB7C' : '#888'}">${msg.status}</span>` : ''}
-                </div>
-              `;
-              chatBody.appendChild(bubble);
-            });
-
-            // Fill header info
-            document.getElementById("view-message-subject").innerText = message.subject || "Conversation";
-            document.getElementById("view-message-sender").innerText = message.patient_name || "";
-            document.getElementById("view-message-date").innerText = message.date ? new Date(message.date).toLocaleString() : "";
-            document.getElementById("view-message-status").innerText = message.status || "";
-
-            document.getElementById("reply-message").value = "";
-            document.getElementById("message-modal").style.display = "flex";
-            chatBody.scrollTop = chatBody.scrollHeight;
-          });
-        });
-      }
-
-      // Reply logic: store reply and reload conversation
-      if (sendReplyBtn) {
-        sendReplyBtn.addEventListener("click", async () => {
-          const replyContent = document.getElementById("reply-message").value.trim();
-          if (!replyContent) {
-            alert("Please enter a reply.");
-            return;
-          }
-          const { data: { user } } = await window.supabase.auth.getUser();
-          await window.supabase
-            .from('messages')
-            .insert([{
-              user_id: user.id,
-              patient_name: currentConversation.patient_name,
-              subject: currentConversation.subject,
-              content: replyContent,
-              date: new Date().toISOString(),
-              status: 'Unread'
-            }]);
-          document.getElementById("reply-message").value = "";
-          // Reload the conversation in the modal
-          // Simulate clicking the last opened "View" button
-          document.querySelectorAll('button[data-message-id]').forEach(btn => {
-            if (btn.getAttribute('data-message-id') === currentConversation.lastMessageId) {
-              btn.click();
-            }
-          });
-          if (window.reloadMessages) window.reloadMessages();
-        });
-      }
-
-      if (closeMessageBtn) {
-        closeMessageBtn.addEventListener("click", () => {
-          messageModal.style.display = "none";
-        });
-      }
-
-      // Expose for table reload
-      window.attachViewHandlers = attachViewHandlers;
     });
   </script>
 
   <!-- Supabase and app scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabaseClient.js"></script>
-  <script src="./doctors/scripts.js"></script>
-  <script src="./doctors/common.js"></script>
   <script>
-document.addEventListener('DOMContentLoaded', async function () {
-  // Fetch and display messages from Supabase
-  async function loadMessages() {
-    const tableBody = document.getElementById('messages-table-body');
-    tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+let currentChat = null;
+let isNewMessage = true;
 
-    const { data, error } = await window.supabase
+// Open popup for new message
+document.getElementById('open-new-message').onclick = function() {
+  isNewMessage = true;
+  currentChat = null;
+  document.getElementById('chat-fields').style.display = 'flex';
+  document.getElementById('chat-recipient').value = '';
+  document.getElementById('chat-subject').value = '';
+  document.getElementById('chat-recipient').disabled = false;
+  document.getElementById('chat-subject').disabled = false;
+  document.getElementById('recipient-pic').src = '/default-avatar.png';
+  document.getElementById('recipient-name').innerText = '';
+  document.getElementById('recipient-status').innerText = '';
+  document.getElementById('chat-conversation-body').innerHTML = '';
+  document.getElementById('chat-reply').value = '';
+  document.getElementById('chat-modal').style.display = 'flex';
+};
+
+// Close popup
+document.getElementById('close-chat-btn').onclick = function() {
+  document.getElementById('chat-modal').style.display = 'none';
+};
+
+// Send or reply
+document.getElementById('chat-send-btn').onclick = async function() {
+  const reply = document.getElementById('chat-reply').value.trim();
+  if (!reply) return;
+
+  const { data: { user } } = await window.supabase.auth.getUser();
+
+  // New message mode
+  if (isNewMessage) {
+    const recipientInput = document.getElementById('chat-recipient').value.trim();
+    const subject = document.getElementById('chat-subject').value.trim();
+    if (!recipientInput || !subject) {
+      alert('Please fill in recipient and subject.');
+      return;
+    }
+    // Look up recipient by email, full_name, or phone
+    const { data: recipientProfile } = await window.supabase
+      .from('profiles')
+      .select('id, full_name, profile_pic_url, email')
+      .or(`email.eq.${recipientInput},full_name.eq.${recipientInput},phone.eq.${recipientInput}`)
+      .maybeSingle();
+    if (!recipientProfile) {
+      alert('Recipient not found.');
+      return;
+    }
+    await window.supabase
       .from('messages')
-      .select('*')
-      .order('date', { ascending: false });
-
-    if (error) {
-      tableBody.innerHTML = `<tr><td colspan="6">Failed to load messages.</td></tr>`;
-      return;
-    }
-
-    if (!data || data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="6">No messages found.</td></tr>`;
-      return;
-    }
-
-    tableBody.innerHTML = '';
-    data.forEach(msg => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${msg.id}</td>
-        <td>${msg.patient_name}</td>
-        <td>${msg.subject}</td>
-        <td>${msg.date ? new Date(msg.date).toLocaleDateString() : ''}</td>
-        <td style="color:${msg.status === 'Unread' ? '#e53935' : '#38DB7C'};font-weight:600;">
-          ${msg.status}
-        </td>
-        <td><button data-message-id="${msg.id}">View</button></td>
-      `;
-      tableBody.appendChild(tr);
-    });
-
-    // Attach modal openers for new buttons
-    window.attachViewHandlers(data);
+      .insert([{
+        user_id: user.id,
+        recipient_id: recipientProfile.id,
+        patient_name: recipientProfile.full_name || recipientProfile.email,
+        subject: subject,
+        content: reply,
+        date: new Date().toISOString(),
+        status: 'Unread'
+      }]);
+    // Switch to conversation mode
+    isNewMessage = false;
+    currentChat = {
+      recipient_id: recipientProfile.id,
+      subject: subject,
+      recipient_email: recipientProfile.email,
+      recipient_pic: recipientProfile.profile_pic_url || '/default-avatar.png',
+      recipient_name: recipientProfile.full_name || recipientProfile.email
+    };
+    document.getElementById('chat-fields').style.display = 'none';
+    document.getElementById('chat-recipient').disabled = true;
+    document.getElementById('chat-subject').disabled = true;
+    document.getElementById('recipient-pic').src = currentChat.recipient_pic;
+    document.getElementById('recipient-name').innerText = currentChat.recipient_name;
+    document.getElementById('recipient-status').innerText = 'Active now';
+    document.getElementById('chat-reply').value = '';
+    await loadConversation(currentChat);
+    if (window.reloadMessages) window.reloadMessages();
+    return;
   }
 
-  // Call on page load
-  loadMessages();
+  // Reply mode
+  if (currentChat) {
+    await window.supabase
+      .from('messages')
+      .insert([{
+        user_id: user.id,
+        recipient_id: currentChat.recipient_id,
+        patient_name: currentChat.recipient_name,
+        subject: currentChat.subject,
+        content: reply,
+        date: new Date().toISOString(),
+        status: 'Unread'
+      }]);
+    document.getElementById('chat-reply').value = '';
+    await loadConversation(currentChat);
+    if (window.reloadMessages) window.reloadMessages();
+  }
+};
 
-  // Optionally, reload messages after sending/replying
-  window.reloadMessages = loadMessages;
+// Load conversation and mark as read
+async function loadConversation(chat) {
+  const { data: { user } } = await window.supabase.auth.getUser();
+  const { data: convoMsgs } = await window.supabase
+    .from('messages')
+    .select('*')
+    .or(`and(user_id.eq.${user.id},recipient_id.eq.${chat.recipient_id}),and(user_id.eq.${chat.recipient_id},recipient_id.eq.${user.id})`)
+    .eq('subject', chat.subject)
+    .order('date', { ascending: true });
+
+  // Mark all unread messages as read (not sent by current user)
+  const unreadIds = (convoMsgs || [])
+    .filter(msg => msg.user_id !== user.id && msg.status === 'Unread')
+    .map(msg => msg.id);
+
+  if (unreadIds.length > 0) {
+    await window.supabase
+      .from('messages')
+      .update({ status: 'Read' })
+      .in('id', unreadIds);
+    if (window.reloadMessages) window.reloadMessages();
+  }
+
+  // Render chat bubbles
+  const chatBody = document.getElementById("chat-conversation-body");
+  chatBody.innerHTML = "";
+  (convoMsgs || []).forEach(msg => {
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble ' + (msg.user_id === user.id ? 'chat-bubble-right' : 'chat-bubble-left');
+    bubble.innerHTML = `
+      <div>${msg.content}</div>
+      <div class="chat-bubble-meta">
+        ${msg.user_id === user.id ? 'You' : chat.recipient_name}
+        • ${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+        ${msg.user_id === user.id ? `<span style="margin-left:8px;font-size:11px;color:${msg.status === 'Read' ? '#38DB7C' : '#888'}">${msg.status}</span>` : ''}
+      </div>
+    `;
+    chatBody.appendChild(bubble);
+  });
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Attach to all "View" buttons in the table
+function attachViewHandlers(data) {
+  document.querySelectorAll('button[data-message-id]').forEach(btn => {
+    btn.onclick = async function () {
+      const messageId = btn.getAttribute('data-message-id');
+      const message = data.find(m => m.id == messageId);
+      if (!message) return;
+      const { data: { user } } = await window.supabase.auth.getUser();
+      const otherUserId = message.user_id === user.id ? message.recipient_id : message.user_id;
+      // Fetch recipient profile for pic and name
+      const { data: recipientProfile } = await window.supabase
+        .from('profiles')
+        .select('full_name, profile_pic_url, email')
+        .eq('id', otherUserId)
+        .single();
+      currentChat = {
+        recipient_id: otherUserId,
+        subject: message.subject,
+        recipient_email: recipientProfile?.email || '',
+        recipient_pic: recipientProfile?.profile_pic_url || '/default-avatar.png',
+        recipient_name: recipientProfile?.full_name || recipientProfile?.email || "User"
+      };
+      isNewMessage = false;
+      document.getElementById('chat-fields').style.display = 'none';
+      document.getElementById('chat-recipient').value = currentChat.recipient_email;
+      document.getElementById('chat-subject').value = currentChat.subject;
+      document.getElementById('chat-recipient').disabled = true;
+      document.getElementById('chat-subject').disabled = true;
+      document.getElementById('recipient-pic').src = currentChat.recipient_pic;
+      document.getElementById('recipient-name').innerText = currentChat.recipient_name;
+      document.getElementById('recipient-status').innerText = 'Active now';
+      document.getElementById('chat-modal').style.display = 'flex';
+      document.getElementById('chat-reply').value = '';
+      await loadConversation(currentChat);
+    };
+  });
+}
+
+// Load messages table
+async function loadMessages() {
+  const tableBody = document.getElementById('messages-table-body');
+  tableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) {
+    tableBody.innerHTML = `<tr><td colspan="6">Not logged in.</td></tr>`;
+    return;
+  }
+  const { data, error } = await window.supabase
+    .from('messages')
+    .select('*')
+    .or(`user_id.eq.${user.id},recipient_id.eq.${user.id}`)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.log(error);
+    tableBody.innerHTML = `<tr><td colspan="6">Failed to load messages.</td></tr>`;
+    return;
+  }
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="6">No messages found.</td></tr>`;
+    return;
+  }
+  tableBody.innerHTML = '';
+  data.forEach(msg => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${msg.id}</td>
+      <td>${msg.patient_name}</td>
+      <td>${msg.subject}</td>
+      <td>${msg.date ? new Date(msg.date).toLocaleDateString() : ''}</td>
+      <td style="color:${msg.status === 'Unread' ? '#e53935' : '#38DB7C'};font-weight:600;">
+        ${msg.status}
+      </td>
+      <td><button data-message-id="${msg.id}">View</button></td>
+    `;
+    tableBody.appendChild(tr);
+  });
+  attachViewHandlers(data);
+}
+window.reloadMessages = loadMessages;
+document.addEventListener('DOMContentLoaded', loadMessages);
+
+document.getElementById('chat-recipient').addEventListener('input', async function() {
+  const query = this.value.trim();
+  const datalist = document.getElementById('recipient-suggestions');
+  datalist.innerHTML = '';
+  if (query.length < 2) return;
+  // Search by email, name, or phone (case-insensitive)
+  const { data: matches } = await window.supabase
+    .from('profiles')
+    .select('id, full_name, email, phone')
+    .or(`email.ilike.%${query}%,full_name.ilike.%${query}%,phone.ilike.%${query}%`)
+    .limit(10);
+  (matches || []).forEach(profile => {
+    const option = document.createElement('option');
+    option.value = profile.email;
+    option.label = `${profile.full_name || ''}${profile.phone ? ' (' + profile.phone + ')' : ''}`;
+    datalist.appendChild(option);
+  });
 });
   </script>
+  <script src="/doctors/scripts.js"></script>
+  <script src="/doctors/common.js"></script>
 </body>
 </html>
