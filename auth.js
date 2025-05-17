@@ -21,11 +21,11 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   console.log('Form data collected:', { first_name, last_name, email, phone, role });
 
   // Patient fields
-  const address = document.querySelector('#patientFields input[type="text"]')?.value || null;
+  const address = this.querySelector('input[name="address"]')?.value || null;
   const gender = document.querySelector('#patientFields select')?.value || null;
   const dob = document.querySelector('#patientFields input[type="date"]')?.value || null;
 
-  // Doctor fields
+  // Doctor fields (use similar unique names if possible)
   const specialization = document.querySelector('#doctorFields input[placeholder="Specialization"]')?.value || null;
   const years_experience = document.querySelector('#doctorFields input[type="number"]')?.value || null;
   const clinic_name = document.querySelector('#doctorFields input[placeholder="Clinic/Hospital Name"]')?.value || null;
