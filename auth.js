@@ -85,8 +85,10 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       }
       return;
     } else {
+      // After successful registration
       alert('Registration successful! Please check your email to verify your account, then log in.');
       document.getElementById('loginModal').style.display = 'none';
+      // No redirect here!
     }
 
     // If user is not signed in (email verification required)
@@ -299,37 +301,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   if (accessToken && type === 'signup') {
     // Set the session using the access token
-    const { data, error } = await supabase.auth.setSession({
+    await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: urlParams.get('refresh_token') || ''
     });
-
-    if (error) {
-      alert('Error during auto-login: ' + error.message);
-      return;
-    }
-
-    // Fetch the user profile and redirect based on role
-    const user = data.session?.user;
-    if (user) {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        alert('Profile fetch error: ' + profileError.message);
-        return;
-      }
-
-      if (profile.role === 'doctor') {
-        window.location.href = '/doctors/appointments.html';
-      } else if (profile.role === 'patient') {
-        window.location.href = '/patients/appointments/appointment.html';
-      } else {
-        alert('Unknown role!');
-      }
-    }
+    // Redirect to home page
+    window.location.href = '/home.html'; // or '/' if your home page is index.html
+    return;
   }
+
 });
