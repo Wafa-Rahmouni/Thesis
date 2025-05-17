@@ -679,21 +679,17 @@ function formatTime(time) {
 
 // Function to confirm logout
 async function confirmLogout() {
-  const logoutConfirmed = confirm("Are you sure you want to log out?");
-  if (logoutConfirmed) {
-    try {
-      // Sign out from Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      // Redirect to the login page
-      window.location.href = "home.html";
-    } catch (error) {
-      console.error('Error signing out:', error);
-      alert('Failed to sign out. Please try again.');
-    }
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    console.log('User logged out.');
+    window.location.href = "/home.html"; // or login page
+  } catch (err) {
+    console.error('Error during logout:', err.message);
+    alert('Failed to log out. Please try again.');
   }
 }
+
 
 // Real-time updates with Supabase subscriptions
 function setupRealtimeUpdates() {
