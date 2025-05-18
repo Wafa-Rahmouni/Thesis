@@ -1,4 +1,3 @@
-
 // --- Registration Handler ---
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -16,28 +15,29 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
   // Patient fields
   const address = this.querySelector('input[name="address"]')?.value || null;
-  const gender = document.querySelector('#patientFields select')?.value || null;
-  const dob = document.querySelector('#patientFields input[type="date"]')?.value || null;
+  const gender = this.querySelector('#patientFields select')?.value || null;
+  const dob = this.querySelector('#patientFields input[type="date"]')?.value || null;
 
-  // Doctor fields
-  const specialization = document.querySelector('#doctorFields input[placeholder="Specialization"]')?.value || null;
-  const years_experience = document.querySelector('#doctorFields input[type="number"]')?.value || null;
-  const clinic_name = document.querySelector('#doctorFields input[placeholder="Clinic/Hospital Name"]')?.value || null;
-  const work_hours = document.querySelector('#doctorFields input[placeholder="Work Hours & Availability"]')?.value || null;
+  // Doctor fields (FIX: use 'this' instead of 'document')
+  const specialization = this.querySelector('#doctorFields input[placeholder="Specialization"]')?.value || null;
+  const years_experience = this.querySelector('#doctorFields input[type="number"]')?.value || null;
+  const clinic_name = this.querySelector('#doctorFields input[placeholder="Clinic/Hospital Name"]')?.value || null;
+  const work_hours = this.querySelector('#doctorFields input[placeholder="Work Hours & Availability"]')?.value || null;
 
   try {
     // 1. Register with Supabase Auth
     console.log('Attempting to register with Supabase Auth...');
     const { data, error } = await supabase.auth.signUp({ email, password });
-    
+
     if (error) {
       alert('Registration error: ' + error.message);
       return;
     }
 
-    // 2. Insert profile data regardless of session (user may need to verify email)
     const userId = data.user?.id || data.session?.user?.id;
+
     if (userId) {
+      // Insert profile as before
       const profileData = {
         id: userId,
         email,
@@ -53,28 +53,25 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         clinic_name: role === 'doctor' ? clinic_name : null,
         work_hours: role === 'doctor' ? work_hours : null
       };
+      console.log('Inserting profile with id:', userId);
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert([profileData], { onConflict: 'id' }); // upsert ensures no duplicate
+        .upsert([profileData], { onConflict: 'id' });
       if (profileError) {
         alert('Profile creation error: ' + profileError.message);
         return;
       }
     }
 
-    // 3. Redirect or show message
-    if (data.session && data.user) {
-      if (role === 'doctor') {
-        window.location.href = 'doctors/appointments.html';
-      } else if (role === 'patient') {
-        window.location.href = '/patients/appointments/appointment.html';
-      } else {
-        alert('Unknown role!');
-      }
-    } else {
-      alert('Registration successful! Please check your email to verify your account, then log in.');
-      document.getElementById('loginModal').style.display = 'none';
-    }
+    // Registration successful, show login modal or redirect
+    alert('Registration successful! Please log in.');
+    // If you use a modal:
+    document.getElementById('loginModal').style.display = 'block';
+    // Optionally, hide the registration modal if you have one:
+    document.getElementById('registerModal')?.style.display = 'none';
+    // Or, to redirect to a login page:
+    // window.location.href = '/login.html';
+
   } catch (err) {
     alert('An unexpected error occurred: ' + err.message);
   }
