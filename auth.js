@@ -24,6 +24,23 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 
   console.log('Form data collected:', { first_name, last_name, email, phone, role, address, gender, dob, specialization, years_experience, clinic_name, work_hours });
 
+  // Store pending profile in localStorage
+  const pendingProfile = {
+    email,
+    first_name,
+    last_name,
+    phone,
+    role,
+    address,
+    gender,
+    dob,
+    specialization,
+    years_experience,
+    clinic_name,
+    work_hours
+  };
+  localStorage.setItem('pendingProfile', JSON.stringify(pendingProfile));
+
   try {
     // 1. Register with Supabase Auth
     const { data, error } = await supabase.auth.signUp({ email, password });
@@ -105,32 +122,41 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     // Fetch profile and redirect based on role
     const user = data.user;
     if (user) {
-      console.log('Fetching user profile for ID:', user.id);
-      
+      // Try to fetch the profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('*')
         .eq('id', user.id)
         .single();
-        
-      if (profileError) { 
-        console.error('Profile fetch error:', profileError);
-        alert('Error accessing your profile: ' + profileError.message); 
-        return; 
-      }
-      
-      console.log('User profile:', profile);
-      console.log('Redirecting based on role:', profile.role);
 
-      if (profile.role === 'doctor') {
+      // If profile is missing fields, upsert with cached registration data
+      if (!profile || !profile.first_name || !profile.last_name || !profile.role) {
+        const cachedProfile = JSON.parse(localStorage.getItem('pendingProfile'));
+        if (cachedProfile) {
+          await supabase.from('profiles').upsert([{ ...cachedProfile, id: user.id, email: user.email }], { onConflict: 'id' });
+          // Optionally clear the cache after upsert
+          localStorage.removeItem('pendingProfile');
+          alert('Your profile has been completed!');
+        } else {
+          alert('Your profile is incomplete. Please complete your profile after login.');
+          // Optionally redirect to a profile completion page
+        }
+      }
+
+      // Fetch the updated profile (optional)
+      const { data: updatedProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      // Redirect based on role
+      if (updatedProfile && updatedProfile.role === 'doctor') {
         window.location.href = '/doctors/appointments.html';
-      } else if (profile.role === 'patient') {
-        window.location.href = '/patients/appointments/appointment.html';
       } else {
-        alert('Unknown role!');
+        window.location.href = '/patients/appointments/appointment.html';
       }
     } else {
-      console.warn('No user object after successful login');
       alert('Login successful but no user data found. Please try again.');
     }
   } catch (err) {
