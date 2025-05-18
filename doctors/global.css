@@ -1319,3 +1319,252 @@ background-color: #bbb;
   display: block;
   margin: 0 auto;
 }
+
+/* --- Notifications Popup --- */
+#notifications-popup {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  padding: 0;
+  z-index: 1100;
+  border-radius: 12px;
+  width: 320px;
+  max-width: 95vw;
+  max-height: 64vh;
+  overflow-y: auto;
+}
+
+#notifications-popup .popup-content {
+  padding: 18px 18px 8px 18px;
+  border-radius: 12px;
+}
+
+#notifications-popup h3 {
+  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+#notifications-popup .close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 22px;
+  color: #333;
+  margin-top: -5px;
+}
+
+.notifications-list li {
+  margin-bottom: 12px;
+  padding: 9px 8px;
+  border-bottom: 1px solid #eee;
+  background: #f9f9ff;
+  border-radius: 6px;
+  transition: background 0.2s;
+  position: relative;
+  font-size: 15px;
+}
+
+.notifications-list li:last-child {
+  border-bottom: none;
+}
+
+.notification.new {
+  background-color: #eaf6ff;
+  border-left: 4px solid #38DB7C;
+}
+
+.notification-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.notification-actions {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+}
+
+.notification-actions button {
+  padding: 3px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.notification-actions .mark-read-btn {
+  background: #38DB7C;
+  color: #fff;
+}
+
+.notification-actions .mark-read-btn:hover {
+  background: #2dc76c;
+}
+
+.notification-actions .mark-unread-btn {
+  background: #ddd;
+  color: #333;
+}
+
+.notification-actions .mark-unread-btn:hover {
+  background: #bbb;
+}
+
+/* --- Logout Popup --- */
+#logout-popup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 1200;
+  justify-content: center;
+  align-items: center;
+}
+
+#logout-popup .popup-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 20px 18px 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  width: 95%;
+  max-width: 320px;
+  text-align: center;
+  position: relative;
+}
+
+#logout-popup h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+#logout-popup p {
+  color: #555;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+#logout-popup .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 20px;
+  color: #888;
+  cursor: pointer;
+}
+
+#logout-popup .popup-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+#logout-popup .popup-button.confirm {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#logout-popup .popup-button.confirm:hover {
+  background: #b71c1c;
+}
+
+#logout-popup .popup-button.cancel {
+  background: #ddd;
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#logout-popup .popup-button.cancel:hover {
+  background: #bbb;
+}
+
+/* --- Language Popup --- */
+#language-popup {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 80px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  padding: 18px 14px 12px 14px;
+  z-index: 1100;
+  border-radius: 10px;
+  width: 210px;
+  max-width: 95vw;
+}
+
+#language-popup .popup-content {
+  padding: 0;
+}
+
+#language-popup h3 {
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+#language-popup .close-btn {
+  float: right;
+  cursor: pointer;
+  font-size: 18px;
+  color: #333;
+}
+
+#language-popup .popup-button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  background-color: #38DB7C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+#language-popup .popup-button:hover {
+  background: #2dc76c;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  #notifications-popup,
+  #language-popup {
+    right: 8px;
+    width: 98vw;
+    min-width: 0;
+    max-width: 99vw;
+  }
+  #logout-popup .popup-content {
+    max-width: 98vw;
+    padding: 18px 6px 12px 6px;
+  }
+}

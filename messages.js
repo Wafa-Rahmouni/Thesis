@@ -70,15 +70,31 @@ document.getElementById('chat-send-btn').onclick = async function () {
 
     const recipientName = `${recipientProfile.first_name || ''} ${recipientProfile.last_name || ''}`.trim() || recipientProfile.email;
 
-    await window.supabase.from('messages').insert([{
-      user_id: user.id,
-      recipient_id: recipientProfile.id,
-      patient_name: recipientName,
-      subject: subject,
-      content: reply,
-      date: new Date().toISOString(),
-      status: 'Unread'
-    }]);
+    // After inserting a new message (new or reply)
+    const { data: insertedMessage, error: msgError } = await window.supabase
+      .from('messages')
+      .insert([{
+        user_id: user.id,
+        recipient_id: recipientProfile ? recipientProfile.id : currentChat.recipient_id,
+        patient_name: recipientName || currentChat.recipient_name,
+        subject: subject || currentChat.subject,
+        content: reply,
+        date: new Date().toISOString(),
+        status: 'Unread'
+      }])
+      .select();
+
+    if (!msgError && insertedMessage && insertedMessage[0]) {
+      await window.supabase.from('notifications').insert([{
+        user_id: recipientProfile ? recipientProfile.id : currentChat.recipient_id,
+        type: 'message',
+        title: 'New Message',
+        content: reply.length > 60 ? reply.slice(0, 60) + '...' : reply,
+        is_read: false,
+        created_at: new Date().toISOString(),
+        message_id: insertedMessage[0].id // link to the message
+      }]);
+    }
 
     isNewMessage = false;
     currentChat = {
@@ -139,14 +155,18 @@ async function loadConversation(chat) {
       <div class="chat-bubble-meta">
         ${msg.user_id === user.id ? 'You' : chat.recipient_name} • 
         ${new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        ${msg.user_id === user.id ? `<span style="margin-left:8px; font-size:11px; color:${msg.status === 'Read' ? '#38DB7C' : '#888'}">${msg.status}</span>` : ''}
+        ${
+          // Only show status if I am the sender
+          msg.user_id === user.id
+            ? `<span style="margin-left:8px; font-size:11px; color:${msg.status === 'Read' ? '#38DB7C' : '#e53935'}">${msg.status}</span>`
+            : ''
+        }
       </div>`;
     chatBody.appendChild(bubble);
   });
 
   chatBody.scrollTop = chatBody.scrollHeight;
 }
-
 // Attach handlers to "View" buttons and mark unread as read before loading conversation
 function attachViewHandlers(data) {
   document.querySelectorAll('button[data-message-id]').forEach(btn => {
@@ -240,13 +260,18 @@ async function loadMessages() {
 
   tableBody.innerHTML = '';
   data.forEach(msg => {
+    // Show "Sent" if I am the sender, otherwise show the real status
+    const statusText = msg.user_id === user.id ? 'Sent' : msg.status;
+    const statusColor = msg.user_id === user.id
+      ? '#888'
+      : (msg.status === 'Unread' ? '#e53935' : '#38DB7C');
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${msg.id}</td>
       <td>${msg.patient_name}</td>
       <td>${msg.subject}</td>
       <td>${msg.date ? new Date(msg.date).toLocaleDateString() : ''}</td>
-      <td style="color:${msg.status === 'Unread' ? '#e53935' : '#38DB7C'};font-weight:600;">${msg.status}</td>
+      <td style="color:${statusColor};font-weight:600;">${statusText}</td>
       <td><button data-message-id="${msg.id}">View</button></td>`;
     tableBody.appendChild(tr);
   });

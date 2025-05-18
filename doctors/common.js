@@ -666,3 +666,124 @@ async function setupRecipientAutocomplete() {
 
 // Call this after DOM is ready
 document.addEventListener('DOMContentLoaded', setupRecipientAutocomplete);
+
+// --- Message Notifications ---
+async function loadMessageNotifications() {
+  if (!window.supabase) return;
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // Fetch unread messages where the current user is the recipient
+  const { data: messages, error } = await window.supabase
+    .from('messages')
+    .select('id, user_id, patient_name, subject, content, date')
+    .eq('recipient_id', user.id)
+    .eq('status', 'Unread')
+    .order('date', { ascending: false })
+    .limit(20);
+
+  const notificationsList = document.querySelector('.notifications-list');
+  if (!notificationsList) return;
+
+  notificationsList.innerHTML = '';
+
+  if (error || !messages || messages.length === 0) {
+    notificationsList.innerHTML = '<li class="notification">No new messages.</li>';
+    updateNotificationBell(0);
+    return;
+  }
+messages.forEach(msg => {
+  const li = document.createElement('li');
+  li.className = 'notification new';
+  li.innerHTML = `
+    <div><b>New Message</b> - <span>${msg.subject || ''}</span></div>
+    <div>${msg.content ? msg.content.slice(0, 60) : ''}</div>
+    <span class="notification-time">${msg.date ? new Date(msg.date).toLocaleString() : ''}</span>
+    <div class="notification-actions" style="margin-top:5px;">
+      <button class="mark-read-btn" style="margin-right:8px;">Mark as Read</button>
+      <button class="mark-unread-btn">Mark as Unread</button>
+    </div>
+  `;
+  li.style.cursor = 'pointer';
+
+  // Open chat on main click (not on action buttons)
+  li.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('mark-read-btn') || e.target.classList.contains('mark-unread-btn')) return;
+    // Mark message as read
+    await window.supabase
+      .from('messages')
+      .update({ status: 'Read' })
+      .eq('id', msg.id);
+    loadMessageNotifications();
+
+    if (window.location.pathname.endsWith('messages.html') && typeof window.openChatWithMessage === 'function') {
+      window.openChatWithMessage(msg);
+    } else {
+      window.location.href = `/messages.html?subject=${encodeURIComponent(msg.subject)}`;
+    }
+  });
+
+  // Mark as Read button
+  li.querySelector('.mark-read-btn').onclick = async (e) => {
+    e.stopPropagation();
+    await window.supabase
+      .from('messages')
+      .update({ status: 'Read' })
+      .eq('id', msg.id);
+    loadMessageNotifications();
+  };
+
+  // Mark as Unread button
+  li.querySelector('.mark-unread-btn').onclick = async (e) => {
+    e.stopPropagation();
+    await window.supabase
+      .from('messages')
+      .update({ status: 'Unread' })
+      .eq('id', msg.id);
+    loadMessageNotifications();
+  };
+
+  notificationsList.appendChild(li);
+});
+  updateNotificationBell(messages.length);
+}
+
+function updateNotificationBell(count) {
+  const bellBtn = document.querySelector('.icon-button[title="Notifications"]');
+  if (!bellBtn) return;
+  let badge = bellBtn.querySelector('.notification-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'notification-badge';
+    bellBtn.appendChild(badge);
+  }
+  badge.textContent = count > 0 ? count : '';
+  badge.style.display = count > 0 ? 'inline-block' : 'none';
+}
+
+// Real-time subscription for messages
+function setupMessageNotificationRealtime() {
+  if (!window.supabase || !window.supabase.channel) return;
+  window.supabase
+    .channel('public:messages')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'messages' },
+      async (payload) => {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (!user) return;
+        if (
+          payload.new?.recipient_id === user.id ||
+          payload.old?.recipient_id === user.id
+        ) {
+          loadMessageNotifications();
+        }
+      }
+    )
+    .subscribe();
+}
+
+// Call these after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  loadMessageNotifications();
+  setupMessageNotificationRealtime();
+});
