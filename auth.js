@@ -8,36 +8,35 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   const last_name = this.querySelector('input[name="last_name"]')?.value || "";
   const email = this.querySelector('input[type="email"]')?.value || "";
   const password = this.querySelector('input[type="password"]')?.value || "";
-  const phone = this.querySelector('input[type="tel"]')?.value || "";
-  const role = document.getElementById('formRoleSelector')?.value || "";
+  const phone = this.querySelector('input[name="phone"]')?.value || "";
+  const role = this.querySelector('select[name="role"]')?.value || document.getElementById('formRoleSelector')?.value || "";
 
   console.log('Form data collected:', { first_name, last_name, email, phone, role });
 
   // Patient fields
   const address = this.querySelector('input[name="address"]')?.value || null;
-  const gender = this.querySelector('#patientFields select')?.value || null;
-  const dob = this.querySelector('#patientFields input[type="date"]')?.value || null;
+  const gender = this.querySelector('select[name="gender"]')?.value || null;
+  const dob = this.querySelector('input[name="dob"]')?.value || null;
 
-  // Doctor fields (FIX: use 'this' instead of 'document')
-  const specialization = this.querySelector('#doctorFields input[placeholder="Specialization"]')?.value || null;
-  const years_experience = this.querySelector('#doctorFields input[type="number"]')?.value || null;
-  const clinic_name = this.querySelector('#doctorFields input[placeholder="Clinic/Hospital Name"]')?.value || null;
-  const work_hours = this.querySelector('#doctorFields input[placeholder="Work Hours & Availability"]')?.value || null;
+  // Doctor fields
+  const specialization = this.querySelector('input[name="specialization"]')?.value || null;
+  const years_experience = this.querySelector('input[name="years_experience"]')?.value || null;
+  const clinic_name = this.querySelector('input[name="clinic_name"]')?.value || null;
+  const work_hours = this.querySelector('input[name="work_hours"]')?.value || null;
 
   try {
     // 1. Register with Supabase Auth
     console.log('Attempting to register with Supabase Auth...');
     const { data, error } = await supabase.auth.signUp({ email, password });
-
+    
     if (error) {
       alert('Registration error: ' + error.message);
       return;
     }
 
+    // 2. Insert profile data regardless of session (user may need to verify email)
     const userId = data.user?.id || data.session?.user?.id;
-
     if (userId) {
-      // Insert profile as before
       const profileData = {
         id: userId,
         email,
@@ -56,16 +55,11 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       console.log('Inserting profile with id:', userId);
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert([profileData], { onConflict: 'id' });
+        .upsert([profileData], { onConflict: 'id' }); // upsert ensures no duplicate
       if (profileError) {
         alert('Profile creation error: ' + profileError.message);
         return;
       }
-    } else {
-      // No session/user yet, so don't try to insert profile now
-      alert('Registration successful! Please check your email to verify your account, then log in.');
-      document.getElementById('loginModal').style.display = 'none';
-      return;
     }
 
     // 3. Redirect or show message
