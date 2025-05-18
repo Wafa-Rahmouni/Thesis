@@ -61,17 +61,26 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         alert('Profile creation error: ' + profileError.message);
         return;
       }
+    } else {
+      // No session/user yet, so don't try to insert profile now
+      alert('Registration successful! Please check your email to verify your account, then log in.');
+      document.getElementById('loginModal').style.display = 'none';
+      return;
     }
 
-    // Registration successful, show login modal or redirect
-    alert('Registration successful! Please log in.');
-    // If you use a modal:
-    document.getElementById('loginModal').style.display = 'block';
-    // Optionally, hide the registration modal if you have one:
-    document.getElementById('registerModal')?.style.display = 'none';
-    // Or, to redirect to a login page:
-    // window.location.href = '/login.html';
-
+    // 3. Redirect or show message
+    if (data.session && data.user) {
+      if (role === 'doctor') {
+        window.location.href = 'doctors/appointments.html';
+      } else if (role === 'patient') {
+        window.location.href = '/patients/appointments/appointment.html';
+      } else {
+        alert('Unknown role!');
+      }
+    } else {
+      alert('Registration successful! Please check your email to verify your account, then log in.');
+      document.getElementById('loginModal').style.display = 'none';
+    }
   } catch (err) {
     alert('An unexpected error occurred: ' + err.message);
   }
