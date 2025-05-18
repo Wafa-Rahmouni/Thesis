@@ -3,38 +3,37 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   e.preventDefault();
   console.log('Registration form submitted');
 
-  // Use optional chaining and fallback values
-  const first_name = this.querySelector('input[name="first_name"]')?.value || "";
-  const last_name = this.querySelector('input[name="last_name"]')?.value || "";
-  const email = this.querySelector('input[type="email"]')?.value || "";
-  const password = this.querySelector('input[type="password"]')?.value || "";
-  const phone = this.querySelector('input[name="phone"]')?.value || "";
-  const role = this.querySelector('select[name="role"]')?.value || document.getElementById('formRoleSelector')?.value || "";
-
-  console.log('Form data collected:', { first_name, last_name, email, phone, role });
+  // Always use this.querySelector to get values from the current form
+  const first_name = this.querySelector('input[name="first_name"]')?.value?.trim() || null;
+  const last_name = this.querySelector('input[name="last_name"]')?.value?.trim() || null;
+  const email = this.querySelector('input[type="email"]')?.value?.trim() || null;
+  const password = this.querySelector('input[type="password"]')?.value || null;
+  const phone = this.querySelector('input[name="phone"]')?.value?.trim() || null;
+  const role = this.querySelector('select[name="role"]')?.value || null;
 
   // Patient fields
-  const address = this.querySelector('input[name="address"]')?.value || null;
+  const address = this.querySelector('input[name="address"]')?.value?.trim() || null;
   const gender = this.querySelector('select[name="gender"]')?.value || null;
   const dob = this.querySelector('input[name="dob"]')?.value || null;
 
   // Doctor fields
-  const specialization = this.querySelector('input[name="specialization"]')?.value || null;
+  const specialization = this.querySelector('input[name="specialization"]')?.value?.trim() || null;
   const years_experience = this.querySelector('input[name="years_experience"]')?.value || null;
-  const clinic_name = this.querySelector('input[name="clinic_name"]')?.value || null;
-  const work_hours = this.querySelector('input[name="work_hours"]')?.value || null;
+  const clinic_name = this.querySelector('input[name="clinic_name"]')?.value?.trim() || null;
+  const work_hours = this.querySelector('input[name="work_hours"]')?.value?.trim() || null;
+
+  console.log('Form data collected:', { first_name, last_name, email, phone, role, address, gender, dob, specialization, years_experience, clinic_name, work_hours });
 
   try {
     // 1. Register with Supabase Auth
-    console.log('Attempting to register with Supabase Auth...');
     const { data, error } = await supabase.auth.signUp({ email, password });
-    
+
     if (error) {
       alert('Registration error: ' + error.message);
       return;
     }
 
-    // 2. Insert profile data regardless of session (user may need to verify email)
+    // 2. Insert profile data if userId is available
     const userId = data.user?.id || data.session?.user?.id;
     if (userId) {
       const profileData = {
@@ -52,10 +51,10 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         clinic_name: role === 'doctor' ? clinic_name : null,
         work_hours: role === 'doctor' ? work_hours : null
       };
-      console.log('Inserting profile with id:', userId);
+      console.log('Inserting profile with:', profileData);
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert([profileData], { onConflict: 'id' }); // upsert ensures no duplicate
+        .upsert([profileData], { onConflict: 'id' });
       if (profileError) {
         alert('Profile creation error: ' + profileError.message);
         return;
@@ -65,7 +64,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     // 3. Redirect or show message
     if (data.session && data.user) {
       if (role === 'doctor') {
-        window.location.href = 'doctors/appointments.html';
+        window.location.href = '/doctors/appointments.html';
       } else if (role === 'patient') {
         window.location.href = '/patients/appointments/appointment.html';
       } else {
@@ -73,7 +72,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
       }
     } else {
       alert('Registration successful! Please check your email to verify your account, then log in.');
-      document.getElementById('loginModal').style.display = 'none';
+      // Show login modal, hide register modal if you have one
+      document.getElementById('loginModal').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
     }
   } catch (err) {
     alert('An unexpected error occurred: ' + err.message);

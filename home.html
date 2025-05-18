@@ -91,11 +91,27 @@
       </div>
     <div class="modal" id="loginModal">
         <div class="modal-content">
-            <form class="form" id="registerForm">
-                <button type="button" class="close-button" id="closeModal">×</button>
-                <p class="title">Register</p> 
+            <!-- ...existing code... -->
+<div class="modal" id="loginModal">
+    <div class="modal-content">
+        <form class="form" id="loginForm" style="display: block;">
+            <button type="button" class="close-button" id="closeModalLogin">×</button>
+            <p class="title">Login</p>
+            <label>
+                <input class="input" type="email" name="email" required>
+                <span>Email</span>
+            </label> 
+            <label>
+                <input class="input" type="password" name="password" required>
+                <span>Password</span>
+            </label>
+            <button class="submit">Submit</button>
+            <p class="signin">Don't have an account? <a href="#" id="showRegister">Register</a></p>
+        </form>
+        <form class="form" id="registerForm" style="display: none;">
+            <button type="button" class="close-button" id="closeModal">×</button>
+            <p class="title">Register</p> 
             <p class="message">Signup now and get full access to our app.</p>
-      
             <div class="flex">
                 <label>
                     <input class="input" type="text" name="first_name" placeholder="Firstname" required>
@@ -107,87 +123,69 @@
                 </label>
             </div>
             <label>
-                <input class="input" type="email" required>
+                <input class="input" type="email" name="email" required>
                 <span>Email</span>
             </label>
             <label>
-                <input class="input" type="password" required>
+                <input class="input" type="password" name="password" required>
                 <span>Password</span>
             </label>
             <label>
-                <input class="input" type="password" required>
+                <input class="input" type="password" name="confirm_password" required>
                 <span>Confirm Password</span>
             </label>
             <label>
-                <input class="input" type="tel" required>
+                <input class="input" type="tel" name="phone" required>
                 <span>Phone Number</span>
             </label>
-      
             <label>
-                <select id="formRoleSelector" class="input" required>
+                <select id="formRoleSelector" class="input" name="role" required>
                     <option value="patient">Patient</option>
                     <option value="doctor">Doctor</option>
                 </select>
                 <span>Role</span>
             </label>
-      
             <div id="patientFields" style="display: none;">
                 <label>
                     <input class="input" type="text" name="address" placeholder="Address">
                     <span>Home Address</span>
                 </label>
                 <label>
-                    <select class="input">
+                    <select class="input" name="gender">
                         <option value="female">Female</option>
                         <option value="male">Male</option>
                     </select>
                     <span>Gender</span>
                 </label>
                 <label>
-                    <input class="input" type="date">
+                    <input class="input" type="date" name="dob">
                     <span>Date of Birth</span>
                 </label>
             </div>
-      
             <div id="doctorFields" style="display: none;">
                 <label>
-                    <input class="input" type="text">
+                    <input class="input" type="text" name="specialization">
                     <span>Specialization</span>
                 </label>
                 <label>
-                    <input class="input" type="number">
+                    <input class="input" type="number" name="years_experience">
                     <span>Years of Experience</span>
                 </label>
                 <label>
-                    <input class="input" type="text">
+                    <input class="input" type="text" name="clinic_name">
                     <span>Clinic/Hospital Name</span>
                 </label>
                 <label>
-                    <input class="input" type="text">
+                    <input class="input" type="text" name="work_hours">
                     <span>Work Hours & Availability</span>
                 </label>
             </div>
-      
             <button class="submit">Submit</button>
             <p class="signin">Already have an account? <a href="#" id="showLogin">Signin</a></p>
         </form>
-        <form class="form" id="loginForm" style="display: none;">
-            <button type="button" class="close-button" id="closeModalLogin">×</button>
-            <p class="title">Login</p>
-        
-            <label>
-                <input class="input" type="email" placeholder="" required>
-                <span>Email</span>
-            </label> 
-            <label>
-                <input class="input" type="password" placeholder="" required>
-                <span>Password</span>
-            </label>
-        
-            <button class="submit">Submit</button>
-        
-            <p class="signin">Don't have an account? <a href="#" id="showRegister">Register</a></p>
-        </form>
+    </div>
+</div>
+<!-- ...existing code... -->
             
         </div>
       </div>
