@@ -501,32 +501,127 @@ async function populateDoctorAppointmentsTable() {
   });
 }
 
-// --- Video Call ---
-function setupVideoCallButtons() {
-  document.querySelectorAll('.video-call-button').forEach(button => {
-    button.addEventListener('click', () => {
-      const type = button.getAttribute('data-type');
-      startVideoCall(type);
-    });
-  });
+// --- Video Call (Two-Sided, Real-Time) ---
+let rtcPeerConnection = null;
+let videoCallChannel = null;
+let remoteStream = null;
+let currentCallUserId = null;
+
+// Utility: Generate a unique room ID for two users
+function getRoomId(userId1, userId2) {
+  return [userId1, userId2].sort().join('-');
 }
-function startVideoCall(type) {
-  console.log(`Starting a video call for ${type}...`);
-  navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    .then(stream => {
-      const videoElement = document.getElementById('local-video');
-      if (videoElement) {
-        videoElement.srcObject = stream;
-        openVideoCallPopup();
+
+// Call this to start or join a call with another user
+async function startVideoCallWith(otherUserId) {
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // 1. Check for a matching virtual appointment
+  const { data: appointments, error } = await window.supabase
+    .from('appointments')
+    .select('*')
+    .or(`(patient.eq.${user.id},doctor.eq.${otherUserId}),(patient.eq.${otherUserId},doctor.eq.${user.id})`)
+    .eq('type', 'Virtual')
+    .eq('status', 'Upcoming');
+
+  if (error) {
+    alert('Could not check appointments. Please try again.');
+    return;
+  }
+
+  // 2. Find if any appointment is within the allowed time window (e.g., ±10 minutes)
+  const now = new Date();
+  let allowed = false;
+  let appointmentTime = null;
+
+  if (appointments && appointments.length > 0) {
+    for (const appt of appointments) {
+      // Combine date and time fields to a Date object
+      const apptDateTime = new Date(`${appt.date}T${appt.time}`);
+      const diffMinutes = Math.abs((now - apptDateTime) / 60000);
+      if (diffMinutes <= 10) { // Allow joining within 10 minutes before/after
+        allowed = true;
+        appointmentTime = apptDateTime;
+        break;
       }
-      window.localStream = stream;
+    }
+  }
+
+  if (!allowed) {
+    alert('You can only access the video call at the time of your scheduled virtual consultation.\n\nPlease book a virtual visit if you have not already.');
+    openBookVisitPopup();
+    // Optionally, pre-select "Virtual" in the booking form:
+    const visitTypeSelect = document.getElementById('visit-type');
+    if (visitTypeSelect) visitTypeSelect.value = 'Virtual';
+    return;
+  }
+
+  // --- If allowed, proceed with video call setup as before ---
+  currentCallUserId = otherUserId;
+  const roomId = getRoomId(user.id, otherUserId);
+
+  videoCallChannel = window.supabase.channel('video-call-' + roomId);
+  videoCallChannel
+    .on('broadcast', { event: 'signal' }, async (payload) => {
+      await handleSignal(payload.payload);
     })
-    .catch(err => {
-      console.error('Media error:', err);
-      alert('Please allow camera and microphone access.');
-    });
-  logHistory('video_call', { type });
+    .subscribe();
+
+  window.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  document.getElementById('local-video').srcObject = window.localStream;
+  openVideoCallPopup();
+
+  rtcPeerConnection = createPeerConnection();
+  window.localStream.getTracks().forEach(track => rtcPeerConnection.addTrack(track, window.localStream));
+
+  if (user.id < otherUserId) {
+    const offer = await rtcPeerConnection.createOffer();
+    await rtcPeerConnection.setLocalDescription(offer);
+    sendSignal({ type: 'offer', sdp: offer });
+  }
 }
+function sendSignal(data) {
+  if (videoCallChannel) {
+    videoCallChannel.send({
+      type: 'broadcast',
+      event: 'signal',
+      payload: data
+    });
+  }
+}
+
+async function handleSignal(data) {
+  if (!rtcPeerConnection) return;
+  if (data.type === 'offer') {
+    await rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+    const answer = await rtcPeerConnection.createAnswer();
+    await rtcPeerConnection.setLocalDescription(answer);
+    sendSignal({ type: 'answer', sdp: answer });
+  } else if (data.type === 'answer') {
+    await rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
+  } else if (data.type === 'candidate') {
+    await rtcPeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+  }
+}
+
+function createPeerConnection() {
+  const pc = new RTCPeerConnection();
+  pc.onicecandidate = (event) => {
+    if (event.candidate) {
+      sendSignal({ type: 'candidate', candidate: event.candidate });
+    }
+  };
+  pc.ontrack = (event) => {
+    if (!remoteStream) {
+      remoteStream = new MediaStream();
+      document.getElementById('remote-video').srcObject = remoteStream;
+    }
+    remoteStream.addTrack(event.track);
+  };
+  return pc;
+}
+
 function openVideoCallPopup() { showPopup('video-call-popup'); }
 function closeVideoCallPopup() {
   hidePopup('video-call-popup');
@@ -534,6 +629,13 @@ function closeVideoCallPopup() {
     window.localStream.getTracks().forEach(track => track.stop());
     window.localStream = null;
   }
+  if (rtcPeerConnection) rtcPeerConnection.close();
+  rtcPeerConnection = null;
+  if (videoCallChannel) videoCallChannel.unsubscribe();
+  videoCallChannel = null;
+  remoteStream = null;
+  document.getElementById('local-video').srcObject = null;
+  document.getElementById('remote-video').srcObject = null;
 }
 function endVideoCall() {
   closeVideoCallPopup();
@@ -574,7 +676,6 @@ function setupRealtimeUpdates() {
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'appointments' },
       async (payload) => {
-        console.log('Change received:', payload);
         await populateDoctorAppointmentsTable();
         await populateUpcomingAppointmentsTable();
       }
@@ -787,3 +888,14 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMessageNotifications();
   setupMessageNotificationRealtime();
 });
+
+window.supabase
+  .channel('public:appointments')
+  .on('postgres_changes',
+    { event: '*', schema: 'public', table: 'appointments' },
+    async (payload) => {
+      await populateDoctorAppointmentsTable();
+      await populateUpcomingAppointmentsTable();
+    }
+  )
+  .subscribe();
