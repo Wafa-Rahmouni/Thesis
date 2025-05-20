@@ -4,6 +4,7 @@ const doctorRTCConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 // (Supabase is now initialized globally in supabaseClient.js, do not re-initialize here)
 
 // --- Load Common HTML ---
+// --- Load Common HTML ---
 function loadCommonHTML(callback) {
   console.log('Attempting to load common HTML...');
   fetch('../../doctors/common.html')
@@ -18,6 +19,22 @@ function loadCommonHTML(callback) {
       if (commonContainer) {
         commonContainer.innerHTML = data;
         console.log('Common HTML loaded successfully.');
+        
+        // Add chatbot after common HTML is loaded
+        if (!document.getElementById('chatling-embed-script')) {
+          const chatbotConfig = document.createElement('script');
+          chatbotConfig.textContent = 'window.chtlConfig = { chatbotId: "5541694675" }';
+          document.body.appendChild(chatbotConfig);
+          
+          const chatbotScript = document.createElement('script');
+          chatbotScript.async = true;
+          chatbotScript.setAttribute('data-id', '5541694675');
+          chatbotScript.id = 'chatling-embed-script';
+          chatbotScript.type = 'text/javascript';
+          chatbotScript.src = 'https://chatling.ai/js/embed.js';
+          document.body.appendChild(chatbotScript);
+        }
+        
         initializeCommonEventListeners();
         if (callback) callback();
       } else {
@@ -61,6 +78,43 @@ function initializeCommonEventListeners() {
   const bookBtn = document.getElementById('open-book-visit-btn');
   if (bookBtn) {
     bookBtn.addEventListener('click', openBookVisitPopup);
+  }
+
+  // Profile edit button
+  const editBtn = document.getElementById('edit-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', function() {
+      // Enable all form fields
+      const inputs = document.querySelectorAll('#profile-form input, #profile-form select');
+      inputs.forEach(input => {
+        input.disabled = false;
+      });
+      
+      // Show save and cancel buttons
+      document.getElementById('save-btn').style.display = 'inline-block';
+      document.getElementById('cancel-btn').style.display = 'inline-block';
+      document.getElementById('edit-btn').style.display = 'none';
+    });
+  }
+  
+  // Profile cancel button
+  const cancelBtn = document.getElementById('cancel-btn');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      // Reload profile data (revert changes)
+      loadProfileData();
+      
+      // Disable form fields
+      const inputs = document.querySelectorAll('#profile-form input, #profile-form select');
+      inputs.forEach(input => {
+        input.disabled = true;
+      });
+      
+      // Hide save and cancel buttons, show edit button
+      document.getElementById('save-btn').style.display = 'none';
+      document.getElementById('cancel-btn').style.display = 'none';
+      document.getElementById('edit-btn').style.display = 'inline-block';
+    });
   }
 }
 
@@ -149,44 +203,76 @@ async function cancelProfileEditing() {
 }
 
 // Save changes to Supabase
-async function saveProfileChanges(e) {
-  if (e) e.preventDefault();
-  if (!window.supabase) return;
-
-  // Get the current user
-  const { data: { user } } = await window.supabase.auth.getUser();
-  if (!user) return;
-
-  // Get values directly from the separate fields
-  const updateData = {
-    first_name: document.getElementById('first_name').value.trim(),
-    last_name: document.getElementById('last_name').value.trim(),
-    address: document.getElementById('address').value,
-    gender: document.getElementById('gender').value,
-    dob: document.getElementById('dob').value,
-    phone: document.getElementById('phone').value,
-    email: document.getElementById('email').value
-  };
-
-  // Optional: handle profile picture upload here if needed
-
-  // Update in Supabase
-  const { error } = await window.supabase
-    .from('profiles')
-    .update(updateData)
-    .eq('id', user.id);
-
-  if (error) {
-    alert('Failed to save profile: ' + error.message);
-    return;
+async function saveProfileChanges() {
+  try {
+    // Get user first, before checking if it exists
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (!user || authError) {
+      alert('You must be logged in to update your profile.');
+      return;
+    }
+    
+    // First check if form elements exist with either ID pattern
+    function getElementValue(baseName) {
+      const element = 
+        document.getElementById(`profile-${baseName}`) || 
+        document.getElementById(baseName);
+      
+      return element ? element.value.trim() : '';
+    }
+    
+    // Create profileData object from form values
+    const profileData = {
+      first_name: getElementValue('first_name'),
+      last_name: getElementValue('last_name'),
+      email: getElementValue('email'),
+      phone: getElementValue('phone'),
+      address: getElementValue('address'),
+      gender: getElementValue('gender'),
+      dob: getElementValue('dob')
+    };
+    
+    console.log('Form data collected:', profileData);
+    
+    // Validate required fields
+    if (!profileData.first_name || !profileData.last_name) {
+      alert('First name and last name are required.');
+      return;
+    }
+    
+    // Add the user ID to the profile data
+    profileData.id = user.id;
+    
+    console.log('Updating profile with:', profileData);
+    
+    // Update the profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(profileData)
+      .eq('id', user.id);
+    
+    if (error) {
+      console.error('Profile update error:', error);
+      alert('Could not update profile: ' + error.message);
+      return;
+    }
+    
+    // Update local storage values for immediate use
+    localStorage.setItem('first_name', profileData.first_name);
+    localStorage.setItem('last_name', profileData.last_name);
+    
+    // Close the profile modal
+    closeProfileModal();
+    
+    // Show success message
+    alert('Profile updated successfully!');
+    
+  } catch (err) {
+    console.error('Unexpected error:', err);
+    alert('An error occurred while saving profile changes: ' + err.message);
   }
-
-  alert('Profile updated!');
-  await loadProfileData();
-  toggleForm(false);
-  toggleFileInput(false);
 }
-
 // Add this function to handle profile picture upload and update
 async function handleProfilePicUpload(event) {
   const file = event.target.files[0];
@@ -846,7 +932,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Call populateClinicDropdown where appropriate, e.g., after opening the book visit popup
+
+window.toggleLanguagePopup = function() {
+  const popup = document.getElementById('ladssnguage-popup');
+  popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+};
+
+window.closeLanguagePopup = function() {
+  document.getElementById('language-popup').style.display = 'none';
+};
+window.translatePage = function(lang) {
+  let attempts = 0;
+  function setLang() {
+    const combo = document.querySelector('.goog-te-combo');
+    if (combo) {
+      combo.value = lang;
+      // Google Translate sometimes needs a click event as well
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+      combo.dispatchEvent(new Event('input', { bubbles: true }));
+      combo.blur(); // Remove focus to trigger translation
+      window.closeLanguagePopup();
+    } else if (attempts < 30) { // Try for up to 3 seconds
+      attempts++;
+      setTimeout(setLang, 100);
+    } else {
+      alert('Translation widget not loaded yet. Please try again in a moment.');
+    }
+  }
+  setLang();
+};
 
 
 
@@ -1142,6 +1256,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 8. Expose for global use
 window.openNotificationsPopup = openNotificationsPopup;
+document.addEventListener('DOMContentLoaded', function() {
+  // Get profile form element (if it exists)
+  const profileForm = document.getElementById('profile-form');
+  if (profileForm) {
+    profileForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      saveProfileChanges();
+    });
+  }
+});
 
 
 

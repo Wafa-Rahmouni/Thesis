@@ -165,29 +165,109 @@
     /* Print Layout */
     .print-layout {
       display: none;
-      width: 80%;
+      position: relative;
+      width: 700px;
+      min-height: 900px;
       margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #ddd;
-      background-color: #f9f9f9;
-    }
-
-    .print-layout h2 {
-      text-align: center;
-      color: #1a73e8;
-    }
-
-    .print-layout .medication-list {
-      margin-top: 20px;
-    }
-
-    .print-layout ul {
-      list-style-type: none;
+      background: #fff;
+      font-family: 'Outfit', Arial, sans-serif;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      overflow: hidden;
       padding: 0;
     }
 
-    .print-layout ul li {
-      padding: 5px;
+    .watermark-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%; /* Reduced from 100% to make image smaller */
+  height: 80%; /* Reduced height as well */
+  transform: translate(-50%, -50%);
+  opacity: 0.2; /* Reduced opacity to be less distracting */
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.watermark-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  opacity: 0.3; /* Further reduced image opacity */
+  filter: grayscale(100%);
+}
+
+.prescription-content {
+  position: relative;
+  z-index: 1;
+  padding: 120px 60px 60px 60px; /* Reduced top padding */
+  color: #222;
+  font-size: 16px; /* Base font size */
+}
+
+.prescription-content h2 {
+  text-align: center;
+  color: #1a73e8;
+  margin-bottom: 30px;
+  font-size: 28px; /* Slightly smaller heading */
+}
+
+.prescription-fields > div {
+  margin-bottom: 18px; /* Slightly reduced spacing */
+  font-size: 16px; /* Consistent font size */
+  line-height: 1.4;
+}
+
+.medication-list {
+  margin-top: 20px;
+}
+
+.medication-list ul {
+  margin: 8px 0 0 20px;
+  padding: 0;
+  font-size: 15px; /* Smaller font for medications */
+  line-height: 1.5;
+}
+
+.medication-list li {
+  margin-bottom: 5px;
+}
+
+.signature-section {
+  margin-top: 80px; /* More space above signature */
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.signature-line {
+  flex: 1;
+  border-bottom: 2px solid #333;
+  height: 1px;
+  margin-left: 10px;
+  max-width: 300px; /* Limit signature line width */
+}
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #print-layout.print-layout, #print-layout.print-layout * {
+        visibility: visible !important;
+      }
+      #print-layout.print-layout {
+        display: block !important;
+        position: absolute;
+        left: 0; top: 0; right: 0;
+        margin: 0 auto;
+        box-shadow: none;
+        z-index: 9999;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
   </style>
 </head>
@@ -229,35 +309,31 @@
         </tr>
       </thead>
       <tbody id="prescriptions-table-body">
-        <!-- Sample Data Rows -->
-        <tr id="prescription-001">
-          <td>RX-001</td>
-          <td>John Doe</td>
-          <td>
-            <ul>
-              <li>Paracetamol</li>
-            </ul>
-          </td>
-          <td>2025-05-05</td>
-          <td>Active</td>
-          <td>
-            <button class="manage-button" onclick="showPrescriptionModal(1)">Manage</button>
-            <button class="print-button" onclick="printPrescription(1)">Print</button>
-          </td>
-        </tr>
+        <!-- Prescription rows will be dynamically inserted here -->
       </tbody>
     </table>
   </div>
 
   <!-- PRINT LAYOUT (Hidden) -->
   <div id="print-layout" class="print-layout">
-    <h2>Prescription Details</h2>
-    <p><strong>Prescription ID:</strong> <span id="print-prescription-id"></span></p>
-    <p><strong>Patient:</strong> <span id="print-patient-name"></span></p>
-    <p><strong>Date:</strong> <span id="print-prescription-date"></span></p>
-    <div class="medication-list">
-      <h3>Medications:</h3>
-      <ul id="print-medications-list"></ul>
+    <div class="watermark-logo">
+      <!-- Use SVG for best quality, or PNG/JPG if needed -->
+<img src="images/medical_prescription.svg" alt="Logo" />    </div>
+    <div class="prescription-content">
+      <h2>Prescription</h2>
+      <div class="prescription-fields">
+        <div><strong>Prescription ID:</strong> <span id="print-prescription-id"></span></div>
+        <div><strong>Patient:</strong> <span id="print-patient-name"></span></div>
+        <div><strong>Date:</strong> <span id="print-prescription-date"></span></div>
+        <div class="medication-list">
+          <strong>Medications:</strong>
+          <ul id="print-medications-list"></ul>
+        </div>
+        <div class="signature-section">
+          <span>Signature:</span>
+          <div class="signature-line"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -266,44 +342,169 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Your Supabase client initializer -->
 <script src="/supabaseClient.js"></script>
-  <script>
-    // Function to print the prescription
-    function printPrescription(prescriptionId) {
-      // Find the corresponding prescription data
-      var prescription = document.getElementById('prescription-' + prescriptionId);
-      var prescriptionId = prescription.cells[0].innerText;
-      var patientName = prescription.cells[1].innerText;
-      var prescriptionDate = prescription.cells[3].innerText;
-      var medications = prescription.cells[2].innerHTML;
-
-      // Populate the print layout
-      document.getElementById('print-prescription-id').innerText = prescriptionId;
-      document.getElementById('print-patient-name').innerText = patientName;
-      document.getElementById('print-prescription-date').innerText = prescriptionDate;
-      document.getElementById('print-medications-list').innerHTML = medications;
-
-      // Show the print layout
-      var printLayout = document.getElementById('print-layout');
-      printLayout.style.display = 'block';
-
-      // Print the content
-      window.print();
-
-      // Hide the print layout again
-      printLayout.style.display = 'none';
-    }
-  </script>
 <script src="scripts.js"></script>
 <script src="./common.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Wait for common content to be loaded
     loadCommonHTML(() => {
       initializeCommonEventListeners();
-      setupTabNavigation(); // <-- Make sure this is called here!
+      setupTabNavigation();
+      loadPrescriptionsForDoctor();
     });
   });
-</script>
 
+  async function loadPrescriptionsForDoctor() {
+  // First check if table body exists
+  const tableBody = document.getElementById('prescriptions-table-body');
+  if (!tableBody) {
+    console.warn("prescriptions-table-body element not found");
+    return;
+  }
+
+  try {
+    // Try to get doctor ID from Supabase Auth first (most reliable)
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let doctorId = user?.id;
+    console.log("Current auth user:", user);
+
+    // If not available from auth, try localStorage as fallback
+    if (!doctorId) {
+      doctorId = localStorage.getItem('doctor_id');
+      let role = localStorage.getItem('role');
+      let email = localStorage.getItem('email');
+      console.log("Loaded doctorId from localStorage:", doctorId);
+
+      // If doctor_id is not set, fetch it using email/role
+      if ((!doctorId || doctorId === 'null') && email) {
+        let { data, error } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('email', email)
+          .single();
+          
+        if (data && data.id && data.role === 'doctor') {
+          doctorId = data.id;
+          localStorage.setItem('doctor_id', doctorId);
+          console.log("Fetched doctorId from profiles:", doctorId);
+        }
+      }
+    }
+
+    if (!doctorId) {
+      tableBody.innerHTML = '<tr><td colspan="6">Doctor not logged in or profile not found.</td></tr>';
+      console.warn("No doctorId found in Auth or localStorage.");
+      return;
+    }
+
+    // Fetch only past consultations with prescriptions
+    // Assuming: status = 'Completed' and prescriptions is a non-empty array/JSON
+    let { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        id,
+        patient,
+        patient_id,
+        date,
+        status,
+        prescriptions
+      `)
+      .eq('doctor_id', doctorId)
+      .eq('status', 'Completed')
+      .not('prescriptions', 'is', null);
+
+    console.log("Supabase prescriptions fetch result:", { data, error });
+
+    if (error) {
+      console.error("Error fetching prescriptions:", error);
+      tableBody.innerHTML = '<tr><td colspan="6">Failed to load prescriptions.</td></tr>';
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="6">No prescriptions found.</td></tr>';
+      return;
+    }
+
+    // Process each prescription row
+    const rows = data.map(row => {
+      // Parse prescriptions (assuming it's a JSON array of medication names)
+      let meds = [];
+      try {
+        meds = Array.isArray(row.prescriptions)
+          ? row.prescriptions
+          : JSON.parse(row.prescriptions || '[]');
+      } catch (e) {
+        console.warn("Error parsing prescriptions:", e);
+        meds = [];
+      }
+      
+      const medsList = meds.length
+        ? `<ul>${meds.map(med => `<li>${med}</li>`).join('')}</ul>`
+        : '<em>No medications</em>';
+
+      // Use direct patient name from appointment or fallback
+      const patientName = row.patient || 'Unknown Patient';
+
+      return `
+        <tr id="prescription-${row.id}">
+          <td>${row.id}</td>
+          <td>${patientName}</td>
+          <td>${medsList}</td>
+          <td>${row.date || 'N/A'}</td>
+          <td>${row.status || 'N/A'}</td>
+          <td>
+            <button class="manage-button" onclick="showPrescriptionModal('${row.id}')">Manage</button>
+            <button class="print-button" onclick="printPrescription('${row.id}')">Print</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    tableBody.innerHTML = rows;
+    console.log("Prescriptions table updated successfully.");
+    
+  } catch (err) {
+    console.error("Unexpected error in loadPrescriptionsForDoctor:", err);
+    if (tableBody) {
+      tableBody.innerHTML = '<tr><td colspan="6">An error occurred while loading prescriptions.</td></tr>';
+    }
+  }
+}
+  // Print logic (updated for dynamic rows)
+  function printPrescription(prescriptionId) {
+    var prescription = document.getElementById('prescription-' + prescriptionId);
+    if (!prescription) return;
+    var cells = prescription.getElementsByTagName('td');
+    var prescriptionIdText = cells[0].innerText;
+    var patientName = cells[1].innerText;
+    var prescriptionDate = cells[3].innerText;
+    var medicationsHTML = cells[2].innerHTML;
+
+    // Extract medications as plain text for printing
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = medicationsHTML;
+    var medItems = tempDiv.querySelectorAll('li');
+    var medList = '';
+    medItems.forEach(function(li) {
+      medList += `<li>${li.innerText}</li>`;
+    });
+
+    document.getElementById('print-prescription-id').innerText = prescriptionIdText;
+    document.getElementById('print-patient-name').innerText = patientName;
+    document.getElementById('print-prescription-date').innerText = prescriptionDate;
+    document.getElementById('print-medications-list').innerHTML = medList;
+
+    var printLayout = document.getElementById('print-layout');
+    printLayout.style.display = 'block';
+    window.print();
+    printLayout.style.display = 'none';
+  }
+
+  // Placeholder for manage modal logic
+  function showPrescriptionModal(prescriptionId) {
+    alert('Manage prescription: ' + prescriptionId);
+    // Implement modal logic as needed
+  }
+</script>
 </body>
 </html>

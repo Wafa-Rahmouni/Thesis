@@ -1912,3 +1912,34 @@ background-color: #bbb;
     font-size: 17px;
   }
 }
+
+
+/* Add to your global.css or a relevant stylesheet */
+.circle-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #555;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  outline: none;
+}
+.circle-btn:hover {
+  background: #777;
+}
+.circle-btn:active {
+  background: #333;
+}
+.circle-btn.hangup {
+  background: #e53935;
+}
+.circle-btn.hangup:hover {
+  background: #b71c1c;
+}
+#google_translate_element { display: none !important; }

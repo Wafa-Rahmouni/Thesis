@@ -199,43 +199,7 @@
         </tr>
       </thead>
       <tbody id="consultations-table-body">
-        <!-- Sample Data Rows -->
-        <tr>
-          <td>CON-001</td>
-          <td>John Doe</td>
-          <td>Dr. Smith</td>
-          <td>2025-05-06</td>
-          <td>General Checkup</td>
-          <td>Completed</td>
-          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
-        </tr>
-        <tr>
-          <td>CON-002</td>
-          <td>Jane Smith</td>
-          <td>Dr. Lee</td>
-          <td>2025-05-07</td>
-          <td>Specialist Referral</td>
-          <td>Pending</td>
-          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
-        </tr>
-        <tr>
-          <td>CON-003</td>
-          <td>Michael Johnson</td>
-          <td>Dr. Brown</td>
-          <td>2025-05-10</td>
-          <td>Follow-up</td>
-          <td>Completed</td>
-          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
-        </tr>
-        <tr>
-          <td>CON-004</td>
-          <td>Emily White</td>
-          <td>Dr. Green</td>
-          <td>2025-05-12</td>
-          <td>Emergency</td>
-          <td>Pending</td>
-          <td><button class="manage-button" onclick="showConsultationModal()">Manage</button></td>
-        </tr>
+        <!-- Consultation rows will be dynamically inserted here -->
       </tbody>
     </table>
   </div>
@@ -257,18 +221,130 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Your Supabase client initializer -->
 <script src="/supabaseClient.js"></script>
-
-  <!-- JS -->
 <script src="scripts.js"></script>
 <script src="common.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Wait for common content to be loaded
     loadCommonHTML(() => {
       initializeCommonEventListeners();
-      setupTabNavigation(); // <-- Make sure this is called here!
+      setupTabNavigation();
+      loadConsultationsForDoctor();
     });
   });
+
+  async function loadConsultationsForDoctor() {
+  // Get the table body
+  const tableBody = document.getElementById('consultations-table-body');
+  
+  // Check if the table element exists
+  if (!tableBody) {
+    console.error("Element 'consultations-table-body' not found in DOM");
+    return;
+  }
+
+  try {
+    // First try to get the doctor ID from Supabase Auth (most reliable method)
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    let doctorId = user?.id;
+    console.log("Current auth user:", user);
+
+    // If not available, try localStorage as fallback
+    if (!doctorId) {
+      doctorId = localStorage.getItem('doctor_id');
+      console.log("Loaded doctorId from localStorage:", doctorId);
+      
+      // If still no doctorId, try to get it from email in localStorage
+      if (!doctorId || doctorId === 'null') {
+        const email = localStorage.getItem('email');
+        console.log("Loaded email from localStorage:", email);
+        
+        if (email) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('id, role')
+            .eq('email', email)
+            .eq('role', 'doctor')
+            .single();
+            
+          if (profile && profile.id) {
+            doctorId = profile.id;
+            localStorage.setItem('doctor_id', doctorId);
+            console.log("Fetched doctorId from profiles:", doctorId);
+          }
+        }
+      }
+    }
+
+    // Still no doctor ID - show error message
+    if (!doctorId) {
+      tableBody.innerHTML = '<tr><td colspan="7">Doctor not logged in or not found.</td></tr>';
+      console.warn("No doctorId found in Auth or localStorage.");
+      return;
+    }
+
+    // Fetch only appointments that are considered consultations based on reason
+    const consultationReasons = [
+      'General Checkup',
+      'Follow-up',
+      'Consultation',
+      'Lab Results'
+    ];
+
+    // Get consultations for this doctor
+    const { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        id,
+        patient, 
+        date,
+        time,
+        type,
+        status,
+        reason,
+        patient_id
+      `)
+      .eq('doctor_id', doctorId)
+      .in('reason', consultationReasons)
+      .order('date', { ascending: false });
+
+    console.log("Supabase consultations fetch result:", { data, error });
+
+    if (error) {
+      tableBody.innerHTML = '<tr><td colspan="7">Failed to load consultations.</td></tr>';
+      console.error("Error fetching consultations:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7">No consultations found.</td></tr>';
+      return;
+    }
+
+    // Create rows for the table
+    const rows = data.map(row => {
+      // Format the patient name - either use the name from the join or the direct name field
+      const patientName = row.patient || 'Unknown Patient';
+      
+      return `
+        <tr>
+          <td>${row.id}</td>
+          <td>${patientName}</td>
+          <td>Doctor</td>
+          <td>${row.date || 'N/A'} ${row.time || ''}</td>
+          <td>${row.type || 'N/A'}</td>
+          <td>${row.status || 'N/A'}</td>
+          <td><button class="manage-button" onclick="showConsultationModal('${row.id}')">Manage</button></td>
+        </tr>
+      `;
+    }).join('');
+
+    tableBody.innerHTML = rows;
+    console.log("Consultations table updated.");
+  } catch (err) {
+    tableBody.innerHTML = '<tr><td colspan="7">Error loading consultations.</td></tr>';
+    console.error("Error in loadConsultationsForDoctor:", err);
+  }
+}
 </script>
 </body>
 </html>

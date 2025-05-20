@@ -183,43 +183,27 @@
   <button class="tab-button" data-page="emergencies">Emergencies</button>
 </div>
     
-  <!-- EMERGENCIES SECTION -->
-  <div class="emergencies-container">
-    <h2>Emergency Cases</h2>
-    <button class="add-emergency-button" onclick="window.location.href='add-emergency.html'">Add New Emergency</button>
-    <p>Use the table below to view and manage dental emergencies. You can update the status or review patient treatment plans.</p>
-    <table>
-      <thead>
-        <tr>
-          <th>Emergency ID</th>
-          <th>Patient</th>
-          <th>Date</th>
-          <th>Emergency Type</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="emergencies-table-body">
-        <!-- Sample Data Rows -->
-        <tr id="emergency-001">
-          <td>EM-001</td>
-          <td>John Doe</td>
-          <td>2025-05-05</td>
-          <td>Severe Toothache</td>
-          <td>Resolved</td>
-          <td><button class="manage-button" onclick="showEmergencyModal(1)">Manage</button></td>
-        </tr>
-        <tr id="emergency-002">
-          <td>EM-002</td>
-          <td>Jane Smith</td>
-          <td>2025-04-25</td>
-          <td>Broken Tooth</td>
-          <td>Ongoing</td>
-          <td><button class="manage-button" onclick="showEmergencyModal(2)">Manage</button></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+
+  <!-- Emergency Section -->
+<div class="appointments-container">
+  <h2>Emergency Calls</h2>
+  <p>Below is the list of emergency calls. You can view details or join an active call.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Call ID</th>
+        <th>Patient</th>
+        <th>Reason</th>
+        <th>Status</th>
+        <th>Scheduled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="emergency-calls-table-body">
+      <!-- Emergency call rows will be dynamically inserted here -->
+    </tbody>
+  </table>
+</div>
 
   <!-- MODAL FOR EMERGENCY MANAGEMENT -->
   <div class="modal" id="emergency-modal" style="display: none;">
@@ -270,6 +254,77 @@
     });
   });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for common content to load
+  loadCommonHTML(async () => {
+    initializeCommonEventListeners();
+    setupTabNavigation();
+    await loadEmergencyCalls();
+  });
+});
 
+async function loadEmergencyCalls() {
+  const tableBody = document.getElementById('emergency-calls-table-body');
+  if (!tableBody) return;
+
+  // Get the logged-in doctor's ID from Supabase Auth
+  const { data: { user } } = await supabase.auth.getUser();
+  const doctorId = user?.id;
+  if (!doctorId) {
+    tableBody.innerHTML = '<tr><td colspan="6">Doctor not logged in.</td></tr>';
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('emergency_calls')
+    .select(`
+      id,
+      reason,
+      type,
+      status,
+      scheduled_date,
+      scheduled_time,
+      profiles:patient_id (first_name, last_name)
+    `)
+    .eq('type', 'emergency')
+    .eq('doctor_id', doctorId)
+    .order('started_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching emergency calls:', error);
+    tableBody.innerHTML = '<tr><td colspan="6">Failed to load emergency calls.</td></tr>';
+    return;
+  }
+
+  const rows = (data || []).map(call => {
+    const patientName = call.profiles
+      ? `${call.profiles.first_name || ''} ${call.profiles.last_name || ''}`.trim()
+      : 'Unknown Patient';
+    const scheduled = call.scheduled_date
+      ? `${call.scheduled_date} ${call.scheduled_time || ''}`
+      : 'N/A';
+
+    return `
+      <tr>
+        <td>${call.id}</td>
+        <td>${patientName}</td>
+        <td>${call.reason || 'No reason provided'}</td>
+        <td>${call.status || 'N/A'}</td>
+        <td>${scheduled}</td>
+        <td>
+          <button onclick="joinEmergencyCall('${call.id}')">Join</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tableBody.innerHTML = rows || '<tr><td colspan="6">No emergency calls found.</td></tr>';
+}
+
+function joinEmergencyCall(callId) {
+  alert(`Joining emergency call with ID: ${callId}`);
+  // Add logic to join the call (e.g., navigate to a video call room)
+}</script>
 </body>
 </html>
