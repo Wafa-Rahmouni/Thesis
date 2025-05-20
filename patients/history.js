@@ -1,16 +1,17 @@
 // No Supabase initialization here; use window.supabase from supabaseClient.js
 function formatDetails(details, action = '') {
   if (action === 'booking' && typeof details === 'object' && details.appointment_id) {
-    return `Booking ID: <b>${details.appointment_id}</b>`;
+    return `<b>Booking ID:</b> ${details.appointment_id}`;
   }
 
   // Pretty print JSON, but flatten if simple
-  if (typeof details === 'object') {
+  if (typeof details === 'object' && details !== null) {
     const keys = Object.keys(details);
     if (keys.length <= 2) {
       return keys.map(k => `<b>${k}:</b> ${details[k]}`).join('<br>');
     }
-    return `<pre class="history-details">${JSON.stringify(details, null, 2)}</pre>`;
+    // For more complex objects, show only keys and short values
+    return keys.map(k => `<b>${k}:</b> ${String(details[k]).length > 30 ? String(details[k]).slice(0, 30) + '…' : details[k]}`).join('<br>');
   }
   return String(details);
 }

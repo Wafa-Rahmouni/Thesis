@@ -115,7 +115,16 @@
       });
     });
 
-    // Payment modal script
+    // Utility: Log to history table
+async function logHistory(action, details = {}) {
+  if (window.supabase) {
+    await window.supabase.from('history').insert([
+      { action, details, timestamp: new Date().toISOString() }
+    ]);
+  }
+}
+
+// Payment modal script
 const paymentModal = document.getElementById('paymentModal');
 const closePaymentModal = document.getElementById('closePaymentModal');
 const paymentForm = document.getElementById('paymentForm');
@@ -130,6 +139,9 @@ document.querySelectorAll('.subscribe-button').forEach(button => {
     paymentForm.dataset.plan = planName;
     paymentForm.dataset.price = planPrice;
     paymentModal.style.display = 'flex'; // Use flex for modal centering
+
+    // Log subscription attempt
+    logHistory('Subscription Initiated', { plan: planName, price: planPrice });
   });
 });
 
@@ -143,6 +155,16 @@ paymentForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(paymentForm);
   const paymentDetails = Object.fromEntries(formData);
+
+  // Log successful payment
+  logHistory('Subscription Payment', {
+    plan: paymentForm.dataset.plan,
+    price: paymentForm.dataset.price,
+    paymentDetails: {
+      card: paymentDetails.card_number.replace(/\d{12}(\d{4})/, '**** **** **** $1'),
+      expiry: paymentDetails.expiry
+    }
+  });
 
   // TODO: Integrate with payment gateway and handle subscription logic
   alert('Payment successful!');
