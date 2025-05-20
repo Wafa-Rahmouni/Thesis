@@ -1,3 +1,5 @@
+const doctorRTCConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
 // --- Remove Supabase Initialization ---
 // (Supabase is now initialized globally in supabaseClient.js, do not re-initialize here)
 
@@ -53,6 +55,12 @@ function initializeCommonEventListeners() {
   const fileInput = document.getElementById('file-input');
   if (fileInput) {
     fileInput.addEventListener('change', handleProfilePicUpload);
+  }
+
+  // Attach Book Visit button event for all users (patients and doctors)
+  const bookBtn = document.getElementById('open-book-visit-btn');
+  if (bookBtn) {
+    bookBtn.addEventListener('click', openBookVisitPopup);
   }
 }
 
@@ -313,6 +321,7 @@ function openBookVisitPopup() {
   const popup = document.getElementById('book-visit-popup');
   if (popup) {
     popup.style.display = 'block';
+    populateClinicDropdown();
   }
 }
 function closeBookVisitPopup() {
@@ -325,24 +334,59 @@ function closeBookVisitPopup() {
 // --- Booking Form Handling ---
 async function handleBooking(event) {
   event.preventDefault();
-  const patientName = document.getElementById('name').value.trim();
+
+  // Get patient info from Supabase user profile
+  let patientName = '';
+  let patientId = '';
+  if (window.supabase && window.supabase.auth) {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (user) {
+      patientId = user.id;
+      patientName = user.user_metadata?.full_name
+        || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim()
+        || user.email
+        || '';
+    }
+  }
+
   const visitDate = document.getElementById('visit-date').value;
   const visitTime = document.getElementById('visit-time').value;
   const visitType = document.getElementById('visit-type').value;
-  const clinic = document.getElementById('clinic').value;
+  const clinicValue = document.getElementById('clinic').value; // format: doctorId|clinicName
   const visitReason = document.getElementById('visit-reason').value;
 
-  if (!patientName || !visitDate || !visitTime || !visitType || !clinic || !visitReason) {
+  if (!patientName || !patientId || !visitDate || !visitTime || !visitType || !clinicValue || !visitReason) {
     alert('Please fill in all the required fields.');
     return;
   }
 
+  // --- Prevent multiple appointments per day for the same patient ---
+  const { data: existingAppointments, error: checkError } = await window.supabase
+    .from('appointments')
+    .select('id')
+    .eq('patient_id', patientId)
+    .eq('date', visitDate);
+
+  if (checkError) {
+    alert('Error checking existing appointments.');
+    return;
+  }
+  if (existingAppointments && existingAppointments.length > 0) {
+    alert('You already have an appointment booked for this day.');
+    return;
+  }
+
+  // Split value into doctorId and clinicName
+  const [doctorId, clinicName] = clinicValue.split('|');
+
   const newAppointment = {
     patient: patientName,
+    patient_id: patientId,
     date: visitDate,
     time: visitTime,
     type: visitType,
-    clinic: clinic,
+    clinic: clinicName,
+    doctor_id: doctorId,
     reason: visitReason,
     status: 'Upcoming',
     created_at: new Date().toISOString()
@@ -355,38 +399,18 @@ async function handleBooking(event) {
       .select();
 
     if (error) throw error;
-    const newAppointmentId = data && data[0] && data[0].id;
-    logHistory('booking', { appointment_id: newAppointmentId });
+
+    await populateDoctorAppointmentsTable?.();
+    await populateUpcomingAppointmentsTable?.();
+    closeBookVisitPopup();
   } catch (error) {
     console.error('Error creating appointment:', error);
-  }
-  closeBookVisitPopup();
-}
-
-// --- Add New Appointment ---
-async function addNewAppointment(patient, date, time, type, status = 'Pending') {
-  try {
-    const newAppointment = {
-      patient: patient,
-      date: date,
-      time: time,
-      type: type,
-      status: status,
-      created_at: new Date().toISOString()
-    };
-    const { data, error } = await window.supabase
-      .from('appointments')
-      .insert([newAppointment]);
-    if (error) throw error;
-    console.log('New appointment added:', data);
-    await populateAppointmentsTable();
-  } catch (error) {
-    console.error('Error adding appointment:', error);
-    alert('Failed to add appointment. Please try again.');
+    alert('Check Your Email for Confirmation!');
   }
 }
+window.handleBooking = handleBooking;
 
-// --- Populate Appointments Table ---
+// --- Populate Upcoming Appointments Table (for patients) ---
 async function populateUpcomingAppointmentsTable() {
   const upcomingTableBody = document.getElementById('upcoming-table-body');
   if (!upcomingTableBody) return;
@@ -395,23 +419,28 @@ async function populateUpcomingAppointmentsTable() {
   const pastTableBody = document.getElementById('past-table-body');
   if (pastTableBody) pastTableBody.innerHTML = '';
 
-  let patientName = '';
-  if (window.supabase.auth && window.supabase.auth.getUser) {
-    const { data: { user } } = await window.supabase.auth.getUser();
-    if (user) {
-      patientName = user.user_metadata?.full_name || user.email;
-    }
+// Get current user ID
+let userId = '';
+if (window.supabase.auth && window.supabase.auth.getUser) {
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (user) {
+    userId = user.id;
   }
-  if (!patientName) {
-    patientName = document.getElementById('name')?.value || 'John Doe';
-  }
+}
 
-  const { data: allAppointments, error } = await window.supabase
-    .from('appointments')
-    .select('*')
-    .eq('patient', patientName)
-    .order('date', { ascending: true });
+if (!userId) {
+  upcomingTableBody.innerHTML = '<tr><td colspan="6">No upcoming appointments found.</td></tr>';
+  if (pastTableBody) pastTableBody.innerHTML = '<tr><td colspan="6">No past appointments found.</td></tr>';
+  return;
+}
 
+const { data: allAppointments, error } = await window.supabase
+  .from('appointments')
+  .select('*')
+  .eq('patient_id', userId) // <-- fetch by patient_id!
+  .order('date', { ascending: false })
+  .order('created_at', { ascending: false });
+  
   if (error) {
     console.error('Error fetching patient appointments:', error);
     return;
@@ -456,217 +485,61 @@ async function populateUpcomingAppointmentsTable() {
   }
 }
 
-// --- Update Appointment Status ---
-async function updateStatus(appointmentId, newStatus) {
-  try {
-    const { data, error } = await window.supabase
-      .from('appointments')
-      .update({ status: newStatus })
-      .eq('id', appointmentId);
-
-    if (error) throw error;
-
-    console.log(`Appointment ${appointmentId} updated to ${newStatus}`);
-    await populateAppointmentsTable();
-    await populateUpcomingAppointmentsTable();
-    alert(`Appointment ${newStatus}`);
-  } catch (error) {
-    console.error('Error updating appointment:', error);
-    alert('Failed to update appointment status. Please try again.');
-  }
-}
-
-// --- Populate Doctor Appointments Table ---
-async function populateDoctorAppointmentsTable() {
-  const tableBody = document.getElementById('doctor-appointments-table-body');
-  if (!tableBody) return;
-  tableBody.innerHTML = '';
-  const { data: appointments, error } = await window.supabase
-    .from('appointments')
-    .select('*')
-    .order('date', { ascending: true });
-  if (error) return;
-  appointments.forEach(appointment => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${appointment.patient}</td>
-      <td>${appointment.date}</td>
-      <td>${appointment.time}</td>
-      <td>${appointment.type}</td>
-      <td>${appointment.clinic}</td>
-      <td>${appointment.reason}</td>
-      <td>${appointment.status}</td>
-    `;
-    tableBody.appendChild(row);
-  });
-}
-
-// --- Video Call (Two-Sided, Real-Time) ---
-let rtcPeerConnection = null;
-let videoCallChannel = null;
-let remoteStream = null;
-let currentCallUserId = null;
-
-// Utility: Generate a unique room ID for two users
-function getRoomId(userId1, userId2) {
-  return [userId1, userId2].sort().join('-');
-}
-
-// Call this to start or join a call with another user
-async function startVideoCallWith(otherUserId) {
-  const { data: { user } } = await window.supabase.auth.getUser();
-  if (!user) return;
-
-  // 1. Check for a matching virtual appointment
-  const { data: appointments, error } = await window.supabase
-    .from('appointments')
-    .select('*')
-    .or(`(patient.eq.${user.id},doctor.eq.${otherUserId}),(patient.eq.${otherUserId},doctor.eq.${user.id})`)
-    .eq('type', 'Virtual')
-    .eq('status', 'Upcoming');
-
-  if (error) {
-    alert('Could not check appointments. Please try again.');
-    return;
-  }
-
-  // 2. Find if any appointment is within the allowed time window (e.g., ±10 minutes)
-  const now = new Date();
-  let allowed = false;
-  let appointmentTime = null;
-
-  if (appointments && appointments.length > 0) {
-    for (const appt of appointments) {
-      // Combine date and time fields to a Date object
-      const apptDateTime = new Date(`${appt.date}T${appt.time}`);
-      const diffMinutes = Math.abs((now - apptDateTime) / 60000);
-      if (diffMinutes <= 10) { // Allow joining within 10 minutes before/after
-        allowed = true;
-        appointmentTime = apptDateTime;
-        break;
-      }
-    }
-  }
-
-  if (!allowed) {
-    alert('You can only access the video call at the time of your scheduled virtual consultation.\n\nPlease book a virtual visit if you have not already.');
-    openBookVisitPopup();
-    // Optionally, pre-select "Virtual" in the booking form:
-    const visitTypeSelect = document.getElementById('visit-type');
-    if (visitTypeSelect) visitTypeSelect.value = 'Virtual';
-    return;
-  }
-
-  // --- If allowed, proceed with video call setup as before ---
-  currentCallUserId = otherUserId;
-  const roomId = getRoomId(user.id, otherUserId);
-
-  videoCallChannel = window.supabase.channel('video-call-' + roomId);
-  videoCallChannel
-    .on('broadcast', { event: 'signal' }, async (payload) => {
-      await handleSignal(payload.payload);
-    })
-    .subscribe();
-
-  window.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  document.getElementById('local-video').srcObject = window.localStream;
-  openVideoCallPopup();
-
-  rtcPeerConnection = createPeerConnection();
-  window.localStream.getTracks().forEach(track => rtcPeerConnection.addTrack(track, window.localStream));
-
-  if (user.id < otherUserId) {
-    const offer = await rtcPeerConnection.createOffer();
-    await rtcPeerConnection.setLocalDescription(offer);
-    sendSignal({ type: 'offer', sdp: offer });
-  }
-}
-function sendSignal(data) {
-  if (videoCallChannel) {
-    videoCallChannel.send({
-      type: 'broadcast',
-      event: 'signal',
-      payload: data
-    });
-  }
-}
-
-async function handleSignal(data) {
-  if (!rtcPeerConnection) return;
-  if (data.type === 'offer') {
-    await rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-    const answer = await rtcPeerConnection.createAnswer();
-    await rtcPeerConnection.setLocalDescription(answer);
-    sendSignal({ type: 'answer', sdp: answer });
-  } else if (data.type === 'answer') {
-    await rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(data.sdp));
-  } else if (data.type === 'candidate') {
-    await rtcPeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-  }
-}
-
-function createPeerConnection() {
-  const pc = new RTCPeerConnection();
-  pc.onicecandidate = (event) => {
-    if (event.candidate) {
-      sendSignal({ type: 'candidate', candidate: event.candidate });
-    }
-  };
-  pc.ontrack = (event) => {
-    if (!remoteStream) {
-      remoteStream = new MediaStream();
-      document.getElementById('remote-video').srcObject = remoteStream;
-    }
-    remoteStream.addTrack(event.track);
-  };
-  return pc;
-}
-
-function openVideoCallPopup() { showPopup('video-call-popup'); }
-function closeVideoCallPopup() {
-  hidePopup('video-call-popup');
-  if (window.localStream) {
-    window.localStream.getTracks().forEach(track => track.stop());
-    window.localStream = null;
-  }
-  if (rtcPeerConnection) rtcPeerConnection.close();
-  rtcPeerConnection = null;
-  if (videoCallChannel) videoCallChannel.unsubscribe();
-  videoCallChannel = null;
-  remoteStream = null;
-  document.getElementById('local-video').srcObject = null;
-  document.getElementById('remote-video').srcObject = null;
-}
-function endVideoCall() {
-  closeVideoCallPopup();
-  alert('Video call ended.');
-}
-function toggleMute() {
-  const stream = window.localStream;
-  if (stream) {
-    const audioTrack = stream.getAudioTracks()[0];
-    audioTrack.enabled = !audioTrack.enabled;
-    alert(audioTrack.enabled ? 'Microphone Unmuted' : 'Microphone Muted');
-  }
-}
-function toggleCamera() {
-  const stream = window.localStream;
-  if (stream) {
-    const videoTrack = stream.getVideoTracks()[0];
-    videoTrack.enabled = !videoTrack.enabled;
-    alert(videoTrack.enabled ? 'Camera On' : 'Camera Off');
-  }
-}
-
-// --- DOM Ready ---
+// --- Hide Book Visit Button for Doctors ---
 document.addEventListener('DOMContentLoaded', async () => {
   loadCommonHTML(async () => {
-    setupVideoCallButtons();
+    initializeCommonEventListeners();
+    setupTabNavigation();
     console.log('Common content loaded and initialized.');
+
+    // Wait for Supabase auth to be ready and user to be available
+    let user = null;
+    if (window.supabase && window.supabase.auth) {
+      for (let i = 0; i < 20; i++) { // Try for up to ~2 seconds
+        const { data } = await window.supabase.auth.getUser();
+        if (data && data.user) {
+          user = data.user;
+          break;
+        }
+        await new Promise(res => setTimeout(res, 100));
+      }
+    }
+
+    // --- Hide or disable Book Visit button for doctors ---
+    if (user) {
+      // Fetch the user's profile to get the role
+      const { data: profile } = await window.supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profile && profile.role && profile.role.toLowerCase() === 'doctor') {
+        // Hide by class
+        document.querySelectorAll('.book-button').forEach(btn => btn.style.display = 'none');
+        // Hide by ID
+        const bookBtnById = document.getElementById('open-book-visit-btn');
+        if (bookBtnById) bookBtnById.style.display = 'none';
+        // Remove any button with text "Book Visit"
+        document.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent.trim().toLowerCase() === 'book visit') {
+            btn.style.display = 'none';
+          }
+        });
+      }
+    }
+
+    // Now populate tables
     await populateDoctorAppointmentsTable();
     await populateUpcomingAppointmentsTable();
   });
 });
+
+// --- Expose popup/modal functions globally for inline HTML onclick handlers ---
+window.openBookVisitPopup = openBookVisitPopup;
+window.closeBookVisitPopup = closeBookVisitPopup;
+
+// (Other modal and utility functions can be exposed as needed)
 
 // --- Real-time updates with Supabase subscriptions ---
 function setupRealtimeUpdates() {
@@ -899,3 +772,376 @@ window.supabase
     }
   )
   .subscribe();
+
+// --- Tab Navigation Setup ---
+function setupTabNavigation() {
+  // Try both selectors for compatibility
+  const tabButtons = document.querySelectorAll(".tab-button");
+
+  // Detect if we're in /patients/ or /doctors/
+  let basePath = "";
+  if (window.location.pathname.includes("/patients/")) {
+    basePath = "/patients";
+  } else if (window.location.pathname.includes("/doctors/")) {
+    basePath = "/doctors";
+  }
+
+  // Define tab routes for each role
+  const patientTabRoutes = {
+    "appointments": "/patients/appointments/appointment.html",
+    "consultation": "/patients/consultation.html",
+    "history": "/patients/history.html",
+    "clinics": "/patients/clinics.html",
+    "plans": "/patients/plans.html",
+    "emergency": "/patients/emergency.html",
+    "reminders": "/patients/reminders.html"
+  };
+
+  const doctorTabRoutes = {
+    "appointments": "/doctors/appointments.html",
+    "patients": "/doctors/patients.html",
+    "consultations": "/doctors/consultations.html",
+    "prescriptions": "/doctors/prescriptions.html",
+    "emergencies": "/doctors/emergencies.html"
+  };
+
+  // Choose which routes to use
+  const tabRoutes = basePath === "/patients" ? patientTabRoutes : doctorTabRoutes;
+
+  // Use data-tab for patients, data-page for doctors
+  const dataAttr = basePath === "/patients" ? "data-tab" : "data-page";
+
+  // Navigation on click
+  tabButtons.forEach(button => {
+    const tab = button.getAttribute(dataAttr);
+    if (!tab) return;
+    button.addEventListener("click", () => {
+      if (tabRoutes[tab]) {
+        location.href = tabRoutes[tab];
+      }
+    });
+  });
+
+  // Highlight active tab
+  const currentPage = window.location.pathname.toLowerCase();
+  tabButtons.forEach(button => {
+    const tab = button.getAttribute(dataAttr);
+    const route = tabRoutes[tab];
+    if (route && currentPage.endsWith(route.toLowerCase())) {
+      button.classList.add("active");
+    } else {
+      button.classList.remove("active");
+    }
+  });
+}
+
+// After loading common HTML and initializing event listeners:
+document.addEventListener('DOMContentLoaded', () => {
+  loadCommonHTML(() => {
+    initializeCommonEventListeners();
+    setupTabNavigation();
+    console.log('Common content loaded and initialized.');
+    // ...any other startup logic...
+  });
+});
+
+
+// Call populateClinicDropdown where appropriate, e.g., after opening the book visit popup
+
+
+
+// Fill clinics dropdown with all unique doctor clinics
+async function populateClinicDropdown() {
+  const clinicSelect = document.getElementById('clinic');
+  if (!clinicSelect || !window.supabase) {
+    console.log('Clinic select not found or Supabase not ready');
+    return;
+  }
+
+  // Clear all options
+  clinicSelect.innerHTML = '';
+
+  // Add default option (do NOT set selected here)
+  const defaultOption = document.createElement('option');
+  defaultOption.value = '';
+  defaultOption.disabled = true;
+  defaultOption.textContent = 'Select a clinic';
+  clinicSelect.appendChild(defaultOption);
+
+  // Fetch all doctor profiles with a clinic_name
+  const { data: doctors, error } = await window.supabase
+    .from('profiles')
+    .select('id, clinic_name, first_name, last_name, role')
+    .eq('role', 'doctor')
+    .not('clinic_name', 'is', null)
+    .neq('clinic_name', '');
+
+  if (error) {
+    console.error('Error fetching clinics:', error);
+    return;
+  }
+
+  // Only show unique clinic names, but keep the doctor id for booking
+  const seen = new Set();
+  let hasOptions = false;
+  doctors.forEach(doc => {
+    if (!seen.has(doc.clinic_name)) {
+      seen.add(doc.clinic_name);
+      const option = document.createElement('option');
+      option.value = `${doc.id}|${doc.clinic_name}`;
+      option.textContent = `${doc.clinic_name} (${doc.first_name || ''} ${doc.last_name || ''})`;
+      clinicSelect.appendChild(option);
+      hasOptions = true;
+    }
+  });
+
+  // If no value is selected, set the default option as selected
+  if (!clinicSelect.value) {
+    clinicSelect.selectedIndex = 0;
+  }
+
+  // Debug: log what is actually being added
+  console.log('Clinics shown in dropdown:', Array.from(seen));
+}
+
+// --- Emergency Call Notification Logic ---
+
+// 1. Fetch active emergency calls for the logged-in doctor
+async function loadEmergencyCallNotifications() {
+  if (!window.supabase) return [];
+
+  // Get current doctor user
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return [];
+
+  // Fetch active emergency calls assigned to this doctor
+  // Make sure your emergency_calls table has: id, reason, started_at, status, patient_id
+  // We'll join to profiles to get patient name
+  const { data, error } = await window.supabase
+    .from('emergency_calls')
+    .select(`
+      id,
+      reason,
+      started_at,
+      status,
+      patient_id,
+      profiles:patient_id (
+        first_name,
+        last_name,
+        email
+      )
+    `)
+    .eq('doctor_id', user.id)
+    .eq('status', 'active')
+    .order('started_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching emergency call notifications:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// 2. Render notifications in the notification panel
+async function renderEmergencyCallNotifications() {
+  const notificationsList = document.querySelector('.notifications-list');
+  if (!notificationsList) return;
+
+  const calls = await loadEmergencyCallNotifications();
+  let count = 0;
+
+  calls.forEach(call => {
+    count++;
+    const patientName = call.profiles
+      ? `${call.profiles.first_name || ''} ${call.profiles.last_name || ''}`.trim() || call.profiles.email
+      : 'Unknown Patient';
+
+    const li = document.createElement('li');
+    li.className = 'notification new emergency';
+    li.innerHTML = `
+      <div>
+        <b class="emergency-tag">EMERGENCY CALL</b> - <span>${patientName}</span>
+      </div>
+      <div>Reason: <span>${call.reason || 'No reason provided'}</span></div>
+      <span class="notification-time">${call.started_at ? new Date(call.started_at).toLocaleString() : 'Now'}</span>
+      <div class="notification-actions" style="margin-top:5px;">
+        <button class="join-emergency-call-btn" data-call-id="${call.id}" style="margin-right:8px;">Join Call</button>
+        <button class="decline-emergency-call-btn" data-call-id="${call.id}">Decline</button>
+      </div>
+    `;
+
+    // Join Call
+    li.querySelector('.join-emergency-call-btn').onclick = function(e) {
+      e.stopPropagation();
+      startDoctorVideoCall(call.id);
+      closeNotificationsPopup();
+    };
+
+    // Decline Call
+    li.querySelector('.decline-emergency-call-btn').onclick = async function(e) {
+      e.stopPropagation();
+      await window.supabase
+        .from('emergency_calls')
+        .update({ status: 'declined' })
+        .eq('id', call.id);
+      renderEmergencyCallNotifications();
+      updateNotificationBell(count - 1);
+    };
+
+    notificationsList.appendChild(li);
+  });
+
+  // If no calls
+  if (count === 0) {
+    notificationsList.innerHTML = '<li class="notification">No emergency calls.</li>';
+  }
+
+  updateNotificationBell(count);
+}
+
+// 3. Update notification bell badge
+function updateNotificationBell(count) {
+  const bellBtn = document.querySelector('.icon-button[title="Notifications"]');
+  if (!bellBtn) return;
+  let badge = bellBtn.querySelector('.notification-badge');
+  if (!badge) {
+    badge = document.createElement('span');
+    badge.className = 'notification-badge';
+    bellBtn.appendChild(badge);
+  }
+  badge.textContent = count > 0 ? count : '';
+  badge.style.display = count > 0 ? 'inline-block' : 'none';
+}
+
+// 4. Real-time subscription for emergency calls
+function setupEmergencyCallRealtime() {
+  if (!window.supabase || !window.supabase.channel) return;
+  window.supabase
+    .channel('public:emergency_calls')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'emergency_calls' },
+      async (payload) => {
+        await renderEmergencyCallNotifications();
+      }
+    )
+    .subscribe();
+}
+
+// 5. Helper: Start video call (redirect to call page)
+function startDoctorVideoCall(callId) {
+  openDoctorVideoCallModal(callId);
+}
+
+function openDoctorVideoCallModal(callId) {
+  const modal = document.getElementById('video-call-modal');
+  if (modal) {
+    modal.style.display = 'block';
+    startDoctorVideoCallSession(callId);
+  }
+}
+
+// Close modal logic for doctor
+document.getElementById('close-video-call-modal').onclick = function() {
+  document.getElementById('video-call-modal').style.display = 'none';
+  // Stop camera/mic if needed
+  const localVideo = document.getElementById('localVideo');
+  if (localVideo && localVideo.srcObject) {
+    localVideo.srcObject.getTracks().forEach(track => track.stop());
+    localVideo.srcObject = null;
+  }
+  // Optionally, disconnect signaling here
+};
+
+// Start local video and connect to call session
+function startDoctorVideoCallSession(callId) {
+  const localVideo = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
+  const callStatus = document.getElementById('call-status');
+  callStatus.textContent = 'Connecting to patient...';
+
+  // 1. Join the same signaling channel as the patient
+  doctorSignalingChannel = window.supabase.channel(`call_${callId}`);
+
+doctorSignalingChannel.on('broadcast', { event: 'signal' }, ({ payload }) => {
+  handleDoctorSignalingData(payload);
+}).subscribe((status) => {
+  if (status === 'SUBSCRIBED') {
+    // Notify patient that doctor is ready
+    doctorSignalingChannel.send({
+      type: 'broadcast',
+      event: 'signal',
+      payload: { type: 'doctor-joined' }
+    });
+  }
+});
+
+  // 2. Start WebRTC as the callee (doctor)
+  startDoctorWebRTC(false);
+}
+
+async function startDoctorWebRTC(isCaller) {
+  doctorPeerConnection = new RTCPeerConnection(doctorRTCConfig);
+
+  // Local video
+  const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  document.getElementById('localVideo').srcObject = localStream;
+  localStream.getTracks().forEach(track => doctorPeerConnection.addTrack(track, localStream));
+
+  // Remote video
+  doctorPeerConnection.ontrack = (event) => {
+    document.getElementById('remoteVideo').srcObject = event.streams[0];
+  };
+
+  // ICE candidates
+  doctorPeerConnection.onicecandidate = (event) => {
+    if (event.candidate) {
+      sendDoctorSignal({ type: 'candidate', data: event.candidate });
+    }
+  };
+}
+function sendDoctorSignal(data) {
+  doctorSignalingChannel.send({
+    type: 'broadcast',
+    event: 'signal',
+    payload: data
+  });
+}
+
+async function handleDoctorSignalingData({ type, data }) {
+  if (!doctorPeerConnection) await startDoctorWebRTC(false);
+
+  if (type === 'offer') {
+    await doctorPeerConnection.setRemoteDescription(new RTCSessionDescription(data));
+    const answer = await doctorPeerConnection.createAnswer();
+    await doctorPeerConnection.setLocalDescription(answer);
+    sendDoctorSignal({ type: 'answer', data: answer });
+  } else if (type === 'answer') {
+    await doctorPeerConnection.setRemoteDescription(new RTCSessionDescription(data));
+  } else if (type === 'candidate') {
+    try {
+      await doctorPeerConnection.addIceCandidate(new RTCIceCandidate(data));
+    } catch (e) {
+      console.error('Error adding received ice candidate', e);
+    }
+  }
+}
+
+// 6. Show notifications popup with fresh data
+function openNotificationsPopup() {
+  closeAllPopups();
+  showPopup('notifications-popup');
+  renderEmergencyCallNotifications();
+}
+
+// 7. Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  renderEmergencyCallNotifications();
+  setupEmergencyCallRealtime();
+});
+
+// 8. Expose for global use
+window.openNotificationsPopup = openNotificationsPopup;
+
+
+

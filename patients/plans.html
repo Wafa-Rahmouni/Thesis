@@ -38,43 +38,68 @@
   <!-- PLANS SECTION -->
   <div class="appointments-container">
     <h2>Available Plans</h2>
-    <div class="consultation-options">
+<div class="consultation-options">
 
-      <div class="consultation-option">
-        <h3>Basic Care</h3>
-        <p>₦4,500/month</p>
-        <ul style="list-style-type: none; padding-left: 0;">
-          <li>2 video consultations/month</li>
-          <li>Standard oral care guidance</li>
-          <li>Prescription support</li>
-        </ul>
-        <button>Subscribe</button>
-      </div>
-
-      <div class="consultation-option">
-        <h3>Premium Plan</h3>
-        <p>₦9,000/month</p>
-        <ul style="list-style-type: none; padding-left: 0;">
-          <li>Unlimited consultations</li>
-          <li>In-clinic priority booking</li>
-          <li>Routine checkups & diagnostics</li>
-        </ul>
-        <button>Subscribe</button>
-      </div>
-
-      <div class="consultation-option">
-        <h3>Family Package</h3>
-        <p>₦15,000/month</p>
-        <ul style="list-style-type: none; padding-left: 0;">
-          <li>Consultations for up to 5 family members</li>
-          <li>Dedicated care manager</li>
-          <li>Emergency dental care access</li>
-        </ul>
-        <button>Subscribe</button>
-      </div>
-
-    </div>
+  <div class="consultation-option">
+    <h3>Basic Care</h3>
+    <p>دج1,200/month</p>
+    <ul style="list-style-type: none; padding-left: 0;">
+      <li>2 video consultations/month</li>
+      <li>Standard oral care guidance</li>
+      <li>Prescription support</li>
+    </ul>
+    <button class="subscribe-button" data-plan="Basic Care" data-price="1200">Subscribe</button>
   </div>
+
+  <div class="consultation-option">
+    <h3>Premium Plan</h3>
+    <p>دج2,500/month</p>
+    <ul style="list-style-type: none; padding-left: 0;">
+      <li>Unlimited consultations</li>
+      <li>In-clinic priority booking</li>
+      <li>Routine checkups & diagnostics</li>
+    </ul>
+    <button class="subscribe-button" data-plan="Premium Plan" data-price="2500">Subscribe</button>
+  </div>
+
+  <div class="consultation-option">
+    <h3>Family Package</h3>
+    <p>دج4,000/month</p>
+    <ul style="list-style-type: none; padding-left: 0;">
+      <li>Consultations for up to 5 family members</li>
+      <li>Dedicated care manager</li>
+      <li>Emergency dental care access</li>
+    </ul>
+    <button class="subscribe-button" data-plan="Family Package" data-price="4000">Subscribe</button>
+  </div>
+
+</div>
+  </div>
+
+  <!-- Payment Modal -->
+<div id="paymentModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width:400px;margin:auto;">
+    <span id="closePaymentModal" style="float:right;cursor:pointer;font-size:1.5em;">&times;</span>
+    <h2>Complete Payment</h2>
+    <p id="paymentPlanName"></p>
+    <form id="paymentForm">
+      <label>
+        Card Number
+        <input type="text" name="card_number" maxlength="19" required placeholder="1234 5678 9012 3456">
+      </label>
+      <label>
+        Expiry Date
+        <input type="text" name="expiry" maxlength="5" required placeholder="MM/YY">
+      </label>
+      <label>
+        CVV
+        <input type="text" name="cvv" maxlength="4" required placeholder="123">
+      </label>
+      <button type="submit">Pay</button>
+    </form>
+  </div>
+</div>
+
 </body>
 <!-- Supabase library from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -89,6 +114,48 @@
         initializeCommonEventListeners();
       });
     });
+
+    // Payment modal script
+const paymentModal = document.getElementById('paymentModal');
+const closePaymentModal = document.getElementById('closePaymentModal');
+const paymentForm = document.getElementById('paymentForm');
+const paymentPlanName = document.getElementById('paymentPlanName');
+
+// Open payment modal on subscribe button click
+document.querySelectorAll('.subscribe-button').forEach(button => {
+  button.addEventListener('click', () => {
+    const planName = button.getAttribute('data-plan');
+    const planPrice = button.getAttribute('data-price');
+    paymentPlanName.textContent = `Plan: ${planName} - Price: ₦${planPrice}`;
+    paymentForm.dataset.plan = planName;
+    paymentForm.dataset.price = planPrice;
+    paymentModal.style.display = 'flex'; // Use flex for modal centering
+  });
+});
+
+// Close payment modal
+closePaymentModal.addEventListener('click', () => {
+  paymentModal.style.display = 'none';
+});
+
+// Handle payment form submission
+paymentForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(paymentForm);
+  const paymentDetails = Object.fromEntries(formData);
+
+  // TODO: Integrate with payment gateway and handle subscription logic
+  alert('Payment successful!');
+
+  paymentModal.style.display = 'none';
+});
+
+// Close modal if clicked outside of it
+window.addEventListener('click', (event) => {
+  if (event.target === paymentModal) {
+    paymentModal.style.display = 'none';
+  }
+});
   </script>
 
 </html>

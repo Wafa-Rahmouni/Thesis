@@ -162,13 +162,13 @@
   <div class="header">
     <h1>Patients Information</h1>
     <p>Efficiently view, track, and manage patient profiles to ensure high-quality care and communication.</p>
-    <div class="tabs">
-      <button class="tab-button" data-page="appointments.html">Appointments</button>
-      <button class="tab-button" data-page="patients.html">Patients</button>
-      <button class="tab-button" data-page="consultations.html">Consultations</button>
-      <button class="tab-button" data-page="prescriptions.html">Prescriptions</button>
-      <button class="tab-button" data-page="emergencies.html">Emergencies</button>
-    </div>
+<div class="tabs">
+  <button class="tab-button" data-page="appointments">Appointments</button>
+  <button class="tab-button" data-page="patients">Patients</button>
+  <button class="tab-button" data-page="consultations">Consultations</button>
+  <button class="tab-button" data-page="prescriptions">Prescriptions</button>
+  <button class="tab-button" data-page="emergencies">Emergencies</button>
+</div>
     
   <!-- PATIENTS SECTION -->
   <div class="patients-container">
@@ -244,5 +244,15 @@
 <script src="/supabaseClient.js"></script>
 <script src="scripts.js"></script>
 <script src="./common.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait for common content to be loaded
+    loadCommonHTML(() => {
+      initializeCommonEventListeners();
+      setupTabNavigation(); // <-- Make sure this is called here!
+    });
+  });
+</script>
+
 </body>
 </html>

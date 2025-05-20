@@ -301,3 +301,102 @@ document.getElementById('chat-recipient').addEventListener('input', async functi
     datalist.appendChild(option);
   });
 });
+
+// --- Message Notifications ---
+
+// Fetch unread message notifications for the current user
+async function fetchMessageNotifications() {
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return [];
+  const { data, error } = await window.supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('type', 'message')
+    .eq('is_read', false)
+    .order('created_at', { ascending: false });
+  return data || [];
+}
+
+// Render message notifications in the popup (append to reminders if needed)
+async function renderMessageNotifications() {
+  const notificationsList = document.querySelector('.notifications-list');
+  if (!notificationsList) return;
+  // Optionally, keep reminders if you want both types
+  const dueReminders = getDueRemindersFromStorage ? getDueRemindersFromStorage() : [];
+  notificationsList.innerHTML = '';
+
+  // Render reminders first (if you want both)
+  if (dueReminders && dueReminders.length > 0) {
+    dueReminders.forEach(reminder => {
+      const li = document.createElement('li');
+      li.className = 'notification new';
+      li.innerHTML = `
+        <div><b>Reminder Due</b> - <span>${reminder.title}</span></div>
+        <div>${reminder.date} ${reminder.time || ''}</div>
+        <span class="notification-time">${new Date(reminder.date + 'T' + (reminder.time || '00:00')).toLocaleString()}</span>
+        <div class="notification-actions" style="margin-top:5px;">
+          <button class="mark-reminder-read-btn" data-reminder-id="${reminder.id}" style="margin-right:8px;">Mark as Read</button>
+        </div>
+      `;
+      notificationsList.appendChild(li);
+    });
+  }
+
+  // Now render message notifications
+  const messages = await fetchMessageNotifications();
+  if (messages.length === 0 && dueReminders.length === 0) {
+    notificationsList.innerHTML = '<li class="notification">No notifications.</li>';
+    updateNotificationBell(0);
+    return;
+  }
+  messages.forEach(msg => {
+    const li = document.createElement('li');
+    li.className = 'notification new';
+    li.innerHTML = `
+      <div><b>New Message</b> - <span>${msg.title || 'Message'}</span></div>
+      <div>${msg.content || ''}</div>
+      <span class="notification-time">${new Date(msg.created_at).toLocaleString()}</span>
+      <div class="notification-actions" style="margin-top:5px;">
+        <button class="mark-message-read-btn" data-notification-id="${msg.id}" style="margin-right:8px;">Mark as Read</button>
+      </div>
+    `;
+    notificationsList.appendChild(li);
+  });
+
+  // Add event listeners for "Mark as Read" (messages)
+  document.querySelectorAll('.mark-message-read-btn').forEach(btn => {
+    btn.onclick = async function(e) {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-notification-id');
+      await window.supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+      renderMessageNotifications();
+    };
+  });
+
+  // Add event listeners for "Mark as Read" (reminders)
+  document.querySelectorAll('.mark-reminder-read-btn').forEach(btn => {
+    btn.onclick = function(e) {
+      e.stopPropagation();
+      const id = btn.getAttribute('data-reminder-id');
+      let dueReminders = getDueRemindersFromStorage();
+      dueReminders = dueReminders.filter(r => String(r.id) !== String(id));
+      setDueRemindersToStorage(dueReminders);
+      renderMessageNotifications();
+    };
+  });
+
+  // Update bell badge
+  updateNotificationBell((dueReminders.length || 0) + messages.length);
+}
+
+// Call this after sending a message, and on interval
+if (typeof renderMessageNotifications === 'function') {
+  setInterval(renderMessageNotifications, 60000); // every minute
+  document.addEventListener('DOMContentLoaded', renderMessageNotifications);
+}
+
+// After sending a message, call renderMessageNotifications()

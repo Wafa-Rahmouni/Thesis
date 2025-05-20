@@ -38,28 +38,8 @@
   <!-- CLINICS LISTING -->
   <div class="appointments-container">
     <h2>Available Clinics</h2>
-    <div class="consultation-options">
-
-<div class="consultation-option">
-  <h3>BrightSmile Dental</h3>
-  <p>123 Main Street, Lagos<br>Mon-Fri: 9am - 5pm</p>
-  <p><strong>Services:</strong> Cleaning, Whitening, Checkups</p>
-  <button onclick="openBookVisitPopup()">Book Appointment</button>
-</div>
-
-<div class="consultation-option">
-  <h3>Healthy Gums Clinic</h3>
-  <p>45 Adebayo Avenue, Abuja<br>Mon-Sat: 8am - 6pm</p>
-  <p><strong>Services:</strong> Periodontics, Oral Surgery</p>
-  <button onclick="openBookVisitPopup()">Book Appointment</button>
-</div>
-
-<div class="consultation-option">
-  <h3>EverSmile Dental Center</h3>
-  <p>89 Allen Rd, Ikeja<br>Mon-Fri: 10am - 4pm</p>
-  <p><strong>Services:</strong> Orthodontics, General Dentistry</p>
-  <button onclick="openBookVisitPopup()">Book Appointment</button>
-</div>
+    <div class="consultation-options" id="clinics-list">
+      <!-- Clinics will be loaded here dynamically -->
     </div>
   </div>
 </body>
@@ -69,12 +49,44 @@
 <script src="/supabaseClient.js"></script>
 <script src="script0.js"></script>
 <script src="../../doctors/common.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCommonHTML(() => {
-        console.log('Common content loaded and initialized.');
-        initializeCommonEventListeners();
-      });
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    loadCommonHTML(() => {
+      console.log('Common content loaded and initialized.');
+      initializeCommonEventListeners();
     });
-  </script>
+
+    // Fetch clinics (doctor profiles) from Supabase
+    const { data: clinics, error } = await supabase
+      .from('profiles')
+      .select('clinic_name, work_hours, specialization, first_name, last_name')
+      .eq('role', 'doctor')
+      .not('clinic_name', 'is', null);
+
+    const clinicsList = document.getElementById('clinics-list');
+    clinicsList.innerHTML = '';
+
+    if (error) {
+      clinicsList.innerHTML = '<p>Error loading clinics.</p>';
+      return;
+    }
+
+    if (clinics.length === 0) {
+      clinicsList.innerHTML = '<p>No clinics available at the moment.</p>';
+      return;
+    }
+
+    clinics.forEach(clinic => {
+      clinicsList.innerHTML += `
+        <div class="consultation-option">
+          <h3>${clinic.clinic_name || 'Clinic'}</h3>
+          <p><strong>Doctor:</strong> ${clinic.first_name || ''} ${clinic.last_name || ''}</p>
+          <p><strong>Specialization:</strong> ${clinic.specialization || 'N/A'}</p>
+          <p><strong>Work Hours:</strong> ${clinic.work_hours || 'N/A'}</p>
+          <button onclick="openBookVisitPopup()">Book Appointment</button>
+        </div>
+      `;
+    });
+  });
+</script>
 </html>

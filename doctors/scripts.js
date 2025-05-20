@@ -25,63 +25,6 @@ function loadCommonHTML(callback) {
     .catch(error => console.error('Error loading common HTML:', error));
 }
 
-// --- Booking Form Handling ---
-async function handleBooking(event) {
-  event.preventDefault();
-  console.log('Handling booking...');
-
-  const patientName = document.getElementById('name').value.trim();
-  const visitDate = document.getElementById('visit-date').value;
-  const visitTime = document.getElementById('visit-time').value;
-  const visitType = document.getElementById('visit-type').value;
-  const clinic = document.getElementById('clinic').value;
-  const visitReason = document.getElementById('visit-reason').value;
-
-  if (!patientName || !visitDate || !visitTime || !visitType || !clinic || !visitReason) {
-    alert('Please fill in all the required fields.');
-    return;
-  }
-
-  const newAppointment = {
-    patient: patientName,
-    date: visitDate,
-    time: visitTime,
-    type: visitType,
-    clinic: clinic,
-    reason: visitReason,
-    status: 'Upcoming',
-    created_at: new Date().toISOString()
-  };
-
-  try {
-    console.log('Inserting appointment into Supabase:', newAppointment);
-
-    // Insert the appointment into Supabase
-    const { data, error } = await window.supabase
-      .from('appointments')
-      .insert([newAppointment]);
-
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
-
-    console.log('Appointment created successfully:', data);
-
-    // Explicitly trigger table updates
-    await populateUpcomingAppointmentsTable();
-    await populateDoctorAppointmentsTable();
-    await populateAppointmentsTable();
-
-    document.getElementById('book-visit-form').reset();
-    alert('Appointment booked successfully!');
-    closeBookVisitPopup();
-
-  } catch (error) {
-    console.error('Error creating appointment:', error);
-    alert('Failed to book appointment: ' + (error.message || 'Unknown error'));
-  }
-}
 
 // --- Populate Appointments Table ---
 async function populateAppointmentsTable() {
@@ -144,62 +87,6 @@ async function populateAppointmentsTable() {
   }
 }
 
-// --- Populate Upcoming Appointments Table ---
-async function populateUpcomingAppointmentsTable() {
-  console.log('Populating upcoming appointments table...');
-  const tableBody = document.getElementById('upcoming-table-body');
-  if (!tableBody) {
-    console.log('upcoming-table-body not found, skipping');
-    return;
-  }
-
-  tableBody.innerHTML = '';
-
-  try {
-    const patientName = document.getElementById('name')?.value || 'John Doe';
-    console.log(`Fetching upcoming appointments for patient: ${patientName}`);
-
-    // Fetch upcoming appointments for this patient from Supabase
-    const { data: upcomingAppointments, error } = await window.supabase
-      .from('appointments')
-      .select('*')
-      .eq('patient', patientName)
-      .eq('status', 'Upcoming')
-      .order('date', { ascending: true });
-
-    if (error) {
-      console.error('Supabase upcoming appointments fetch error:', error);
-      throw error;
-    }
-
-    console.log(`Received ${upcomingAppointments ? upcomingAppointments.length : 0} upcoming appointments`);
-
-    if (upcomingAppointments && upcomingAppointments.length > 0) {
-      upcomingAppointments.forEach(appointment => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${appointment.date}</td>
-          <td>${appointment.time}</td>
-          <td>${appointment.type}</td>
-          <td>${appointment.clinic}</td>
-          <td>${appointment.reason}</td>
-          <td>${appointment.status}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    } else {
-      // Handle empty results
-      const row = document.createElement('tr');
-      row.innerHTML = '<td colspan="6" style="text-align: center;">No upcoming appointments found</td>';
-      tableBody.appendChild(row);
-    }
-
-  } catch (error) {
-    console.error('Error fetching upcoming appointments:', error);
-    // Add error message to table
-    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Failed to load upcoming appointments. Please refresh the page.</td></tr>';
-  }
-}
 
 // --- Populate Doctor Appointments Table ---
 async function populateDoctorAppointmentsTable() {
@@ -274,7 +161,6 @@ async function updateStatus(appointmentId, newStatus) {
 
     // Refresh the tables
     await populateAppointmentsTable();
-    await populateUpcomingAppointmentsTable();
     await populateDoctorAppointmentsTable();
 
     alert(`Appointment ${newStatus} successfully`);
@@ -290,7 +176,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, initializing application...');
 
   loadCommonHTML(async () => {
-    setupVideoCallButtons();
     console.log('Common content loaded and initialized.');
 
     // Attach event listeners to booking form if it exists
@@ -319,39 +204,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   });
-
-  // Set up book visit popup buttons if they exist
-  const bookVisitBtn = document.getElementById('book-visit-btn');
-  if (bookVisitBtn) {
-    bookVisitBtn.addEventListener('click', openBookVisitPopup);
-  }
-
-  const closeBookVisitBtn = document.querySelector('#book-visit-popup .close');
-  if (closeBookVisitBtn) {
-    closeBookVisitBtn.addEventListener('click', closeBookVisitPopup);
-  }
 });
 
-// --- Book Visit Popup Functions ---
-function openBookVisitPopup() {
-  console.log('Opening book visit popup');
-  closeAllPopups(); // Close other popups
-  const popup = document.getElementById('book-visit-popup');
-  if (popup) {
-    popup.style.display = 'block';
-  }
-}
-
-// Function to close the booking popup
-function closeBookVisitPopup() {
-  console.log('Closing book visit popup');
-  const popup = document.getElementById('book-visit-popup');
-  if (popup) {
-    popup.style.display = 'none';
-  }
-}
-
-// Real-time updates with Supabase subscriptions
+// --- Real-time updates with Supabase subscriptions
 function setupRealtimeUpdates() {
   console.log('Setting up realtime updates with Supabase...');
 
@@ -365,7 +220,6 @@ function setupRealtimeUpdates() {
           console.log('Realtime change received:', payload);
           // Refresh both tables when appointments are updated
           await populateDoctorAppointmentsTable();
-          await populateUpcomingAppointmentsTable();
           await populateAppointmentsTable();
         }
       )

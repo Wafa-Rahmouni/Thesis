@@ -7,8 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="stylesg.css">
-  <link rel="stylesheet" href="../../doctors/global.css"> <!-- Linking the external CSS -->
-</head>
+<link rel="stylesheet" href="../../doctors/global.css"></head>
 <body>
 
   <!-- NAVBAR -->
@@ -49,8 +48,7 @@
       <div class="consultation-option">
         <h3>Start Video Triage</h3>
         <p>Connect with an available dentist to assess the issue right away.</p>
-        <button class="video-call-button" data-type="emergency">Start Video Call</button>
-      </div>
+<button class="video-call-button" data-type="emergency" id="open-video-call-popup">Start Video Call</button>      </div>
 
       <div class="consultation-option">
         <h3>Find Nearby Emergency Clinic</h3>
@@ -67,12 +65,52 @@
       <li>Dental abscess with high fever</li>
     </ul>
   </div>
+
+  <!-- Emergency Video Call Popup -->
+<div id="video-call-popup" class="popup" style="display:none;">
+  <div class="popup-content">
+    <span class="close" id="close-video-call-popup">&times;</span>
+    <h3>Start Video Consultation</h3>
+    <form id="video-call-form">
+      <label for="doctor-select">Choose a doctor:</label>
+      <select id="doctor-select" required>
+        <option value="">Select a doctor</option>
+      </select>
+      <label for="call-reason">Reason for consultation:</label>
+      <textarea id="call-reason" required placeholder="Describe your issue"></textarea>
+      <div id="schedule-fields" style="display:none;">
+        <label for="call-date">Date:</label>
+        <input type="date" id="call-date" min="" />
+        <label for="call-time">Time:</label>
+        <input type="time" id="call-time" />
+      </div>
+      <input type="hidden" id="call-type" value="emergency" />
+      <button type="submit" class="popup-button confirm">Start Call</button>
+    </form>
+  </div>
+</div>
+
+<!-- Video Call Modal -->
+<div id="video-call-modal" class="popup" style="display:none;">
+  <div class="popup-content" style="max-width:600px;">
+    <span class="close" id="close-video-call-modal">&times;</span>
+    <h3>Emergency Video Call</h3>
+    <div id="video-call-ui">
+      <video id="localVideo" autoplay muted playsinline class="main-video"></video>
+      <div class="mini-video-container">
+        <video id="remoteVideo" autoplay playsinline class="mini-video"></video>
+      </div>
+    </div>
+    <div id="call-status" style="margin-top:10px;">Waiting for doctor to join...</div>
+  </div>
+</div>
 </body>
 <!-- Supabase library from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Your Supabase client initializer -->
 <script src="/supabaseClient.js"></script>
 <script src="/patients/script0.js"></script>
+<script src="/patients/emergency.js"></script>
 <script src="../../doctors/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {

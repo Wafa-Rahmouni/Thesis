@@ -84,13 +84,9 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="clinic">Choose Clinic:</label>
-        <select id="clinic" required>
-          <option value="" disabled selected>Select a clinic</option>
-          <option value="Clinic A">Clinic A</option>
-          <option value="Clinic B">Clinic B</option>
-          <option value="Clinic C">Clinic C</option>
-        </select>
+<select id="clinic" required>
+  <option value="" disabled selected>Select a clinic</option>
+</select>
       </div>
       <div class="form-group">
         <label for="visit-reason">Reason for Visit:</label>
@@ -187,39 +183,29 @@
 </div>
 
   <!-- Video Call Popup -->
-  <div id="video-call-popup" class="popup" style="display: none;">
-    <div class="popup-content">
-      <span class="close-btn" onclick="closeVideoCallPopup()">&times;</span>
-      <h3>Video Call</h3>
-      <video id="local-video" autoplay playsinline muted></video>
-      <div class="mini-video">
-        <video id="remote-video" autoplay playsinline></video>
-      </div>
-      <div class="popup-actions">
-        <button class="icon-button mute" onclick="toggleMute()" title="Mute/Unmute">
-          <i class="fa fa-microphone"></i>
-        </button>
-        <button class="icon-button end-call" onclick="endVideoCall()" title="End Call">
-          <i class="fa fa-phone"></i>
-        </button>
-        <button class="icon-button camera" onclick="toggleCamera()" title="Toggle Camera">
-          <i class="fa fa-video-camera"></i>
-        </button>
+<!-- Video Call Modal -->
+<div id="video-call-modal" class="popup" style="display:none;">
+  <div class="popup-content" style="max-width:600px;">
+    <span class="close" id="close-video-call-modal">&times;</span>
+    <h3>Emergency Video Call</h3>
+    <div id="video-call-ui">
+      <video id="localVideo" autoplay muted playsinline class="main-video"></video>
+      <div class="mini-video-container">
+        <video id="remoteVideo" autoplay playsinline class="mini-video"></video>
       </div>
     </div>
+    <div id="call-status" style="margin-top:10px;">Waiting for doctor to join...</div>
   </div>
-
+</div>
   <!-- Find Clinic Popup -->
   <div id="find-clinic-popup" class="popup" style="display: none;">
     <div class="popup-content">
       <h3>Find a Clinic</h3>
       <div class="search-bar">
         <input
-          type="text"
-          id="clinic-search"
-          placeholder="Search for clinics or locations..."
-        />
-        <button onclick="searchClinics()">Search</button>
+          type="text" id="clinic-search" placeholder="Search for clinics or locations..."
+/>
+  <button type="button" class="popup-button" id="find-clinic-search-btn" onclick="searchClinics()">Search</button>
       </div>
       <div class="map-container">
         <iframe
@@ -243,8 +229,6 @@
 </body>
 <!-- Supabase library from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Your Supabase client initializer -->
 <script src="/supabaseClient.js"></script>
-<!-- Your app scripts -->
-<script src="common.js"></script>
-</html>
+<script src="/patients/emergency.js"></script>
+<script src="common.js"></script></html>

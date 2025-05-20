@@ -24,18 +24,16 @@
   <div class="header">
     <h1>Appointments</h1>
     <p>View, confirm, reschedule, or cancel patient appointments.</p>
-    <div class="tabs">
-      <button class="tab-button" data-page="appointments.html">Appointments</button>
-      <button class="tab-button" data-page="patients.html">Patients</button>
-      <button class="tab-button" data-page="consultations.html">Consultations</button>
-      <button class="tab-button" data-page="prescriptions.html">Prescriptions</button>
-      <button class="tab-button" data-page="emergencies.html">Emergencies</button>
-    </div>
-  </div>
-
+<div class="tabs">
+  <button class="tab-button" data-page="appointments">Appointments</button>
+  <button class="tab-button" data-page="patients">Patients</button>
+  <button class="tab-button" data-page="consultations">Consultations</button>
+  <button class="tab-button" data-page="prescriptions">Prescriptions</button>
+  <button class="tab-button" data-page="emergencies">Emergencies</button>
+</div>
   <!-- APPOINTMENTS SECTION -->
   <div class="appointments-container">
-    <h2>Upcoming Appointments</h2>
+    <h2>Appointments</h2>
 <table id="doctor-appointments-table">
   <thead>
     <tr>
@@ -84,5 +82,12 @@
 <!-- Your app scripts -->
 <script src="scripts.js"></script>
 <script src="common.js"></script>
-</body>
-</html>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait for common content to be loaded
+    loadCommonHTML(() => {
+      initializeCommonEventListeners();
+      setupTabNavigation(); // <-- Make sure this is called here!
+    });
+  });
+</script>

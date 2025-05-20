@@ -203,14 +203,13 @@
   <div class="header">
     <h1>Prescriptions</h1>
     <p>Efficiently track, manage, and update prescriptions for your patients, including multiple medications per prescription.</p>
-    <div class="tabs">
-      <button class="tab-button" data-page="appointments.html">Appointments</button>
-      <button class="tab-button" data-page="patients.html">Patients</button>
-      <button class="tab-button" data-page="consultations.html">Consultations</button>
-      <button class="tab-button" data-page="prescriptions.html">Prescriptions</button>
-      <button class="tab-button" data-page="emergencies.html">Emergencies</button>
-    </div>
-    
+<div class="tabs">
+  <button class="tab-button" data-page="appointments">Appointments</button>
+  <button class="tab-button" data-page="patients">Patients</button>
+  <button class="tab-button" data-page="consultations">Consultations</button>
+  <button class="tab-button" data-page="prescriptions">Prescriptions</button>
+  <button class="tab-button" data-page="emergencies">Emergencies</button>
+</div>
     
 
   <!-- PRESCRIPTIONS SECTION -->
@@ -296,5 +295,15 @@
   </script>
 <script src="scripts.js"></script>
 <script src="./common.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait for common content to be loaded
+    loadCommonHTML(() => {
+      initializeCommonEventListeners();
+      setupTabNavigation(); // <-- Make sure this is called here!
+    });
+  });
+</script>
+
 </body>
 </html>
