@@ -12,7 +12,7 @@
 </head>
 <body>
   <!-- Google Translate Widget -->
-<div id="google_translate_element" style="margin: 10px;"></div>
+<div id="google_translate_element"></div>
 <script type="text/javascript">
   function googleTranslateElementInit() {
     new google.translate.TranslateElement({
@@ -22,9 +22,7 @@
     }, 'google_translate_element');
   }
 </script>
-<script type="text/javascript" 
-  src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit">
-</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
@@ -56,9 +54,9 @@
     <div class="popup-content">
       <span class="close-btn" onclick="closeLanguagePopup()">&times;</span>
       <h3>Select Language</h3>
-<button class="popup-button" onclick="translatePage('en')">English</button>
-<button class="popup-button" onclick="translatePage('ar')">العربية</button>
-<button class="popup-button" onclick="translatePage('fr')">Français</button>
+<button onclick="switchLanguage('en')">English</button>
+<button onclick="switchLanguage('ar')">العربية</button>
+<button onclick="switchLanguage('fr')">Français</button>
     </div>
   </div>
 

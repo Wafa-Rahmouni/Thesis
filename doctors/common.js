@@ -941,18 +941,18 @@ window.toggleLanguagePopup = function() {
 window.closeLanguagePopup = function() {
   document.getElementById('language-popup').style.display = 'none';
 };
+
 window.translatePage = function(lang) {
   let attempts = 0;
   function setLang() {
     const combo = document.querySelector('.goog-te-combo');
     if (combo) {
       combo.value = lang;
-      // Google Translate sometimes needs a click event as well
       combo.dispatchEvent(new Event('change', { bubbles: true }));
-      combo.dispatchEvent(new Event('input', { bubbles: true }));
-      combo.blur(); // Remove focus to trigger translation
-      window.closeLanguagePopup();
-    } else if (attempts < 30) { // Try for up to 3 seconds
+      combo.blur();
+      // Optionally, close the popup after selection
+      if (typeof closeLanguagePopup === "function") closeLanguagePopup();
+    } else if (attempts < 30) {
       attempts++;
       setTimeout(setLang, 100);
     } else {
@@ -961,7 +961,6 @@ window.translatePage = function(lang) {
   }
   setLang();
 };
-
 
 
 // Fill clinics dropdown with all unique doctor clinics

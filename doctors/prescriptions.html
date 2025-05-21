@@ -269,6 +269,127 @@
         print-color-adjust: exact !important;
       }
     }
+    .add-prescription-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  transition: background-color 0.3s;
+}
+.add-prescription-button:hover {
+  background-color: #388e3c;
+}
+
+.modal {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  padding: 32px 28px 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(26,115,232,0.18);
+  border: 2px solid #1a73e8;
+  width: 420px;
+  max-width: 95vw;
+  font-family: 'Outfit', Arial, sans-serif;
+  animation: modalFadeIn 0.25s;
+}
+@keyframes modalFadeIn {
+  from { transform: translateY(40px) scale(0.98); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.modal-content h3 {
+  color: #1a73e8;
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+}
+.form-group {
+  margin-bottom: 18px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+  font-weight: 500;
+  font-size: 15px;
+}
+.form-group input[type="text"],
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: 1px solid #bdbdbd;
+  font-size: 15px;
+  background: #f8fafc;
+  margin-bottom: 6px;
+  transition: border 0.2s;
+}
+.form-group input[type="text"]:focus,
+.form-group input[type="date"]:focus {
+  border: 1.5px solid #1a73e8;
+  outline: none;
+  background: #fff;
+}
+.add-medication-btn {
+  margin-top: 5px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s;
+}
+.add-medication-btn:hover {
+  background: #1669c1;
+}
+.action-buttons {
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.submit-btn {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.submit-btn:hover {
+  background: #388e3c;
+}
+.close {
+  background: #ccc;
+  color: #333;
+  padding: 10px 22px;
+  border-radius: 6px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.close:hover {
+  background: #999;
+  color: #fff;
+}
   </style>
 </head>
 <body>
@@ -295,8 +416,36 @@
   <!-- PRESCRIPTIONS SECTION -->
   <div class="prescriptions-container">
     <h2>Prescription Records</h2>
-    <button class="add-prescription-button" onclick="window.location.href='add-prescription.html'">Add New Prescription</button>
-    <p>Below is the list of prescriptions you have issued. Each prescription can contain multiple medications.</p>
+<!-- Add New Prescription Button -->
+<button class="add-prescription-button" id="open-add-prescription-modal">Add New Prescription</button>
+
+<!-- Add Prescription Modal -->
+<div id="add-prescription-modal" class="modal">
+  <div class="modal-content">
+    <h3>Add New Prescription</h3>
+    <form id="add-prescription-form">
+      <div class="form-group">
+        <label>Patient Name:</label>
+        <input type="text" id="new-patient-name" required />
+      </div>
+      <div class="form-group">
+        <label>Date:</label>
+        <input type="date" id="new-prescription-date" required />
+      </div>
+      <div class="form-group">
+        <label>Medications:</label>
+        <div id="medications-list">
+          <input type="text" class="medication-input" placeholder="Medication name" required />
+        </div>
+        <button type="button" id="add-medication-btn" class="add-medication-btn">Add Medication</button>
+      </div>
+      <div class="action-buttons">
+        <button type="submit" class="submit-btn">Add Prescription</button>
+        <button type="button" class="close" id="close-add-prescription-modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>    <p>Below is the list of prescriptions you have issued. Each prescription can contain multiple medications.</p>
     <table>
       <thead>
         <tr>
@@ -400,16 +549,8 @@
     // Assuming: status = 'Completed' and prescriptions is a non-empty array/JSON
     let { data, error } = await supabase
       .from('appointments')
-      .select(`
-        id,
-        patient,
-        patient_id,
-        date,
-        status,
-        prescriptions
-      `)
+      .select('id, patient, date, prescriptions')
       .eq('doctor_id', doctorId)
-      .eq('status', 'Completed')
       .not('prescriptions', 'is', null);
 
     console.log("Supabase prescriptions fetch result:", { data, error });
@@ -505,6 +646,111 @@
     alert('Manage prescription: ' + prescriptionId);
     // Implement modal logic as needed
   }
+  // Show modal
+document.getElementById('open-add-prescription-modal').onclick = function(e) {
+  e.preventDefault();
+  document.getElementById('add-prescription-modal').style.display = 'flex';
+};
+
+// Close modal logic (button)
+document.getElementById('close-add-prescription-modal').onclick = function(e) {
+  e.preventDefault();
+  document.getElementById('add-prescription-modal').style.display = 'none';
+};
+
+// Optional: Close modal when clicking outside modal-content
+document.getElementById('add-prescription-modal').onclick = function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+  }
+};
+
+// Add medication input logic
+document.getElementById('add-medication-btn').onclick = function(e) {
+  e.preventDefault();
+  const medsList = document.getElementById('medications-list');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'medication-input';
+  input.placeholder = 'Medication name';
+  input.required = true;
+  input.style = "width:90%;padding:7px;border-radius:5px;border:1px solid #ccc;margin-bottom:6px;";
+  medsList.appendChild(input);
+};
+
+// Form submit logic
+document.getElementById('add-prescription-form').onsubmit = async function(e) {
+  e.preventDefault();
+  const patientName = document.getElementById('new-patient-name').value.trim();
+  const prescriptionDate = document.getElementById('new-prescription-date').value;
+  const medInputs = document.querySelectorAll('.medication-input');
+  const medications = Array.from(medInputs)
+    .map(input => input.value.trim())
+    .filter(val => val);
+
+  if (!patientName || !prescriptionDate || medications.length === 0) {
+    alert('Please fill all fields and add at least one medication.');
+    return;
+  }
+
+  // Get doctor ID from auth or localStorage
+  let doctorId = null;
+  const { data: { user } = {} } = await supabase.auth.getUser();
+  if (user && user.id) {
+    doctorId = user.id;
+  } else {
+    doctorId = localStorage.getItem('doctor_id');
+  }
+
+  // Insert into Supabase appointments table
+  const { data, error } = await supabase
+    .from('appointments')
+    .insert([{
+      patient: patientName,
+      date: prescriptionDate,
+      time: '', // You can add a time field if needed
+      type: 'Prescription',
+      clinic: '', // Fill if you have clinic info
+      reason: '',
+      status: 'Draft',
+      doctor_id: doctorId,
+      prescriptions: medications
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    alert('Failed to save prescription: ' + error.message);
+    return;
+  }
+
+  // Use the real prescription ID from the DB
+  const prescriptionId = data.id;
+
+  // Append to table
+  const tableBody = document.getElementById('prescriptions-table-body');
+  const medsListHTML = `<ul>${medications.map(med => `<li>${med}</li>`).join('')}</ul>`;
+  const newRow = document.createElement('tr');
+  newRow.id = `prescription-${prescriptionId}`;
+  newRow.innerHTML = `
+    <td>${prescriptionId}</td>
+    <td>${patientName}</td>
+    <td>${medsListHTML}</td>
+    <td>${prescriptionDate}</td>
+    <td>Draft</td>
+    <td>
+      <button class="manage-button" onclick="showPrescriptionModal('${prescriptionId}')">Manage</button>
+      <button class="print-button" onclick="printPrescription('${prescriptionId}')">Print</button>
+    </td>
+  `;
+  tableBody.prepend(newRow);
+
+  document.getElementById('add-prescription-modal').style.display = 'none';
+  this.reset();
+  // Remove extra medication inputs except the first
+  const medsList = document.getElementById('medications-list');
+  while (medsList.children.length > 1) medsList.removeChild(medsList.lastChild);
+};
 </script>
 </body>
 </html>

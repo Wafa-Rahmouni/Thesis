@@ -100,11 +100,31 @@ async function populateDoctorAppointmentsTable() {
   tableBody.innerHTML = '';
 
   try {
-    console.log('Fetching all appointments for doctor view...');
-    // Fetch all appointments from Supabase (for the doctor view)
+    // 1. Get logged-in doctor
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) {
+      console.log('No logged-in user');
+      return;
+    }
+
+    // 2. Fetch doctor's profile to get clinic name
+    const { data: profile, error: profileError } = await window.supabase
+      .from('profiles')
+      .select('clinic_name')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Could not fetch doctor profile.', profileError);
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Could not fetch doctor profile.</td></tr>';
+      return;
+    }
+
+    // 3. Fetch only appointments for this clinic
     const { data: appointments, error } = await window.supabase
       .from('appointments')
       .select('*')
+      .eq('clinic', profile.clinic_name)
       .order('date', { ascending: true });
 
     if (error) {
@@ -112,7 +132,7 @@ async function populateDoctorAppointmentsTable() {
       throw error;
     }
 
-    console.log(`Received ${appointments ? appointments.length : 0} doctor appointments`);
+    console.log(`Received ${appointments ? appointments.length : 0} doctor appointments for clinic: ${profile.clinic_name}`);
 
     if (appointments && appointments.length > 0) {
       appointments.forEach(appointment => {
@@ -131,7 +151,7 @@ async function populateDoctorAppointmentsTable() {
     } else {
       // Handle empty results
       const row = document.createElement('tr');
-      row.innerHTML = '<td colspan="7" style="text-align: center;">No appointments found</td>';
+      row.innerHTML = '<td colspan="7" style="text-align: center;">No appointments found for your clinic</td>';
       tableBody.appendChild(row);
     }
 
@@ -141,7 +161,6 @@ async function populateDoctorAppointmentsTable() {
     tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Failed to load appointments. Please refresh the page.</td></tr>';
   }
 }
-
 // --- Update Appointment Status ---
 async function updateStatus(appointmentId, newStatus) {
   console.log(`Updating appointment ${appointmentId} to status: ${newStatus}`);

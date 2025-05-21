@@ -3,7 +3,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   e.preventDefault();
   console.log('Registration form submitted');
 
-  // Always use this.querySelector to get values from the current form
+  // Collect form data
   const first_name = this.querySelector('input[name="first_name"]')?.value?.trim() || null;
   const last_name = this.querySelector('input[name="last_name"]')?.value?.trim() || null;
   const email = this.querySelector('input[type="email"]')?.value?.trim() || null;
@@ -40,60 +40,74 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     work_hours
   };
   localStorage.setItem('pendingProfile', JSON.stringify(pendingProfile));
+  console.log('Pending profile stored in localStorage:', pendingProfile);
 
   try {
     // 1. Register with Supabase Auth
+    console.log('Attempting to register user with email:', email);
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
+      console.error('Registration error:', error);
       alert('Registration error: ' + error.message);
       return;
     }
+    console.log('User registered successfully:', data);
 
     // 2. Insert profile data if userId is available
     const userId = data.user?.id || data.session?.user?.id;
+    console.log('User ID obtained:', userId);
+
     if (userId) {
       const profileData = {
-        id: userId,
-        email,
-        first_name,
-        last_name,
-        phone,
-        role,
-        address: role === 'patient' ? address : null,
-        gender: role === 'patient' ? gender : null,
-        dob: role === 'patient' ? dob : null,
-        specialization: role === 'doctor' ? specialization : null,
-        years_experience: role === 'doctor' ? years_experience : null,
-        clinic_name: role === 'doctor' ? clinic_name : null,
-        work_hours: role === 'doctor' ? work_hours : null
-      };
-      console.log('Inserting profile with:', profileData);
+  id: userId,
+  email,
+  first_name,
+  last_name,
+  phone,
+  role,
+  address: role === 'patient' ? address : null,
+  gender: role === 'patient' ? gender : null,
+  dob: role === 'patient' ? dob : null,
+  specialization: role === 'doctor' ? specialization : null,
+  years_experience: role === 'doctor' ? years_experience : null,
+  clinic_name: role === 'doctor' ? clinic_name : null,
+  work_hours: role === 'doctor' ? work_hours : null
+};
+      console.log('Profile data to insert:', profileData);
+      console.log('Inserting profile with data:', profileData);
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert([profileData], { onConflict: 'id' });
       if (profileError) {
+        console.error('Profile creation error:', profileError);
         alert('Profile creation error: ' + profileError.message);
         return;
       }
+      console.log('Profile inserted successfully');
     }
 
     // 3. Redirect or show message
     if (data.session && data.user) {
+      console.log('User session and user data available:', data);
       if (role === 'doctor') {
+        console.log('Redirecting to doctor dashboard');
         window.location.href = '/doctors/appointments.html';
       } else if (role === 'patient') {
+        console.log('Redirecting to patient dashboard');
         window.location.href = '/patients/appointments/appointment.html';
       } else {
+        console.warn('Unknown role detected:', role);
         alert('Unknown role!');
       }
     } else {
+      console.log('Registration successful but no session found. Prompting user to verify email.');
       alert('Registration successful! Please check your email to verify your account, then log in.');
-      // Show login modal, hide register modal if you have one
       document.getElementById('loginModal').style.display = 'block';
       document.getElementById('registerForm').style.display = 'none';
     }
   } catch (err) {
+    console.error('Unexpected error during registration:', err);
     alert('An unexpected error occurred: ' + err.message);
   }
 });
@@ -122,39 +136,28 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     // Fetch profile and redirect based on role
     const user = data.user;
     if (user) {
-      // Try to fetch the profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      // If profile is missing fields, upsert with cached registration data
-      if (!profile || !profile.first_name || !profile.last_name || !profile.role) {
-        const cachedProfile = JSON.parse(localStorage.getItem('pendingProfile'));
-        if (cachedProfile) {
-          await supabase.from('profiles').upsert([{ ...cachedProfile, id: user.id, email: user.email }], { onConflict: 'id' });
-          // Optionally clear the cache after upsert
-          localStorage.removeItem('pendingProfile');
-          alert('Your profile has been completed!');
-        } else {
-          alert('Your profile is incomplete. Please complete your profile after login.');
-          // Optionally redirect to a profile completion page
-        }
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        alert('Failed to fetch profile data.');
+        return;
       }
 
-      // Fetch the updated profile (optional)
-      const { data: updatedProfile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      console.log('Fetched profile data:', profile);
 
-      // Redirect based on role
-      if (updatedProfile && updatedProfile.role === 'doctor') {
-        window.location.href = '/doctors/appointments.html';
-      } else {
+if (profile.role === 'doctor') {
+  console.log('Redirecting to doctor dashboard');
+  window.location.href = '/doctors/appointments.html';
+} else if (profile.role === 'patient') {
+        console.log('Redirecting to patient dashboard');
         window.location.href = '/patients/appointments/appointment.html';
+      } else {
+        alert('Unknown role!');
       }
     } else {
       alert('Login successful but no user data found. Please try again.');
@@ -316,3 +319,36 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
 });
+
+async function logHistory(action, details = {}) {
+  if (window.supabase) {
+    const { error } = await window.supabase.from('history').insert([
+      { action, details, timestamp: new Date().toISOString() }
+    ]);
+    if (error) {
+      console.error('Error logging history:', error);
+    }
+  } else {
+    console.error('Supabase is not initialized.');
+  }
+}
+
+async function signOut() {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Sign-out error:', error);
+      alert('Failed to sign out: ' + error.message);
+      return;
+    }
+
+    // Log the sign-out action
+    await logHistory('Sign Out', {});
+
+    // Redirect to login page or home page
+    window.location.href = '/home.html';
+  } catch (err) {
+    console.error('Unexpected error during sign-out:', err);
+    alert('An unexpected error occurred: ' + err.message);
+  }
+}
