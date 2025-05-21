@@ -182,11 +182,6 @@
         </form>
     </div>
 </div>
-<!-- ...existing code... -->
-            
-        </div>
-      </div>
-    </div>
     <footer class="footer" id="footer">
         <div class="footer-container">
           <div class="footer-main">
@@ -290,6 +285,40 @@
           </div>
         </div>
       </footer>
+      <!-- Language Selection Popup -->
+<div id="language-popup" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);">
+  <div style="background:linear-gradient(145deg, #ffffff, #f5f7fa);padding:3em 3.5em;border-radius:16px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-width:500px;width:90%;">
+    <img src="images/logo-removebg-preview.png" alt="SanteNet Logo" style="height:60px;margin-bottom:10px;">
+    <h2 style="color:#333;font-family:'Outfit',sans-serif;font-size:28px;margin-bottom:20px;font-weight:600;">Select Your Language</h2>
+    <p style="color:#555;margin-bottom:25px;font-family:'Outfit',sans-serif;">Choose your preferred language for the best experience</p>
+    <!-- Replace your current language buttons with these enhanced ones -->
+    <div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
+      <button class="lang-btn" data-lang="en" style="padding:14px 28px;border-radius:50px;border:none;background:linear-gradient(145deg, #3498db, #2980b9);color:white;font-size:18px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.3s;flex:1;min-width:130px;box-shadow:0 6px 15px rgba(52,152,219,0.3);display:flex;align-items:center;justify-content:center;gap:8px;">
+        <img src="https://flagcdn.com/w20/us.png" alt="English" style="height:18px;border-radius:3px;">
+        English
+      </button>
+      <button class="lang-btn" data-lang="fr" style="padding:14px 28px;border-radius:50px;border:none;background:linear-gradient(145deg, #2ecc71, #27ae60);color:white;font-size:18px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.3s;flex:1;min-width:130px;box-shadow:0 6px 15px rgba(46,204,113,0.3);display:flex;align-items:center;justify-content:center;gap:8px;">
+        <img src="https://flagcdn.com/w20/fr.png" alt="Français" style="height:18px;border-radius:3px;">
+        Français
+      </button>
+      <button class="lang-btn" data-lang="ar" style="padding:14px 28px;border-radius:50px;border:none;background:linear-gradient(145deg, #9b59b6, #8e44ad);color:white;font-size:18px;font-weight:500;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.3s;flex:1;min-width:130px;box-shadow:0 6px 15px rgba(155,89,182,0.3);display:flex;align-items:center;justify-content:center;gap:8px;">
+        <img src="https://flagcdn.com/w20/sa.png" alt="العربية" style="height:18px;border-radius:3px;">
+        العربية
+      </button>
+    </div>
+  </div>
+</div>
+<div id="google_translate_element" style="display:none;"></div>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'en,fr,ar',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+  }
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
       <script> window.chtlConfig = { chatbotId: "5541694675" } </script>
 <script async data-id="5541694675" id="chatling-embed-script" type="text/javascript" src="https://chatling.ai/js/embed.js"></script>
 <!-- Supabase library from CDN -->
@@ -303,6 +332,52 @@ window.addEventListener('load', function() {
   var mainContent = document.getElementById('main-content');
   if (preloader) preloader.style.display = 'none';
   if (mainContent) mainContent.style.display = 'block';
+});
+</script>
+<script>
+function applySavedLanguage() {
+  const lang = localStorage.getItem('preferredLanguage');
+  if (lang) {
+    // Set cookie with proper path and domain
+    document.cookie = `googtrans=/en/${lang}; path=/; domain=${window.location.hostname}`;
+    
+    const interval = setInterval(() => {
+      const select = document.querySelector('.goog-te-combo');
+      if (select) {
+        select.value = lang;
+        select.dispatchEvent(new Event('change'));
+        clearInterval(interval);
+      }
+    }, 300);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  // Only show popup if no language is saved
+  if (!localStorage.getItem('preferredLanguage')) {
+    document.getElementById('language-popup').style.display = 'flex';
+  } else {
+    document.getElementById('language-popup').style.display = 'none';
+    applySavedLanguage();
+  }
+
+  // Handle language button clicks
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const lang = this.getAttribute('data-lang');
+      localStorage.setItem('preferredLanguage', lang);
+      document.getElementById('language-popup').style.display = 'none';
+      // Wait for Google Translate widget to be ready
+      const interval = setInterval(() => {
+        const select = document.querySelector('.goog-te-combo');
+        if (select) {
+          select.value = lang;
+          select.dispatchEvent(new Event('change'));
+          clearInterval(interval);
+        }
+      }, 300);
+    });
+  });
 });
 </script>
     

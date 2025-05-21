@@ -576,6 +576,36 @@ tr:not(:last-child) {
 .lang-button:hover {
   background: #2dc76c;
 }
+
+/* Add these styles to your global.css file */
+.language-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.language-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(to right, #f5f7fa, #ffffff);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.language-btn:hover {
+  background: linear-gradient(to right, #e0f7fa, #ffffff);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
 /* Patient Profile Page Styles */
 .profile-container {
 padding: 32px;

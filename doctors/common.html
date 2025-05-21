@@ -11,18 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <!-- Google Translate Widget -->
-<div id="google_translate_element"></div>
-<script type="text/javascript">
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      includedLanguages: 'en,fr,ar',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
-  }
-</script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  
   <!-- Navigation Bar -->
   <nav>
     <div class="nav-container">
@@ -49,16 +38,27 @@
     </div>
   </nav>
 
-  <!-- Language Popup -->
-  <div id="language-popup" class="popup" style="display: none;">
-    <div class="popup-content">
-      <span class="close-btn" onclick="closeLanguagePopup()">&times;</span>
-      <h3>Select Language</h3>
-<button onclick="switchLanguage('en')">English</button>
-<button onclick="switchLanguage('ar')">العربية</button>
-<button onclick="switchLanguage('fr')">Français</button>
+<!-- Replace your current language popup with this styled version -->
+<div id="language-popup" class="popup" style="display: none;">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closeLanguagePopup()">&times;</span>
+    <h3>Select Language</h3>
+    <div class="language-options">
+      <button onclick="switchLanguage('en')" class="language-btn">
+        <img src="https://flagcdn.com/w20/us.png" alt="English" style="height:18px;border-radius:3px;margin-right:8px;">
+        English
+      </button>
+      <button onclick="switchLanguage('ar')" class="language-btn">
+        <img src="https://flagcdn.com/w20/sa.png" alt="العربية" style="height:18px;border-radius:3px;margin-right:8px;">
+        العربية
+      </button>
+      <button onclick="switchLanguage('fr')" class="language-btn">
+        <img src="https://flagcdn.com/w20/fr.png" alt="Français" style="height:18px;border-radius:3px;margin-right:8px;">
+        Français
+      </button>
     </div>
   </div>
+</div>
 
   <!-- Book Visit Popup -->
 <div id="book-visit-popup" class="popup" style="display: none;">
