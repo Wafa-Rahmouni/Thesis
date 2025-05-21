@@ -314,8 +314,12 @@
     new google.translate.TranslateElement({
       pageLanguage: 'en',
       includedLanguages: 'en,fr,ar',
+      autoDisplay: false,
       layout: google.translate.TranslateElement.InlineLayout.SIMPLE
     }, 'google_translate_element');
+    
+    // Hide the bar immediately after initialization
+    setTimeout(hideTranslateBar, 100);
   }
 </script>
 <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -335,24 +339,69 @@ window.addEventListener('load', function() {
 });
 </script>
 <script>
+// Hide Google Translate bar
+function hideTranslateBar() {
+  const style = document.createElement('style');
+  style.textContent = `
+    .goog-te-banner-frame, 
+    .skiptranslate,
+    .VIpgJd-ZVi9od-ORHb-OEVmcd,
+    .goog-te-gadget {
+      display: none !important;
+    }
+    body {
+      top: 0 !important;
+      position: static !important;
+    }
+    .goog-te-menu-value {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Apply saved language
 function applySavedLanguage() {
   const lang = localStorage.getItem('preferredLanguage');
   if (lang) {
-    // Set cookie with proper path and domain
+    // Set proper cookie for Google Translate
     document.cookie = `googtrans=/en/${lang}; path=/; domain=${window.location.hostname}`;
     
+    // Try to trigger Google Translate
     const interval = setInterval(() => {
       const select = document.querySelector('.goog-te-combo');
       if (select) {
         select.value = lang;
         select.dispatchEvent(new Event('change'));
         clearInterval(interval);
+        
+        // Hide bar after applying translation
+        hideTranslateBar();
       }
     }, 300);
   }
 }
 
+// Switch language function - called when clicking language buttons
+function switchLanguage(lang) {
+  // Save language preference
+  localStorage.setItem('preferredLanguage', lang);
+  
+  // Hide popup
+  document.getElementById('language-popup').style.display = 'none';
+  
+  // Set Google Translate cookie
+  document.cookie = `googtrans=/en/${lang}; path=/; domain=${window.location.hostname}`;
+  
+  // Force page reload to apply new language
+  location.reload();
+}
+
+// Initialize on page load
 window.addEventListener('DOMContentLoaded', function() {
+  // Hide Google Translate bar immediately
+  hideTranslateBar();
+  
   // Only show popup if no language is saved
   if (!localStorage.getItem('preferredLanguage')) {
     document.getElementById('language-popup').style.display = 'flex';
@@ -361,24 +410,20 @@ window.addEventListener('DOMContentLoaded', function() {
     applySavedLanguage();
   }
 
-  // Handle language button clicks
+  // Attach event listeners to buttons
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const lang = this.getAttribute('data-lang');
-      localStorage.setItem('preferredLanguage', lang);
-      document.getElementById('language-popup').style.display = 'none';
-      // Wait for Google Translate widget to be ready
-      const interval = setInterval(() => {
-        const select = document.querySelector('.goog-te-combo');
-        if (select) {
-          select.value = lang;
-          select.dispatchEvent(new Event('change'));
-          clearInterval(interval);
-        }
-      }, 300);
+      switchLanguage(lang);
     });
   });
 });
+
+// Call again after page fully loads to ensure bar stays hidden
+window.addEventListener('load', hideTranslateBar);
+
+// Call periodically to keep the bar hidden (Google sometimes tries to show it)
+setInterval(hideTranslateBar, 1000);
 </script>
     
 </body>
