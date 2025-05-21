@@ -203,26 +203,23 @@ async function cancelProfileEditing() {
 }
 
 // Save changes to Supabase
-async function saveProfileChanges() {
+async function saveProfileChanges(event) {
+  if (event) event.preventDefault();
   try {
-    // Get user first, before checking if it exists
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
     if (!user || authError) {
       alert('You must be logged in to update your profile.');
       return;
     }
-    
-    // First check if form elements exist with either ID pattern
+
+    // Collect form values
     function getElementValue(baseName) {
-      const element = 
-        document.getElementById(`profile-${baseName}`) || 
+      const element =
+        document.getElementById(`profile-${baseName}`) ||
         document.getElementById(baseName);
-      
       return element ? element.value.trim() : '';
     }
-    
-    // Create profileData object from form values
+
     const profileData = {
       first_name: getElementValue('first_name'),
       last_name: getElementValue('last_name'),
@@ -232,42 +229,35 @@ async function saveProfileChanges() {
       gender: getElementValue('gender'),
       dob: getElementValue('dob')
     };
-    
-    console.log('Form data collected:', profileData);
-    
-    // Validate required fields
+
     if (!profileData.first_name || !profileData.last_name) {
       alert('First name and last name are required.');
       return;
     }
-    
+
     // Add the user ID to the profile data
     profileData.id = user.id;
-    
-    console.log('Updating profile with:', profileData);
-    
+
     // Update the profile
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('profiles')
       .update(profileData)
       .eq('id', user.id);
-    
+
     if (error) {
       console.error('Profile update error:', error);
       alert('Could not update profile: ' + error.message);
       return;
     }
-    
-    // Update local storage values for immediate use
+
+    // Optionally update localStorage
     localStorage.setItem('first_name', profileData.first_name);
     localStorage.setItem('last_name', profileData.last_name);
-    
-    // Close the profile modal
+
+    // Reload profile data and close modal
+    await loadProfileData();
     closeProfileModal();
-    
-    // Show success message
     alert('Profile updated successfully!');
-    
   } catch (err) {
     console.error('Unexpected error:', err);
     alert('An error occurred while saving profile changes: ' + err.message);
@@ -489,9 +479,10 @@ async function handleBooking(event) {
     await populateDoctorAppointmentsTable?.();
     await populateUpcomingAppointmentsTable?.();
     closeBookVisitPopup();
+    alert('Appointment booked successfully!');
   } catch (error) {
     console.error('Error creating appointment:', error);
-    alert('Check Your Email for Confirmation!');
+    alert('Failed to book appointment. Please try again.');
   }
 }
 window.handleBooking = handleBooking;

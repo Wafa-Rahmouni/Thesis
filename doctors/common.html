@@ -211,12 +211,12 @@
   <div id="find-clinic-popup" class="popup" style="display: none;">
     <div class="popup-content">
       <h3>Find a Clinic</h3>
-      <div class="search-bar">
-        <input
-          type="text" id="clinic-search" placeholder="Search for clinics or locations..."
-/>
-  <button type="button" class="popup-button" id="find-clinic-search-btn" onclick="searchClinics()">Search</button>
-      </div>
+<div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search here..." />
+    <button class="search-button" id="search-btn" aria-label="Search">
+        <div class="icon"></div>
+    </button>
+</div>
       <div class="map-container">
         <iframe
           id="google-map"
@@ -237,6 +237,48 @@
     <a href="#">Home</a> &gt; <span id="breadcrumb-page">Page Name</span>
   </div>
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search-input');
+  const searchBtn = document.getElementById('search-btn');
+
+  function handleSearch(e) {
+    e.preventDefault();
+    const query = searchInput.value.trim().toLowerCase();
+    if (!query) {
+      alert('Please enter a search term.');
+      return;
+    }
+    // DEMO: Search service titles and descriptions on the page
+    let found = false;
+    document.querySelectorAll('.service-box').forEach(box => {
+      const title = box.querySelector('h2')?.textContent.toLowerCase() || '';
+      const desc = box.querySelector('p')?.textContent.toLowerCase() || '';
+      if (title.includes(query) || desc.includes(query)) {
+        box.style.border = '2px solid #007bff';
+        found = true;
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        box.style.border = '';
+      }
+    });
+    if (!found) {
+      alert('No matching services found.');
+    }
+  }
+
+  if (searchBtn) {
+    searchBtn.addEventListener('click', handleSearch);
+  }
+  if (searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        handleSearch(e);
+      }
+    });
+  }
+});
+</script>
 <!-- Supabase library from CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabaseClient.js"></script>

@@ -1635,6 +1635,7 @@ background-color: #bbb;
 .book-visit-popup .popup-content {
   max-height: 75vh;
   overflow-y: auto;
+  max-width: 60vh;
 }
 
 /* For language popup */
