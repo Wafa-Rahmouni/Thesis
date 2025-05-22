@@ -34,7 +34,7 @@
         <div class="consultation-option">
           <h3>Video Call</h3>
           <p>Speak with a dentist from your home or office.</p>
-          <button class="video-call-button" onclick="startVideoCallWith('DOCTOR_USER_ID')">Start Video Call</button>        </div>
+          <button class="video-call-button" onclick="openBookVisitPopupForVirtual()">Start Video Call</button>        </div>
         <div class="consultation-option">
           <h3>In-Person Visit</h3>
           <p>Find a nearby clinic and book a physical visit.</p>
@@ -62,4 +62,34 @@
     });
   </script>
   <script src="/language.js"></script>
+  <script>
+  // Function to open the booking popup with Virtual type pre-selected
+  function openBookVisitPopupForVirtual() {
+    // First open the standard booking popup
+    openBookVisitPopup();
+    
+    // Then pre-select the Virtual option
+    setTimeout(() => {
+      const visitTypeSelect = document.getElementById('visitType');
+      if (visitTypeSelect) {
+        visitTypeSelect.value = 'Virtual';
+        
+        // If you have fields that should only show for virtual visits
+        const virtualFields = document.querySelectorAll('.virtual-only-field');
+        virtualFields.forEach(field => {
+          field.style.display = 'block';
+        });
+        
+        // If you have fields that should only show for in-person visits
+        const inPersonFields = document.querySelectorAll('.in-person-only-field');
+        inPersonFields.forEach(field => {
+          field.style.display = 'none';
+        });
+      }
+    }, 100); // Short delay to ensure the popup is fully open
+  }
+  
+  // Make sure this function is available globally
+  window.openBookVisitPopupForVirtual = openBookVisitPopupForVirtual;
+</script>
 </html>

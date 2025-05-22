@@ -1257,5 +1257,149 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+// Add these functions to properly handle video/audio controls
+function toggleDoctorAudio() {
+  try {
+    const localVideo = document.getElementById('localVideo');
+    
+    if (localVideo && localVideo.srcObject) {
+      const audioTrack = localVideo.srcObject.getAudioTracks()[0];
+      
+      if (audioTrack) {
+        // Toggle the track's enabled state
+        audioTrack.enabled = !audioTrack.enabled;
+        
+        // Update button UI
+        const muteBtn = document.getElementById('mute-audio-btn');
+        if (muteBtn) {
+          muteBtn.innerHTML = audioTrack.enabled ? 
+            '<i class="fa fa-microphone"></i>' : 
+            '<i class="fa fa-microphone-slash"></i>';
+          muteBtn.title = audioTrack.enabled ? "Mute Audio" : "Unmute Audio";
+        }
+        
+        console.log('Audio track enabled:', audioTrack.enabled);
+      }
+    }
+  } catch (err) {
+    console.error('Error toggling audio:', err);
+  }
+}
+
+function toggleDoctorVideo() {
+  try {
+    const localVideo = document.getElementById('localVideo');
+    
+    if (localVideo && localVideo.srcObject) {
+      const videoTrack = localVideo.srcObject.getVideoTracks()[0];
+      
+      if (videoTrack) {
+        // Toggle the track's enabled state
+        videoTrack.enabled = !videoTrack.enabled;
+        
+        // Update button UI
+        const videoBtn = document.getElementById('mute-video-btn');
+        if (videoBtn) {
+          videoBtn.innerHTML = videoTrack.enabled ? 
+            '<i class="fa fa-video"></i>' : 
+            '<i class="fa fa-video-slash"></i>';
+          videoBtn.title = videoTrack.enabled ? "Turn Off Camera" : "Turn On Camera";
+        }
+        
+        console.log('Video track enabled:', videoTrack.enabled);
+      }
+    }
+  } catch (err) {
+    console.error('Error toggling video:', err);
+  }
+}
+
+// Complete function to properly close the video call
+function closeDoctorVideoCall() {
+  console.log("Closing video call...");
+  
+  try {
+    // 1. Stop all media tracks from the local video stream
+    const localVideo = document.getElementById('localVideo');
+    if (localVideo && localVideo.srcObject) {
+      const tracks = localVideo.srcObject.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        console.log(`Stopped ${track.kind} track`);
+      });
+      localVideo.srcObject = null;
+    }
+    
+    // 2. Clear the remote video stream
+    const remoteVideo = document.getElementById('remoteVideo');
+    if (remoteVideo) {
+      remoteVideo.srcObject = null;
+    }
+    
+    // 3. Close WebRTC peer connection if it exists
+    if (typeof doctorPeerConnection !== 'undefined' && doctorPeerConnection) {
+      doctorPeerConnection.close();
+      doctorPeerConnection = null;
+      console.log("Closed peer connection");
+    }
+    
+    // 4. Unsubscribe from Supabase realtime channel
+    if (typeof doctorSignalingChannel !== 'undefined' && doctorSignalingChannel) {
+      doctorSignalingChannel.unsubscribe();
+      doctorSignalingChannel = null;
+      console.log("Unsubscribed from signaling channel");
+    }
+    
+    // 5. Reset call status text
+    const callStatus = document.getElementById('call-status');
+    if (callStatus) {
+      callStatus.textContent = "Call ended";
+    }
+    
+    // 6. Reset button states
+    const muteAudioBtn = document.getElementById('mute-audio-btn');
+    const muteVideoBtn = document.getElementById('mute-video-btn');
+    
+    if (muteAudioBtn) {
+      muteAudioBtn.innerHTML = '<i class="fa fa-microphone"></i>';
+    }
+    
+    if (muteVideoBtn) {
+      muteVideoBtn.innerHTML = '<i class="fa fa-video"></i>';
+    }
+    
+    // 7. Hide the video call popup
+    const modal = document.getElementById('video-call-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+    
+    console.log("Video call closed successfully");
+  } catch (err) {
+    console.error("Error while closing video call:", err);
+  }
+}
+
+// Make function globally available
+window.closeDoctorVideoCall = closeDoctorVideoCall;
+
+// Add event listeners for modal close button
+document.addEventListener('DOMContentLoaded', function() {
+  const closeModalBtn = document.getElementById('close-video-call-modal');
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', function() {
+      closeDoctorVideoCall();
+    });
+  }
+  
+  // Also add listener for the hangup button
+  const hangupBtn = document.getElementById('hangup-btn');
+  if (hangupBtn) {
+    hangupBtn.addEventListener('click', function() {
+      closeDoctorVideoCall();
+    });
+  }
+});
+
 
 
